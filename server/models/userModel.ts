@@ -26,6 +26,34 @@ const userScheme = new mongoose.Schema<UserDocument>(
 		verificationToken: {
 			type: String,
 		},
+		tokens: [
+			{
+				token: {
+					type: String,
+					required: true,
+				},
+				device_id: {
+					type: String,
+					required: true,
+				},
+				createdAt: {
+					type: Date,
+					default: Date.now,
+				},
+				name: {
+					type: String,
+					required: true,
+				},
+				type: {
+					type: String,
+					required: true,
+				},
+				unique: {
+					type: String,
+					required: true,
+				},
+			},
+		],
 	},
 	{ timestamps: true }
 );
