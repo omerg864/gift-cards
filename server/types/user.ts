@@ -7,6 +7,7 @@ export interface User {
 	image?: string;
 	isVerified?: boolean;
 	verificationToken?: string;
+	resetPasswordTokenExpiry?: Date;
 	tokens: IToken[];
 }
 
