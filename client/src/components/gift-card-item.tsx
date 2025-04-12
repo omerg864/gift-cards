@@ -31,7 +31,10 @@ export function GiftCardItem({
 
 	return (
 		<div
-			className="relative w-full h-[200px] rounded-xl shadow-lg cursor-pointer transition-all duration-300 hover:scale-[1.02]"
+			className="relative w-full  h-[200px] rounded-xl shadow-lg cursor-pointer transition-all duration-300 hover:scale-[1.02]"
+			style={{
+				maxWidth: '25rem',
+			}}
 			onClick={onClick}
 		>
 			<div

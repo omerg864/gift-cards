@@ -188,7 +188,7 @@ export function GiftCardList() {
 			<div>
 				<h2 className="text-2xl font-semibold mb-6">Your Gift Cards</h2>
 				{giftCards.length > 0 ? (
-					<div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+					<div className="flex gap-6 flex-wrap w-full justify-center lg:justify-start">
 						{giftCards.map((card) => (
 							<GiftCardItem
 								handleCardClick={handleGiftCardClick}
