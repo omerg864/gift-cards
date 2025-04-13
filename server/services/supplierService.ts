@@ -128,4 +128,39 @@ const updateSupplier = async (
 	return updatedSupplier;
 };
 
-export { newUserSupplier, getUserSuppliers, getSupplier, getUserSupplier, updateSupplier };
+const deleteUserSupplierById = async (user: UserDocument, id: string) => {
+	const supplier = await Supplier.findOne({
+		_id: id,
+		user: user._id,
+	});
+
+	if (!supplier) {
+		return null;
+	}
+
+	let promises: Promise<any>[] = [];
+	if (supplier.image) {
+		promises.push(deleteFromCloudinary(supplier.image));
+	}
+
+	for (const store of supplier.stores) {
+		if (store.image) {
+			promises.push(deleteFromCloudinary(store.image));
+		}
+	}
+
+	await Promise.allSettled(promises);
+
+	await Supplier.findByIdAndDelete(id);
+
+	return supplier;
+};
+
+export {
+	newUserSupplier,
+	getUserSuppliers,
+	getSupplier,
+	getUserSupplier,
+	updateSupplier,
+	deleteUserSupplierById,
+};

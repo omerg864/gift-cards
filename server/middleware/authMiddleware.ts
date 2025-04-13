@@ -1,7 +1,7 @@
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import asyncHandler from 'express-async-handler';
-import User from '../models/userModel';
 import { Request, Response, NextFunction } from 'express';
+import { getUserById } from '../services/userService';
 
 const authUser = asyncHandler(
 	async (req: Request, res: Response, next: NextFunction) => {
@@ -20,7 +20,7 @@ const authUser = asyncHandler(
 			throw new Error('Not authorized, token failed');
 		}
 
-		const user = await User.findById(decoded.id);
+		const user = await getUserById(decoded.id);
 
 		if (!user) {
 			res.status(404);
@@ -50,13 +50,13 @@ const authAdmin = asyncHandler(
 			throw new Error('Not authorized, token failed');
 		}
 
-		const user = await User.findById(decoded.id);
+		const user = await getUserById(decoded.id);
 
 		if (!user) {
 			res.status(404);
 			throw new Error('User not found');
 		}
-		
+
 		if (user.admin !== true) {
 			res.status(401);
 			throw new Error('Not authorized, not an admin');

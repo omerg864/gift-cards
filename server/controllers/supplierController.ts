@@ -1,5 +1,6 @@
 import AsyncHandler from 'express-async-handler';
 import {
+	deleteUserSupplierById,
 	getSupplier,
 	getUserSupplier,
 	getUserSuppliers,
@@ -105,10 +106,24 @@ const updateUserSupplier = AsyncHandler(async (req, res) => {
 	});
 });
 
+const deleteUserSupplier = AsyncHandler(async (req, res) => {
+	const user = req.user!;
+	const supplierId = req.params.id;
+	const supplier = await deleteUserSupplierById(user, supplierId);
+	if (!supplier) {
+		res.status(404);
+		throw new Error('Supplier not found');
+	}
+	res.status(200).json({
+		success: true,
+		message: 'Supplier deleted',
+	});
+});
+
 export {
 	getSuppliers,
 	createUserSupplier,
 	getSupplierById,
 	updateUserSupplier,
-	newUserSupplier,
+	deleteUserSupplier
 };
