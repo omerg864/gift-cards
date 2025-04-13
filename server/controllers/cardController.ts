@@ -18,20 +18,20 @@ const getCards = asyncHandler(async (req, res) => {
 
 const createCardAndSupplier = asyncHandler(async (req, res) => {
 	const user = req.user!;
-	const { name, supplier, description, physicalCard, amount, currency } =
+	const { name, supplierName, description, physicalCard, amount, currency } =
 		req.body;
 
 	let { stores = '[]' } = req.body;
 	stores = JSON.parse(stores);
 
-	if (!supplier || !name || isNaN(amount) || !currency) {
+	if (!supplierName || !name || isNaN(amount) || !currency) {
 		res.status(400);
 		throw new Error('Please add all required fields');
 	}
 
 	const newSupplier = await newUserSupplier(
 		req.files,
-		supplier,
+		supplierName,
 		'',
 		undefined,
 		stores,
@@ -96,20 +96,20 @@ const createCard = asyncHandler(async (req, res) => {
 const updateCardWithNewSupplier = asyncHandler(async (req, res) => {
 	const user = req.user!;
 	const cardId = req.params.id;
-	const { name, supplier, description, physicalCard, amount, currency } =
+	const { name, supplierName, description, physicalCard, amount, currency } =
 		req.body;
 
 	let { stores = '[]' } = req.body;
 	stores = JSON.parse(stores);
 
-	if (!supplier || !name || isNaN(amount) || !currency) {
+	if (!supplierName || !name || isNaN(amount) || !currency) {
 		res.status(400);
 		throw new Error('Please add all required fields');
 	}
 
 	const newSupplier = await newUserSupplier(
 		req.files,
-		supplier,
+		supplierName,
 		'',
 		undefined,
 		stores,
@@ -194,4 +194,11 @@ const deleteCard = asyncHandler(async (req, res) => {
 	});
 });
 
-export { getCards, createCardAndSupplier, createCard, updateCard, deleteCard };
+export {
+	getCards,
+	createCardAndSupplier,
+	createCard,
+	updateCard,
+	deleteCard,
+	updateCardWithNewSupplier,
+};
