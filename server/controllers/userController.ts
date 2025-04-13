@@ -156,23 +156,23 @@ const register = asyncHandler(
 		promises.push(user.save());
 		const htmlContent = `
 			<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
-				<img src="${process.env.HOST_ADDRESS}/logo.png" alt="Mix Master Logo" style="width: 100px; display: block; margin: 0 auto 20px;" />
+				<img src="${process.env.HOST_ADDRESS}/logo.png" alt="Gift Cards Logo" style="width: 100px; display: block; margin: 0 auto 20px;" />
 				<h2 style="text-align: center; color: #333;">Verify Your Email</h2>
 				<p>Hi,</p>
-				<p>Thank you for signing up for Mix Master! Please verify your email address by clicking the button below:</p>
-				<a href="${process.env.HOST_ADDRESS}/verify/${user._id}" 
-					style="display: inline-block; background-color: #D93025; color: #fff; padding: 10px 20px; border-radius: 5px; text-decoration: none;">
+				<p>Thank you for signing up for Gift Cards! Please verify your email address by clicking the button below:</p>
+				<a href="${process.env.HOST_ADDRESS}/verify/${user.id}" 
+					style="display: inline-block; background-color: rgb(37, 103, 217); color: #fff; padding: 10px 20px; border-radius: 5px; text-decoration: none;">
 					Verify Email
 				</a>
-				<p>If you did not sign up for Mix Master, please ignore this email.</p>
-				<p>Thanks,<br>The Mix Master Team</p>
+				<p>If you did not sign up for Gift Cards, please ignore this email.</p>
+				<p>Thanks,<br>The Gift Cards Team</p>
 			</div>
 		`;
 		promises.push(
 			sendEmail(
 				email,
 				'Verify your email',
-				`please verify your email: ${process.env.HOST_ADDRESS}/verify/${user._id}`,
+				`please verify your email: ${process.env.HOST_ADDRESS}/verify/${user.id}`,
 				htmlContent
 			)
 		);
@@ -403,16 +403,16 @@ const resendEmail = asyncHandler(
 		}
 		const htmlContent = `
 			<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
-				<img src="${process.env.HOST_ADDRESS}/logo.png" alt="Mix Master Logo" style="width: 100px; display: block; margin: 0 auto 20px;" />
+				<img src="${process.env.HOST_ADDRESS}/logo.png" alt="Gift Cards Logo" style="width: 100px; display: block; margin: 0 auto 20px;" />
 				<h2 style="text-align: center; color: #333;">Verify Your Email</h2>
 				<p>Hi,</p>
-				<p>Thank you for signing up for Mix Master! Please verify your email address by clicking the button below:</p>
+				<p>Thank you for signing up for Gift Cards! Please verify your email address by clicking the button below:</p>
 				<a href="${process.env.HOST_ADDRESS}/verify/${user._id}" 
-					style="display: inline-block; background-color: #D93025; color: #fff; padding: 10px 20px; border-radius: 5px; text-decoration: none;">
+					style="display: inline-block; background-color:rgb(37, 103, 217); color: #fff; padding: 10px 20px; border-radius: 5px; text-decoration: none;">
 					Verify Email
 				</a>
-				<p>If you did not sign up for Mix Master, please ignore this email.</p>
-				<p>Thanks,<br>The Mix Master Team</p>
+				<p>If you did not sign up for Gift Cards, please ignore this email.</p>
+				<p>Thanks,<br>The Gift Cards Team</p>
 			</div>
 		`;
 
@@ -572,22 +572,22 @@ const sendEmailPasswordReset = asyncHandler(
 		await user.save();
 		const htmlContent = `
 			<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
-				<img src="${process.env.HOST_ADDRESS}/logo.png" alt="Mix Master Logo" style="width: 100px; display: block; margin: 0 auto 20px;" />
+				<img src="${process.env.HOST_ADDRESS}/logo.png" alt="Gift Cards Logo" style="width: 100px; display: block; margin: 0 auto 20px;" />
 				<h2 style="text-align: center; color: #333;">Reset Your Password</h2>
 				<p>Hi,</p>
 				<p>We received a request to reset your password. You can reset it by clicking the link below:</p>
 				<a href="${process.env.HOST_ADDRESS}/forgot/password/${token}/${email}" 
-					style="display: inline-block; background-color: #D93025; color: #fff; padding: 10px 20px; border-radius: 5px; text-decoration: none;">
+					style="display: inline-block; background-color: rgb(37, 103, 217); color: #fff; padding: 10px 20px; border-radius: 5px; text-decoration: none;">
 					Reset Password
 				</a>
 				<p>If you did not request this, please ignore this email. The link will expire in 30 minutes.</p>
-				<p>Thanks,<br>Mix Master Team</p>
+				<p>Thanks,<br>Gift Cards Team</p>
 			</div>
 		`;
 
 		const sent = await sendEmail(
 			email,
-			'Reset your password - Mix Master',
+			'Reset your password - Gift Cards',
 			`Reset your password: ${process.env.HOST_ADDRESS}/forgot/password/${token}/${email}`,
 			htmlContent
 		);

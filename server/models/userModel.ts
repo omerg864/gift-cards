@@ -29,6 +29,10 @@ const userScheme = new mongoose.Schema<UserDocument>(
 		resetPasswordTokenExpiry: {
 			type: Date,
 		},
+		admin: {
+			type: Boolean,
+			default: false,
+		},
 		tokens: [
 			{
 				token: {

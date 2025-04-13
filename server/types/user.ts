@@ -9,6 +9,7 @@ export interface User {
 	verificationToken?: string;
 	resetPasswordTokenExpiry?: Date;
 	tokens: IToken[];
+	admin?: boolean;
 }
 
 export interface IToken {

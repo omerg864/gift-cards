@@ -7,3 +7,7 @@ declare module 'express-serve-static-core' {
 		user?: UserDocument;
 	}
 }
+
+export interface FieldFiles {
+	[fieldname: string]: Express.Multer.File[];
+}
