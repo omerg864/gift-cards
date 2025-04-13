@@ -7,8 +7,13 @@ import { sendEmail } from '../utils/functions';
 import { OAuth2Client } from 'google-auth-library';
 import { v4 as uuid } from 'uuid';
 import { Device, UserDocument } from '../types/user';
-import User from '../models/userModel';
 import { deleteFromCloudinary, uploadToCloudinary } from '../config/cloud';
+import {
+	createUser,
+	getUserByEmail,
+	getUserById,
+	updateUserById,
+} from '../services/userService';
 
 const createUserLogin = async (
 	res: Response,
@@ -82,9 +87,7 @@ const login = asyncHandler(
 			res.status(400);
 			throw new Error('Invalid email');
 		}
-		const user: UserDocument | null = await User.findOne({
-			email: { $regex: new RegExp(`^${email}$`, 'i') },
-		});
+		const user: UserDocument | null = await getUserByEmail(email);
 		if (!user) {
 			res.status(400);
 			throw new Error('Invalid email or password');
@@ -127,9 +130,7 @@ const register = asyncHandler(
 				'Password must be at least 8 characters long, contain at least one uppercase letter, one lowercase letter, and one number'
 			);
 		}
-		const userFound = await User.findOne({
-			email: { $regex: new RegExp(`^${email}$`, 'i') },
-		});
+		const userFound = await getUserByEmail(email);
 		if (userFound) {
 			res.status(400);
 			throw new Error('User already exists');
@@ -145,7 +146,7 @@ const register = asyncHandler(
 				imageID
 			);
 		}
-		const user = new User({
+		const user = await createUser({
 			name,
 			email,
 			password: hashedPassword,
@@ -201,7 +202,7 @@ const deleteUser = asyncHandler(
 const verifyEmail = asyncHandler(
 	async (req: Request, res: Response): Promise<void> => {
 		const { id } = req.params;
-		const user = await User.findById(id);
+		const user = await getUserById(id);
 		if (!user) {
 			res.status(400);
 			throw new Error('User not found');
@@ -249,16 +250,12 @@ const updateUser = asyncHandler(
 			if (user.image) {
 				await deleteFromCloudinary(user.image);
 			}
-			image = null;
+			image = undefined;
 		}
-		const userUpdated = await User.findByIdAndUpdate(
-			user._id,
-			{
-				image,
-				name,
-			},
-			{ new: true }
-		);
+		const userUpdated = await updateUserById(user.id, {
+			image,
+			name,
+		});
 		res.json({
 			success: true,
 			user: userUpdated,
@@ -284,7 +281,7 @@ const refresh = asyncHandler(async (req, res) => {
 		throw new Error('Token failed');
 	}
 
-	const user = await User.findById(decoded.id);
+	const user = await getUserById(decoded.id);
 	if (!user) {
 		res.status(404);
 		throw new Error('User not found');
@@ -355,7 +352,7 @@ const logout = asyncHandler(
 			res.status(400);
 			throw new Error('Token failed');
 		}
-		const user = await User.findById(decoded.id);
+		const user = await getUserById(decoded.id);
 		if (!user) {
 			res.status(404);
 			throw new Error('User not found');
@@ -390,9 +387,7 @@ const resendEmail = asyncHandler(
 			res.status(400);
 			throw new Error('Invalid email');
 		}
-		const user = await User.findOne({
-			email: { $regex: new RegExp(`^${email}$`, 'i') },
-		});
+		const user = await getUserByEmail(email);
 		if (!user) {
 			res.status(400);
 			throw new Error('User not found');
@@ -468,19 +463,15 @@ const googleLogin = asyncHandler(
 			res.status(400);
 			throw new Error('Invalid email');
 		}
-		const user = await User.findOne({
-			email: { $regex: new RegExp(`^${email}$`, 'i') },
-		});
+		const user = await getUserByEmail(email);
 		if (!user) {
 			// create user
 			const password = uuid();
-			const newUser = new User({
-				f_name: payload.given_name,
-				l_name: payload.family_name,
-				gender: 'Other',
+			const newUser = await createUser({
+				name: payload.given_name + ' ' + payload.family_name,
 				email,
 				password,
-				picture: payload.picture,
+				image: payload.picture,
 				isVerified: true,
 			});
 			await newUser.save();
@@ -557,9 +548,7 @@ const sendEmailPasswordReset = asyncHandler(
 			res.status(400);
 			throw new Error('Invalid email');
 		}
-		const user = await User.findOne({
-			email: { $regex: new RegExp(`^${email}$`, 'i') },
-		});
+		const user = await getUserByEmail(email);
 		if (!user) {
 			res.status(404);
 			throw new Error('User not found');
@@ -614,9 +603,7 @@ const resetPassword = asyncHandler(
 				'Password must be at least 8 characters long, contain at least one uppercase letter, one lowercase letter, and one number'
 			);
 		}
-		const user = await User.findOne({
-			email: { $regex: new RegExp(`^${email}$`, 'i') },
-		});
+		const user = await getUserByEmail(email);
 		if (!user) {
 			res.status(400);
 			throw new Error('Invalid token');
