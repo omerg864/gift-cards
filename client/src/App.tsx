@@ -15,6 +15,7 @@ import ForgotPasswordPage from './pages/ForgotPassword';
 import VerifyEmailPage from './pages/VerifyEmail';
 import ResetPasswordPage from './pages/ResetPassword';
 import { GoogleOAuthProvider } from '@react-oauth/google';
+import ConfirmEmailPage from './pages/ConfirmEmail';
 
 function App() {
 	return (
@@ -39,6 +40,10 @@ function App() {
 						<Route
 							path="/forgot-password"
 							element={<ForgotPasswordPage />}
+						/>
+						<Route
+							path="/verify/:token"
+							element={<ConfirmEmailPage />}
 						/>
 						<Route
 							path="/verify-email"

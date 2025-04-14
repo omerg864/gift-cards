@@ -96,4 +96,16 @@ const resendVerificationEmail = async (
 	}
 };
 
-export { login, googleLogin, register, resendVerificationEmail };
+const verifyEmail = async (token: string): Promise<{ success: boolean }> => {
+	try {
+		const response = await client.get<{
+			success: boolean;
+			message: string;
+		}>(`/user/verify/${token}`);
+		return response.data;
+	} catch (error) {
+		return errorHandler(error);
+	}
+};
+
+export { login, googleLogin, register, resendVerificationEmail, verifyEmail };

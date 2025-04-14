@@ -12,34 +12,38 @@ import {
 } from '../components/ui/card';
 import { Alert, AlertDescription } from '../components/ui/alert';
 import { CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import { verifyEmail as verifyEmailService } from '../services/userService';
+import { toastError } from '../lib/utils';
 
 export default function ConfirmEmailPage() {
 	const navigate = useNavigate();
-	const [searchParams] = useSearchParams();
-	const token = searchParams.get('token');
+	const { token } = useParams();
 
 	const [isVerifying, setIsVerifying] = useState(true);
 	const [isSuccess, setIsSuccess] = useState(false);
-	const [error, setError] = useState('');
 
 	useEffect(() => {
 		// Simulate API verification
-		const verifyEmail = () => {
+		const verifyEmail = async () => {
 			setIsVerifying(true);
 
 			// Check if token exists
 			if (!token) {
-				setError('Invalid verification link');
+				toast.error('Invalid verification link');
 				setIsVerifying(false);
 				return;
 			}
 
-			// Simulate API call delay
-			setTimeout(() => {
-				setIsVerifying(false);
+			try {
+				await verifyEmailService(token);
+				toast.success('Email verified successfully');
 				setIsSuccess(true);
-			}, 2000);
+			} catch (error) {
+				toastError(error);
+			}
+			setIsVerifying(false);
 		};
 
 		verifyEmail();
@@ -80,13 +84,6 @@ export default function ConfirmEmailPage() {
 					</CardDescription>
 				</CardHeader>
 				<CardContent className="space-y-4">
-					{error && !isVerifying && (
-						<Alert variant="destructive">
-							<AlertCircle className="h-4 w-4" />
-							<AlertDescription>{error}</AlertDescription>
-						</Alert>
-					)}
-
 					{isVerifying ? (
 						<div className="flex justify-center py-4">
 							<Loader2 className="h-8 w-8 animate-spin text-primary" />
