@@ -7,10 +7,10 @@ import {
 	useEffect,
 	type ReactNode,
 } from 'react';
-import { useNavigate } from 'react-router-dom';
 import {
 	ACCESS_TOKEN,
 	AUTH_EXPIRATION,
+	EMAIL,
 	REFRESH_TOKEN,
 	USER,
 } from '../lib/constants';
@@ -25,13 +25,9 @@ export interface User {
 
 interface AuthContextType {
 	setUser: (user: User | null) => void;
+	setEmail: (email: string | null) => void;
+	email: string | null;
 	user: User | null;
-	login: (email: string, password: string) => Promise<boolean>;
-	register: (
-		name: string,
-		email: string,
-		password: string
-	) => Promise<boolean>;
 	logout: () => void;
 	updateUser: (userData: Partial<User>) => void;
 	isLoading: boolean;
@@ -42,8 +38,8 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-	const navigate = useNavigate();
 	const [user, setUser] = useState<User | null>(null);
+	const [email, setEmail] = useState<string | null>(null);
 	const [isLoading, setIsLoading] = useState(true);
 
 	// Load user from localStorage on mount
@@ -57,7 +53,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 				console.error('Failed to parse stored user:', error);
 			}
 		}
-		setIsLoading(false);
+		const storedEmail = localStorage.getItem(EMAIL);
+		if (storedEmail) {
+			setEmail(storedEmail);
+		}
 	}, []);
 
 	// Save user to localStorage when it changes
@@ -72,65 +71,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 		}
 	}, [user]);
 
-	const login = async (email: string, password: string): Promise<boolean> => {
-		// In a real app, this would be an API call
-		setIsLoading(true);
-
-		// Simulate API delay
-		await new Promise((resolve) => setTimeout(resolve, 1000));
-
-		// Mock login logic - in a real app, this would validate credentials with a backend
-		if (email && password) {
-			// For demo purposes, any non-empty email/password works
-			setUser({
-				id: '1',
-				name: email.split('@')[0],
-				email,
-				avatar: '',
-				isVerified: true,
-			});
-			setIsLoading(false);
-			return true;
+	useEffect(() => {
+		if (email) {
+			localStorage.setItem(EMAIL, email);
+		} else {
+			localStorage.removeItem(EMAIL);
 		}
-
-		setIsLoading(false);
-		return false;
-	};
-
-	const register = async (
-		name: string,
-		email: string,
-		password: string
-	): Promise<boolean> => {
-		// In a real app, this would be an API call
-		setIsLoading(true);
-
-		// Simulate API delay
-		await new Promise((resolve) => setTimeout(resolve, 1000));
-
-		// Mock registration logic
-		if (name && email && password) {
-			// In a real app, we would not set the user here, but redirect to verification
-			setUser({
-				id: '1',
-				name,
-				email,
-				avatar: '',
-				isVerified: false,
-			});
-			setIsLoading(false);
-
-			// Redirect to verify email page
-			navigate('/verify-email');
-			return true;
-		}
-
-		setIsLoading(false);
-		return false;
-	};
+	}, [email]);
 
 	const logout = () => {
 		setUser(null);
+		setEmail(null);
 	};
 
 	const updateUser = (userData: Partial<User>) => {
@@ -170,8 +121,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 			value={{
 				setUser,
 				user,
-				login,
-				register,
+				setEmail,
+				email,
 				logout,
 				updateUser,
 				isLoading,

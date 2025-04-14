@@ -31,7 +31,7 @@ import {
 import { email_regex, password_regex } from '../lib/regex';
 
 export default function RegisterPage() {
-	const { setUser } = useAuth();
+	const { setUser, setEmail: setAuthEmail } = useAuth();
 	const navigate = useNavigate();
 	const [isLoading, setIsLoading] = useState(false);
 	const [name, setName] = useState('');
@@ -98,6 +98,7 @@ export default function RegisterPage() {
 		setIsLoading(true);
 		try {
 			const data = await register(email, password, name);
+			setAuthEmail(email);
 			if (data.sent) {
 				toast.success(
 					'Registration successful! Please verify your email.'

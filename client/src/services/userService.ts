@@ -19,6 +19,11 @@ export interface RegisterResponse {
 	success: boolean;
 }
 
+export interface ResendVerificationResponse {
+	sent: boolean;
+	success: boolean;
+}
+
 const errorHandler = (error: unknown): never => {
 	if (axios.isAxiosError(error)) {
 		const message = error.response?.data?.message || 'Login failed';
@@ -77,4 +82,18 @@ const register = async (
 	}
 };
 
-export { login, googleLogin, register };
+const resendVerificationEmail = async (
+	email: string
+): Promise<ResendVerificationResponse> => {
+	try {
+		const response = await client.post<ResendVerificationResponse>(
+			'/user/resend',
+			{ email }
+		);
+		return response.data;
+	} catch (error) {
+		return errorHandler(error);
+	}
+};
+
+export { login, googleLogin, register, resendVerificationEmail };

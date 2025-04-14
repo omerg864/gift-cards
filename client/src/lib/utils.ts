@@ -10,16 +10,17 @@ import {
 import { v4 as uuidv4 } from 'uuid';
 import { DeviceDetails } from '../types/user';
 import { toast } from 'react-toastify';
+import { DEVICE_ID } from './constants';
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
 }
 
 export const getDeviceDetails = (): DeviceDetails => {
-	let id = localStorage.getItem('device_id');
+	let id = localStorage.getItem(DEVICE_ID);
 	if (!id) {
 		id = uuidv4();
-		localStorage.setItem('device_id', id);
+		localStorage.setItem(DEVICE_ID, id);
 	}
 	let name = `${browserName} (${osName})`;
 	let type = 'desktop';

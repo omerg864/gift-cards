@@ -10,25 +10,44 @@ import {
 	CardHeader,
 	CardTitle,
 } from '../components/ui/card';
-import { Alert, AlertDescription } from '../components/ui/alert';
-import { Mail, AlertCircle, Check } from 'lucide-react';
+import { Mail } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
+import { Label } from '../components/ui/label';
+import { Input } from '../components/ui/input';
+import { toast } from 'react-toastify';
+import { email_regex } from '../lib/regex';
+import { resendVerificationEmail } from '../services/userService';
+import { toastError } from '../lib/utils';
 
 export default function VerifyEmailPage() {
-	const [isResending, setIsResending] = useState(false);
-	const [resendSuccess, setResendSuccess] = useState(false);
-	const [error, setError] = useState('');
+	const [isLoading, setIsLoading] = useState(false);
+	const { email: authEmail } = useAuth();
+	const [email, setEmail] = useState<string | null>(authEmail);
 
-	const handleResendEmail = () => {
-		setIsResending(true);
-		setError('');
-		setResendSuccess(false);
+	const handleResendEmail = async (e: React.FormEvent<HTMLFormElement>) => {
+		e.preventDefault();
+		if (!email) {
+			toast.error('Email is required');
+			return;
+		}
+		if (!email_regex.test(email)) {
+			toast.error('Invalid email address');
+			return;
+		}
+		setIsLoading(true);
+		try {
+			const data = await resendVerificationEmail(email);
 
-		// Simulate API call
-		setTimeout(() => {
-			setIsResending(false);
-			setResendSuccess(true);
-		}, 1500);
+			if (data.sent) {
+				toast.success('Verification email sent successfully');
+			} else {
+				toast.error('Failed to send verification email');
+			}
+		} catch (error) {
+			toastError(error);
+		}
+		setIsLoading(false);
 	};
 
 	return (
@@ -49,23 +68,6 @@ export default function VerifyEmailPage() {
 					</CardDescription>
 				</CardHeader>
 				<CardContent className="space-y-4">
-					{error && (
-						<Alert variant="destructive">
-							<AlertCircle className="h-4 w-4" />
-							<AlertDescription>{error}</AlertDescription>
-						</Alert>
-					)}
-
-					{resendSuccess && (
-						<Alert className="bg-green-50 text-green-800 border-green-200">
-							<Check className="h-4 w-4" />
-							<AlertDescription>
-								Verification email has been resent. Please check
-								your inbox.
-							</AlertDescription>
-						</Alert>
-					)}
-
 					<div className="bg-muted/50 p-4 rounded-lg">
 						<h3 className="font-medium mb-2">What to do next:</h3>
 						<ol className="list-decimal list-inside space-y-2 text-sm text-muted-foreground">
@@ -86,22 +88,32 @@ export default function VerifyEmailPage() {
 						</ol>
 					</div>
 
-					<div className="text-center">
+					<form className="text-center" onSubmit={handleResendEmail}>
 						<p className="text-sm text-muted-foreground mb-4">
 							Didn't receive the email? Check your spam folder or
 							click below to resend.
 						</p>
+						<div className="space-y-2 mb-4 text-start">
+							<Label htmlFor="email">Email</Label>
+							<Input
+								id="email"
+								type="email"
+								value={email || ''}
+								onChange={(e) => setEmail(e.target.value)}
+								required
+							/>
+						</div>
 						<Button
-							onClick={handleResendEmail}
-							disabled={isResending}
+							type="submit"
+							disabled={isLoading}
 							variant="outline"
 							className="w-full"
 						>
-							{isResending
+							{isLoading
 								? 'Sending...'
 								: 'Resend Verification Email'}
 						</Button>
-					</div>
+					</form>
 				</CardContent>
 				<CardFooter className="flex flex-col">
 					<div className="text-center text-sm text-muted-foreground mt-2">
