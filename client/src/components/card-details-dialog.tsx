@@ -18,8 +18,8 @@ import {
 	DollarSign,
 } from 'lucide-react';
 import { useState } from 'react';
-import type { GiftCard } from '../../types/gift-card';
-import { getSupplierByName } from '../../types/supplier';
+import type { GiftCard } from '../types/gift-card';
+import { getSupplierByName } from '../types/supplier';
 
 interface CardDetailsDialogProps {
 	giftCard: GiftCard;

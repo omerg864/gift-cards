@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import type { GiftCard } from '../../types/gift-card';
+import type { GiftCard } from '../types/gift-card';
 import { GiftCardItem } from '../components/gift-card-item';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 

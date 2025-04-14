@@ -13,7 +13,7 @@ import {
 } from '../components/ui/card';
 import { Alert, AlertDescription } from '../components/ui/alert';
 import { Check, Bell, Moon, Sun, Globe, Shield } from 'lucide-react';
-import { useAuth } from '../../hooks/useAuth';
+import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 
 export default function SettingsPage() {

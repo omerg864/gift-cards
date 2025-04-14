@@ -25,9 +25,9 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from '../components/ui/select';
-import type { GiftCard } from '../../types/gift-card';
-import { currencies } from '../../types/gift-card';
-import { predefinedSuppliers, allAvailableStores } from '../../types/supplier';
+import type { GiftCard } from '../types/gift-card';
+import { currencies } from '../types/gift-card';
+import { predefinedSuppliers, allAvailableStores } from '../types/supplier';
 import { X, Plus, CreditCard, Smartphone, Store, Search } from 'lucide-react';
 import { ScrollArea } from '../components/ui/scroll-area';
 import { useNavigate } from 'react-router-dom';

@@ -18,7 +18,7 @@ import {
 	LogIn,
 	UserPlus,
 } from 'lucide-react';
-import { useAuth } from '../../hooks/useAuth';
+import { useAuth } from '../hooks/useAuth';
 import { Link, useNavigate } from 'react-router-dom';
 
 export function Header() {
@@ -33,7 +33,7 @@ export function Header() {
 
 	const handleLogout = () => {
 		logout();
-		navigate('/');
+		navigate('/login');
 	};
 
 	if (!mounted) return null;

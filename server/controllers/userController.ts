@@ -264,8 +264,7 @@ const updateUser = asyncHandler(
 );
 
 const refresh = asyncHandler(async (req, res) => {
-	const authHeader = req.headers['authorization'];
-	const refreshToken = authHeader && authHeader.split(' ')[1];
+	const { refreshToken } = req.body;
 	if (!refreshToken) {
 		res.status(400);
 		throw new Error('No refresh token provided.');

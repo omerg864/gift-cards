@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import { ArrowLeft, Store, CreditCard, Smartphone, Plus } from 'lucide-react';
-import { getSupplierById } from '../../types/supplier';
+import { getSupplierById } from '../types/supplier';
 import { AddGiftCardDialog } from '../components/add-gift-card-dialog';
 import { useNavigate, useParams } from 'react-router-dom';
 

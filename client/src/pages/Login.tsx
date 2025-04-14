@@ -14,54 +14,89 @@ import {
 	CardHeader,
 	CardTitle,
 } from '../components/ui/card';
-import { Alert, AlertDescription } from '../components/ui/alert';
-import { CreditCard, AlertCircle } from 'lucide-react';
-import { useAuth } from '../../hooks/useAuth';
+import { CreditCard } from 'lucide-react';
+import { toast } from 'react-toastify';
+import { useAuth } from '../hooks/useAuth';
 import { Link, useNavigate } from 'react-router-dom';
+import { email_regex } from '../lib/regex';
+import Loading from '../components/loading';
+import {
+	ACCESS_TOKEN,
+	AUTH_EXPIRATION,
+	REFRESH_TOKEN,
+	USER,
+} from '../lib/constants';
+import { googleLogin, login, LoginResponse } from '../services/userService';
+import { getDeviceDetails, toastError } from '../lib/utils';
+import GoogleLogin from '../components/GoogleLoginButton';
 
 export default function LoginPage() {
 	const navigate = useNavigate();
-	const { login, isLoading } = useAuth();
+	const [isLoading, setIsLoading] = useState<boolean>(false);
+	const { setUser } = useAuth();
 	const [email, setEmail] = useState('');
 	const [password, setPassword] = useState('');
-	const [error, setError] = useState('');
 
-	const handleGoogleLogin = () => {
-		// In a real app, this would redirect to Google OAuth
-		// For demo purposes, we'll simulate a successful login
-		login('demo@example.com', 'password123')
-			.then((success) => {
-				if (success) {
-					navigate('/');
-				}
-			})
-			.catch((err) => {
-				setError('An error occurred during Google login');
-				console.error(err);
-			});
+	const handleGoogleLogin = async (authResult: any) => {
+		if (authResult?.code) {
+			setIsLoading(true);
+			try {
+				const device = getDeviceDetails();
+				const data = await googleLogin(authResult.code, device);
+				successfulLogin(data);
+			} catch (error) {
+				toastError(error);
+			}
+			setIsLoading(false);
+		} else {
+			toast.error('Google login failed');
+		}
+	};
+
+	const successfulLogin = (data: LoginResponse) => {
+		localStorage.setItem(USER, JSON.stringify(data.user));
+		localStorage.setItem(ACCESS_TOKEN, data.accessToken);
+		localStorage.setItem(REFRESH_TOKEN, data.refreshToken);
+		const expiresIn = 50 * 60 * 1000;
+		localStorage.setItem(
+			AUTH_EXPIRATION,
+			new Date(Date.now() + expiresIn).toISOString()
+		);
+		toast.success('Logged in successfully');
+		setUser(data.user);
+		navigate('/');
 	};
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
-		setError('');
+
+		const device = getDeviceDetails();
 
 		if (!email || !password) {
-			setError('Please enter both email and password');
+			toast.error('Please enter your email and password');
 			return;
 		}
 
-		try {
-			const success = await login(email, password);
-			if (success) {
-				navigate('/');
-			} else {
-				setError('Invalid email or password');
-			}
-		} catch (err) {
-			setError('An error occurred during login');
-			console.error(err);
+		if (!email_regex.test(email)) {
+			toast.error('Please enter a valid email address');
+			return;
 		}
+
+		setIsLoading(true);
+
+		try {
+			const data = await login(email, password, device);
+			successfulLogin(data);
+		} catch (error) {
+			toastError(error);
+		}
+
+		setIsLoading(false);
 	};
+
+	if (isLoading) {
+		return <Loading />;
+	}
 
 	return (
 		<div className="container mx-auto flex items-center justify-center min-h-[calc(100vh-64px)] px-4 py-8">
@@ -81,18 +116,11 @@ export default function LoginPage() {
 				</CardHeader>
 				<CardContent>
 					<form onSubmit={handleSubmit} className="space-y-4">
-						{error && (
-							<Alert variant="destructive">
-								<AlertCircle className="h-4 w-4" />
-								<AlertDescription>{error}</AlertDescription>
-							</Alert>
-						)}
 						<div className="space-y-2">
 							<Label htmlFor="email">Email</Label>
 							<Input
 								id="email"
 								type="email"
-								placeholder="name@example.com"
 								value={email}
 								onChange={(e) => setEmail(e.target.value)}
 								required
@@ -136,38 +164,10 @@ export default function LoginPage() {
 							</div>
 						</div>
 
-						<Button
-							type="button"
-							variant="outline"
-							className="w-full flex items-center justify-center gap-2"
-							onClick={handleGoogleLogin}
-							disabled={isLoading}
-						>
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								width="16"
-								height="16"
-								viewBox="0 0 24 24"
-								fill="none"
-								stroke="currentColor"
-								strokeWidth="2"
-								strokeLinecap="round"
-								strokeLinejoin="round"
-								className="lucide lucide-chrome"
-							>
-								<circle cx="12" cy="12" r="10" />
-								<circle cx="12" cy="12" r="4" />
-								<line x1="21.17" y1="8" x2="12" y2="8" />
-								<line x1="3.95" y1="6.06" x2="8.54" y2="14" />
-								<line
-									x1="10.88"
-									y1="21.94"
-									x2="15.46"
-									y2="14"
-								/>
-							</svg>
-							Sign in with Google
-						</Button>
+						<GoogleLogin
+							authResponse={handleGoogleLogin}
+							isLoading={isLoading}
+						/>
 					</form>
 				</CardContent>
 				<CardFooter className="flex flex-col">

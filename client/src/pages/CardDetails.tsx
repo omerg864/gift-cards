@@ -19,9 +19,9 @@ import {
 	Smartphone,
 	FileText,
 } from 'lucide-react';
-import type { GiftCard } from '../../types/gift-card';
-import { getSupplierByName } from '../../types/supplier';
-import { getCurrencySymbol } from '../../types/gift-card';
+import type { GiftCard } from '../types/gift-card';
+import { getSupplierByName } from '../types/supplier';
+import { getCurrencySymbol } from '../types/gift-card';
 import { EditGiftCardDialog } from '../components/edit-gift-card-dialog';
 import { useNavigate, useParams } from 'react-router';
 import { GiftCardItem } from '../components/gift-card-item';

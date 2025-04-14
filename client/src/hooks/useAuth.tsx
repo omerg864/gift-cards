@@ -8,6 +8,12 @@ import {
 	type ReactNode,
 } from 'react';
 import { useNavigate } from 'react-router-dom';
+import {
+	ACCESS_TOKEN,
+	AUTH_EXPIRATION,
+	REFRESH_TOKEN,
+	USER,
+} from '../lib/constants';
 
 export interface User {
 	id: string;
@@ -18,6 +24,7 @@ export interface User {
 }
 
 interface AuthContextType {
+	setUser: (user: User | null) => void;
 	user: User | null;
 	login: (email: string, password: string) => Promise<boolean>;
 	register: (
@@ -41,11 +48,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 	// Load user from localStorage on mount
 	useEffect(() => {
-		const storedUser = localStorage.getItem('user');
+		const storedUser = localStorage.getItem(USER);
 		if (storedUser) {
 			try {
 				setUser(JSON.parse(storedUser));
 			} catch (error) {
+				localStorage.removeItem(USER);
 				console.error('Failed to parse stored user:', error);
 			}
 		}
@@ -55,9 +63,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 	// Save user to localStorage when it changes
 	useEffect(() => {
 		if (user) {
-			localStorage.setItem('user', JSON.stringify(user));
+			localStorage.setItem(USER, JSON.stringify(user));
 		} else {
-			localStorage.removeItem('user');
+			localStorage.removeItem(ACCESS_TOKEN);
+			localStorage.removeItem(REFRESH_TOKEN);
+			localStorage.removeItem(AUTH_EXPIRATION);
+			localStorage.removeItem(USER);
 		}
 	}, [user]);
 
@@ -157,6 +168,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 	return (
 		<AuthContext.Provider
 			value={{
+				setUser,
 				user,
 				login,
 				register,

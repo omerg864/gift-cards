@@ -24,13 +24,13 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from '../components/ui/select';
-import type { GiftCard } from '../../types/gift-card';
-import { currencies } from '../../types/gift-card';
+import type { GiftCard } from '../types/gift-card';
+import { currencies } from '../types/gift-card';
 import {
 	predefinedSuppliers,
 	getSupplierByName,
 	allAvailableStores,
-} from '../../types/supplier';
+} from '../types/supplier';
 import { X, Plus, CreditCard, Smartphone, Store, Search } from 'lucide-react';
 import { Badge } from '../components/ui/badge';
 

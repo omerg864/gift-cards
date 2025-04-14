@@ -16,7 +16,7 @@ import {
 } from '../components/ui/card';
 import { Alert, AlertDescription } from '../components/ui/alert';
 import { CreditCard, AlertCircle } from 'lucide-react';
-import { useAuth } from '../../hooks/useAuth';
+import { useAuth } from '../hooks/useAuth';
 import { Link } from 'react-router-dom';
 
 export default function RegisterPage() {

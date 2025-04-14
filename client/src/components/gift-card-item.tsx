@@ -1,8 +1,8 @@
 'use client';
-import type { GiftCard } from '../../types/gift-card';
-import { getSupplierByName } from '../../types/supplier';
+import type { GiftCard } from '../types/gift-card';
+import { getSupplierByName } from '../types/supplier';
 import { CreditCard, Smartphone } from 'lucide-react';
-import { getCurrencySymbol } from '../../types/gift-card';
+import { getCurrencySymbol } from '../types/gift-card';
 
 interface GiftCardItemProps {
 	giftCard: GiftCard;

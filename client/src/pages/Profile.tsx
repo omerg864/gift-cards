@@ -22,7 +22,7 @@ import {
 import { Alert, AlertDescription } from '../components/ui/alert';
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
 import { AlertCircle, Check, User, Lock, CreditCard } from 'lucide-react';
-import { useAuth } from '../../hooks/useAuth';
+import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 
 export default function ProfilePage() {
