@@ -13,6 +13,12 @@ export interface LoginResponse {
 	success: boolean;
 }
 
+export interface RegisterResponse {
+	sent: boolean;
+	message: string;
+	success: boolean;
+}
+
 const errorHandler = (error: unknown): never => {
 	if (axios.isAxiosError(error)) {
 		const message = error.response?.data?.message || 'Login failed';
@@ -39,16 +45,36 @@ const login = async (
 	}
 };
 
-const googleLogin = async (code: string, device: DeviceDetails): Promise<LoginResponse> => {
-    try {
-        const response = await client.post<LoginResponse>('/user/google', {
-            code,
-            device,
-        });
-        return response.data;
-    } catch (error) {
-        return errorHandler(error);
-    }
-}
+const googleLogin = async (
+	code: string,
+	device: DeviceDetails
+): Promise<LoginResponse> => {
+	try {
+		const response = await client.post<LoginResponse>('/user/google', {
+			code,
+			device,
+		});
+		return response.data;
+	} catch (error) {
+		return errorHandler(error);
+	}
+};
 
-export { login, googleLogin };
+const register = async (
+	email: string,
+	password: string,
+	name: string
+): Promise<RegisterResponse> => {
+	try {
+		const response = await client.post<RegisterResponse>('/user/register', {
+			email,
+			password,
+			name,
+		});
+		return response.data;
+	} catch (error) {
+		return errorHandler(error);
+	}
+};
+
+export { login, googleLogin, register };
