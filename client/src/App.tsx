@@ -16,6 +16,8 @@ import VerifyEmailPage from './pages/VerifyEmail';
 import ResetPasswordPage from './pages/ResetPassword';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import ConfirmEmailPage from './pages/ConfirmEmail';
+import ProtectedRoute from './components/routes/ProtectedRoute';
+import UserRestrictedRoute from './components/routes/UserRestrictedRoute';
 
 function App() {
 	return (
@@ -27,19 +29,62 @@ function App() {
 				<AuthProvider>
 					<Header />
 					<Routes>
-						<Route path="/" element={<Home />} />
-						<Route path="/card/:id" element={<CardDetails />} />
+						<Route
+							path="/"
+							element={
+								<ProtectedRoute>
+									<Home />
+								</ProtectedRoute>
+							}
+						/>
+						<Route
+							path="/card/:id"
+							element={
+								<ProtectedRoute>
+									<CardDetails />
+								</ProtectedRoute>
+							}
+						/>
 						<Route
 							path="/supplier/:id"
-							element={<SupplierDetails />}
+							element={
+								<ProtectedRoute>
+									<SupplierDetails />
+								</ProtectedRoute>
+							}
 						/>
-						<Route path="/login" element={<LoginPage />} />
+						<Route
+							path="/login"
+							element={
+								<UserRestrictedRoute>
+									<LoginPage />
+								</UserRestrictedRoute>
+							}
+						/>
 						<Route path="/register" element={<RegisterPage />} />
-						<Route path="/profile" element={<ProfilePage />} />
-						<Route path="/settings" element={<SettingsPage />} />
+						<Route
+							path="/profile"
+							element={
+								<ProtectedRoute>
+									<ProfilePage />
+								</ProtectedRoute>
+							}
+						/>
+						<Route
+							path="/settings"
+							element={
+								<ProtectedRoute>
+									<SettingsPage />
+								</ProtectedRoute>
+							}
+						/>
 						<Route
 							path="/forgot-password"
-							element={<ForgotPasswordPage />}
+							element={
+								<UserRestrictedRoute>
+									<ForgotPasswordPage />
+								</UserRestrictedRoute>
+							}
 						/>
 						<Route
 							path="/verify/:token"
@@ -47,11 +92,19 @@ function App() {
 						/>
 						<Route
 							path="/verify-email"
-							element={<VerifyEmailPage />}
+							element={
+								<UserRestrictedRoute>
+									<VerifyEmailPage />
+								</UserRestrictedRoute>
+							}
 						/>
 						<Route
 							path="/forgot/password/:token/:email"
-							element={<ResetPasswordPage />}
+							element={
+								<UserRestrictedRoute>
+									<ResetPasswordPage />
+								</UserRestrictedRoute>
+							}
 						/>
 					</Routes>
 				</AuthProvider>
