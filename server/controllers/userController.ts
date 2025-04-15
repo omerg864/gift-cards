@@ -590,8 +590,8 @@ const sendEmailPasswordReset = asyncHandler(
 
 const resetPassword = asyncHandler(
 	async (req: Request, res: Response): Promise<void> => {
-		const { token, email } = req.params;
-		const { password } = req.body;
+		const { email } = req.params;
+		const { password, token } = req.body;
 		if (!email_regex.test(email)) {
 			res.status(400);
 			throw new Error('Invalid email');

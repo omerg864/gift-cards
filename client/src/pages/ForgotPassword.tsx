@@ -14,32 +14,42 @@ import {
 	CardTitle,
 } from '../components/ui/card';
 import { Alert, AlertDescription } from '../components/ui/alert';
-import { CreditCard, AlertCircle, Check, ArrowLeft } from 'lucide-react';
+import { CreditCard, Check, ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import { email_regex } from '../lib/regex';
+import { forgotPassword } from '../services/userService';
+import { toastError } from '../lib/utils';
 
 export default function ForgotPasswordPage() {
 	const [email, setEmail] = useState('');
-	const [error, setError] = useState('');
 	const [success, setSuccess] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
-		setError('');
 		setSuccess(false);
 
-		if (!email) {
-			setError('Please enter your email address');
+		if (!email_regex.test(email)) {
+			toast.error('Please enter a valid email');
 			return;
 		}
 
 		setIsLoading(true);
 
-		// Simulate API call
-		setTimeout(() => {
-			setIsLoading(false);
-			setSuccess(true);
-		}, 1500);
+		try {
+			const data = await forgotPassword(email);
+
+			if (data.sent) {
+				setSuccess(true);
+			} else {
+				toast.error('Failed to send email. Please try again');
+			}
+		} catch (error) {
+			toastError(error);
+		}
+
+		setIsLoading(false);
 	};
 
 	return (
@@ -83,18 +93,11 @@ export default function ForgotPasswordPage() {
 						</div>
 					) : (
 						<form onSubmit={handleSubmit} className="space-y-4">
-							{error && (
-								<Alert variant="destructive">
-									<AlertCircle className="h-4 w-4" />
-									<AlertDescription>{error}</AlertDescription>
-								</Alert>
-							)}
 							<div className="space-y-2">
 								<Label htmlFor="email">Email</Label>
 								<Input
 									id="email"
 									type="email"
-									placeholder="name@example.com"
 									value={email}
 									onChange={(e) => setEmail(e.target.value)}
 									required

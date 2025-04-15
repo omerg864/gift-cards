@@ -19,8 +19,13 @@ export interface RegisterResponse {
 	success: boolean;
 }
 
-export interface ResendVerificationResponse {
+export interface EmailRequestResponse {
 	sent: boolean;
+	success: boolean;
+}
+
+export interface MessageResponse {
+	message: string;
 	success: boolean;
 }
 
@@ -84,9 +89,9 @@ const register = async (
 
 const resendVerificationEmail = async (
 	email: string
-): Promise<ResendVerificationResponse> => {
+): Promise<EmailRequestResponse> => {
 	try {
-		const response = await client.post<ResendVerificationResponse>(
+		const response = await client.post<EmailRequestResponse>(
 			'/user/resend',
 			{ email }
 		);
@@ -108,4 +113,47 @@ const verifyEmail = async (token: string): Promise<{ success: boolean }> => {
 	}
 };
 
-export { login, googleLogin, register, resendVerificationEmail, verifyEmail };
+const forgotPassword = async (email: string): Promise<EmailRequestResponse> => {
+	try {
+		const response = await client.post<EmailRequestResponse>(
+			'user/forgot/email',
+			{
+				email,
+			}
+		);
+
+		return response.data;
+	} catch (error) {
+		return errorHandler(error);
+	}
+};
+
+const resetPassword = async (
+	token: string,
+	email: string,
+	password: string
+) => {
+	try {
+		const response = await client.post<MessageResponse>(
+			`user/forgot/password/${email}`,
+			{
+				token,
+				password,
+			}
+		);
+
+		return response.data;
+	} catch (error) {
+		return errorHandler(error);
+	}
+};
+
+export {
+	login,
+	googleLogin,
+	register,
+	resendVerificationEmail,
+	verifyEmail,
+	forgotPassword,
+	resetPassword,
+};

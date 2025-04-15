@@ -27,7 +27,7 @@ router.post('/google', googleLogin);
 router.post('/refresh', refresh);
 router.post('/resend', resendEmail);
 router.post('/forgot/email', sendEmailPasswordReset);
-router.post('/forgot/password/:token/:email', resetPassword);
+router.post('/forgot/password/:email', resetPassword);
 router.post('/logout', authUser, logout);
 router.get('/verify/:id', verifyEmail);
 router.put('/password', authUser, changePassword);

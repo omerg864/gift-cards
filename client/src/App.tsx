@@ -50,7 +50,7 @@ function App() {
 							element={<VerifyEmailPage />}
 						/>
 						<Route
-							path="/reset-password"
+							path="/forgot/password/:token/:email"
 							element={<ResetPasswordPage />}
 						/>
 					</Routes>
