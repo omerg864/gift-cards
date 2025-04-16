@@ -34,6 +34,8 @@ const createUserSupplier = AsyncHandler(async (req, res) => {
 		description,
 		cardTypes,
 		stores,
+		'#6B7280',
+		'#374151',
 		user
 	);
 

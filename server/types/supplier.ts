@@ -14,6 +14,8 @@ export interface Supplier {
     image?: string;
     description?: string;
     cardTypes: string[];
+    fromColor: string;
+    toColor: string;
 }
 
 export interface SupplierDocument extends Supplier, Document {}

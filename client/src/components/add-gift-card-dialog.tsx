@@ -38,9 +38,9 @@ interface AddGiftCardDialogProps {
 
 export function AddGiftCardDialog({ onClose }: AddGiftCardDialogProps) {
 	const navigate = useNavigate();
-	const [formData, setFormData] = useState<Omit<GiftCard, 'id'>>({
+	const [formData, setFormData] = useState<Omit<GiftCard, '_id'>>({
 		supplier: '',
-		supplierId: '',
+		name: '',
 		cardNumber: '',
 		expirationDate: '',
 		amount: 0,
@@ -72,10 +72,10 @@ export function AddGiftCardDialog({ onClose }: AddGiftCardDialogProps) {
 	};
 
 	const handleSupplierChange = (value: string) => {
-		const supplier = predefinedSuppliers.find((s) => s.id === value);
+		const supplier = predefinedSuppliers.find((s) => s._id === value);
 
 		if (supplier) {
-			if (supplier.id === 'other') {
+			if (supplier._id === 'other') {
 				setShowCustomSupplier(true);
 				setFormData((prev) => ({
 					...prev,
@@ -88,9 +88,9 @@ export function AddGiftCardDialog({ onClose }: AddGiftCardDialogProps) {
 				setShowStoreSelector(false);
 				setFormData((prev) => ({
 					...prev,
-					supplierId: supplier.id,
+					supplierId: supplier._id,
 					supplier: supplier.name,
-					supportedStores: supplier.supportedStores, // Set supported stores from supplier
+					supportedStores: supplier.stores, // Set supported stores from supplier
 				}));
 			}
 		}
@@ -191,8 +191,8 @@ export function AddGiftCardDialog({ onClose }: AddGiftCardDialogProps) {
 							<SelectContent>
 								{predefinedSuppliers.map((supplier) => (
 									<SelectItem
-										key={supplier.id}
-										value={supplier.id}
+										key={supplier._id}
+										value={supplier._id}
 									>
 										{supplier.name}
 									</SelectItem>

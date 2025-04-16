@@ -38,6 +38,14 @@ const supplierScheme = new mongoose.Schema<SupplierDocument>(
                 required: true,
             },
         ],
+        fromColor: {
+            type: String,
+            required: true,
+        },
+        toColor: {
+            type: String,
+            required: true,
+        },
     },
     { timestamps: true }
 );

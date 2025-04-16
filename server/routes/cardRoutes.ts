@@ -14,7 +14,7 @@ const router = express.Router();
 
 const uploadFields = upload.fields([
 	{ name: 'supplier', maxCount: 1 },
-	{ name: 'stores', maxCount: 100 },
+	{ name: 'stores_images', maxCount: 100 },
 ]);
 
 router.get('/', authUser, getCards);

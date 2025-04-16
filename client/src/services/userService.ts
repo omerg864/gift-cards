@@ -1,15 +1,10 @@
-import axios from 'axios';
-import { DeviceDetails } from '../types/user';
-import { client, checkToken } from './client';
+import { DeviceDetails, User } from '../types/user';
+import { axiosErrorHandler, client } from './client';
 
 export interface LoginResponse {
 	accessToken: string;
 	refreshToken: string;
-	user: {
-		id: string;
-		name: string;
-		email: string;
-	};
+	user: User;
 	success: boolean;
 }
 
@@ -29,15 +24,6 @@ export interface MessageResponse {
 	success: boolean;
 }
 
-const errorHandler = (error: unknown): never => {
-	if (axios.isAxiosError(error)) {
-		const message = error.response?.data?.message || 'Login failed';
-		throw new Error(message);
-	} else {
-		throw new Error('Unexpected error during login');
-	}
-};
-
 const login = async (
 	email: string,
 	password: string,
@@ -51,7 +37,7 @@ const login = async (
 		});
 		return response.data;
 	} catch (error) {
-		return errorHandler(error);
+		return axiosErrorHandler(error);
 	}
 };
 
@@ -66,7 +52,7 @@ const googleLogin = async (
 		});
 		return response.data;
 	} catch (error) {
-		return errorHandler(error);
+		return axiosErrorHandler(error);
 	}
 };
 
@@ -83,7 +69,7 @@ const register = async (
 		});
 		return response.data;
 	} catch (error) {
-		return errorHandler(error);
+		return axiosErrorHandler(error);
 	}
 };
 
@@ -97,7 +83,7 @@ const resendVerificationEmail = async (
 		);
 		return response.data;
 	} catch (error) {
-		return errorHandler(error);
+		return axiosErrorHandler(error);
 	}
 };
 
@@ -109,7 +95,7 @@ const verifyEmail = async (token: string): Promise<{ success: boolean }> => {
 		}>(`/user/verify/${token}`);
 		return response.data;
 	} catch (error) {
-		return errorHandler(error);
+		return axiosErrorHandler(error);
 	}
 };
 
@@ -124,7 +110,7 @@ const forgotPassword = async (email: string): Promise<EmailRequestResponse> => {
 
 		return response.data;
 	} catch (error) {
-		return errorHandler(error);
+		return axiosErrorHandler(error);
 	}
 };
 
@@ -144,7 +130,7 @@ const resetPassword = async (
 
 		return response.data;
 	} catch (error) {
-		return errorHandler(error);
+		return axiosErrorHandler(error);
 	}
 };
 

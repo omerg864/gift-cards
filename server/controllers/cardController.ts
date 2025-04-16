@@ -35,6 +35,8 @@ const createCardAndSupplier = asyncHandler(async (req, res) => {
 		'',
 		undefined,
 		stores,
+		'#6B7280',
+		'#374151',
 		user
 	);
 
@@ -113,6 +115,8 @@ const updateCardWithNewSupplier = asyncHandler(async (req, res) => {
 		'',
 		undefined,
 		stores,
+		'#6B7280',
+		'#374151',
 		user
 	);
 

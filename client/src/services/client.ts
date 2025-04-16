@@ -59,4 +59,18 @@ const checkToken = async (): Promise<string | null> => {
 	return token;
 };
 
-export { client, refreshToken, checkToken };
+const axiosErrorHandler = (error: unknown): never => {
+	if (axios.isAxiosError(error)) {
+		const message = error.response?.data?.message || 'Login failed';
+		throw new Error(message);
+	} else {
+		if ((error as Error).message === 'Network Error') {
+			throw new Error('Network error. Please check your connection.');
+		} else if ((error as Error).message === 'Please login') {
+			throw new Error('Please login');
+		}
+		throw new Error('Internal server error');
+	}
+};
+
+export { client, refreshToken, checkToken, axiosErrorHandler };

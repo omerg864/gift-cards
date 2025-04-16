@@ -14,14 +14,7 @@ import {
 	REFRESH_TOKEN,
 	USER,
 } from '../lib/constants';
-
-export interface User {
-	id: string;
-	name: string;
-	email: string;
-	avatar?: string;
-	isVerified?: boolean;
-}
+import { User } from '../types/user';
 
 interface AuthContextType {
 	setUser: (user: User | null) => void;
@@ -30,9 +23,6 @@ interface AuthContextType {
 	user: User | null;
 	logout: () => void;
 	updateUser: (userData: Partial<User>) => void;
-	isLoading: boolean;
-	resetPassword: (email: string) => Promise<boolean>;
-	verifyEmail: (token: string) => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -40,7 +30,6 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
 	const [user, setUser] = useState<User | null>(null);
 	const [email, setEmail] = useState<string | null>(null);
-	const [isLoading, setIsLoading] = useState(true);
 
 	// Load user from localStorage on mount
 	useEffect(() => {
@@ -64,9 +53,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 		if (user) {
 			localStorage.setItem(USER, JSON.stringify(user));
 		} else {
-			localStorage.removeItem(ACCESS_TOKEN);
-			localStorage.removeItem(REFRESH_TOKEN);
-			localStorage.removeItem(AUTH_EXPIRATION);
 			localStorage.removeItem(USER);
 		}
 	}, [user]);
@@ -82,38 +68,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 	const logout = () => {
 		setUser(null);
 		setEmail(null);
+		localStorage.removeItem(USER);
+		localStorage.removeItem(ACCESS_TOKEN);
+		localStorage.removeItem(REFRESH_TOKEN);
+		localStorage.removeItem(AUTH_EXPIRATION);
+		localStorage.removeItem(EMAIL);
 	};
 
 	const updateUser = (userData: Partial<User>) => {
 		if (user) {
 			setUser({ ...user, ...userData });
 		}
-	};
-
-	const resetPassword = async (email: string): Promise<boolean> => {
-		// In a real app, this would be an API call
-		setIsLoading(true);
-
-		// Simulate API delay
-		await new Promise((resolve) => setTimeout(resolve, 1000));
-
-		setIsLoading(false);
-		return true;
-	};
-
-	const verifyEmail = async (token: string): Promise<boolean> => {
-		// In a real app, this would be an API call
-		setIsLoading(true);
-
-		// Simulate API delay
-		await new Promise((resolve) => setTimeout(resolve, 1000));
-
-		if (user) {
-			setUser({ ...user, isVerified: true });
-		}
-
-		setIsLoading(false);
-		return true;
 	};
 
 	return (
@@ -125,9 +90,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 				email,
 				logout,
 				updateUser,
-				isLoading,
-				resetPassword,
-				verifyEmail,
 			}}
 		>
 			{children}

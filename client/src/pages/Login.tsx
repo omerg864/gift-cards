@@ -88,7 +88,10 @@ export default function LoginPage() {
 			const data = await login(email, password, device);
 			successfulLogin(data);
 		} catch (error) {
-			if (error instanceof Error && error.message === 'Please verify your email') {
+			if (
+				error instanceof Error &&
+				error.message === 'Please verify your email'
+			) {
 				setAuthEmail(email);
 				toast.error('Please verify your email');
 				navigate('/verify-email');

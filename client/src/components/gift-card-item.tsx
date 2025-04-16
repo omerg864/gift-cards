@@ -1,8 +1,8 @@
 'use client';
 import type { GiftCard } from '../types/gift-card';
-import { getSupplierByName } from '../types/supplier';
 import { CreditCard, Smartphone } from 'lucide-react';
 import { getCurrencySymbol } from '../types/gift-card';
+import { Supplier } from '../types/supplier';
 
 interface GiftCardItemProps {
 	giftCard: GiftCard;
@@ -15,17 +15,14 @@ export function GiftCardItem({
 	handleCardClick,
 	supplierCard,
 }: GiftCardItemProps) {
-	const supplier = getSupplierByName(giftCard.supplier);
 	const currencySymbol = getCurrencySymbol(giftCard.currency);
-
-	console.log('GiftCardItem', giftCard);
 
 	const onClick = () => {
 		if (supplierCard && handleCardClick) {
 			console.log('Supplier card clicked');
-			handleCardClick(supplier.id);
+			handleCardClick((giftCard.supplier as Supplier)._id);
 		} else if (handleCardClick) {
-			handleCardClick(giftCard.id);
+			handleCardClick(giftCard._id);
 		}
 	};
 
@@ -40,14 +37,17 @@ export function GiftCardItem({
 			<div
 				className={`absolute inset-0 rounded-xl p-6 flex flex-col justify-between`}
 				style={{
-					background: `linear-gradient(135deg, ${supplier.fromColor}, ${supplier.toColor})`,
+					background: `linear-gradient(135deg, ${(giftCard.supplier as Supplier).fromColor}, ${(giftCard.supplier as Supplier).toColor})`,
 				}}
 			>
 				{/* Card header */}
 				<div>
-					<h3 className="text-xl font-bold text-white mb-2">
-						{giftCard.supplier.toUpperCase()}
+					<h3 className="text-xl font-bold text-white">
+						{giftCard.name.toUpperCase()}
 					</h3>
+					<p className="text-sm text-white/80 mb-2">
+						{(giftCard.supplier as Supplier).name}
+					</p>
 					<div className="w-fit bg-white/20 px-2 py-1 rounded-full text-white text-xs flex items-center">
 						{giftCard.isPhysical ? (
 							<>

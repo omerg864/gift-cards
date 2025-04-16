@@ -11,6 +11,8 @@ const newUserSupplier = async (
 	description: string | undefined,
 	cardTypes: Array<any> | undefined,
 	stores: Array<any>,
+	fromColor: string,
+	toColor: string,
 	user: UserDocument
 ): Promise<SupplierDocument> => {
 	let image: string | undefined = undefined;
@@ -26,8 +28,8 @@ const newUserSupplier = async (
 			);
 		}
 		// store images
-		if ((files as FieldFiles).stores) {
-			const storeImages = (files as FieldFiles).stores;
+		if ((files as FieldFiles).stores_images) {
+			const storeImages = (files as FieldFiles).stores_images;
 			for (const storeImage of storeImages) {
 				const storeImageUrl = await uploadToCloudinary(
 					storeImage.buffer,
@@ -52,6 +54,8 @@ const newUserSupplier = async (
 		stores,
 		image,
 		description,
+		fromColor,
+		toColor,
 		cardTypes,
 	});
 
