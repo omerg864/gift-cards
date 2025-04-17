@@ -24,7 +24,7 @@ import { getSupplierByName } from '../types/supplier';
 import { getCurrencySymbol } from '../types/gift-card';
 import { EditGiftCardDialog } from '../components/edit-gift-card-dialog';
 import { useNavigate, useParams } from 'react-router';
-import { GiftCardItem } from '../components/gift-card-item';
+import { GiftCardItem } from '../components/GiftCardItem';
 
 export default function CardDetailsPage() {
 	const navigate = useNavigate();
@@ -108,7 +108,7 @@ export default function CardDetailsPage() {
 					},
 				];
 
-				const card = mockCards.find((card) => card.id === params.id);
+				const card = mockCards.find((card) => card._id === params.id);
 				setGiftCard(card || null);
 				if (card) {
 					setFilteredStores(card.supportedStores);

@@ -7,13 +7,15 @@ export interface Card {
     name: string;
     supplier: ObjectId | SupplierDocument;
     description?: string;
-    physicalCard: boolean;
+    isPhysical: boolean;
     amount: number;
     currency: string;
     cardNumber?: string;
     expirationMonth?: number;
     expirationYear?: number;
     cvv?: string;
+    encryptionKey?: string;
+    encryptedCardNumber?: string;
 }
 
 export interface CardDocument extends Card, Document {}

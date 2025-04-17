@@ -1,44 +1,50 @@
 'use client';
 
-import { Badge } from '../components/ui/badge';
-import { Switch } from '../components/ui/switch';
-import { Textarea } from '../components/ui/textarea';
-import { Checkbox } from '../components/ui/checkbox';
+import { Badge } from './ui/badge';
+import { Switch } from './ui/switch';
+import { Textarea } from './ui/textarea';
+import { Checkbox } from './ui/checkbox';
 
 import type React from 'react';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
 	Dialog,
 	DialogContent,
 	DialogHeader,
 	DialogTitle,
 	DialogFooter,
-} from '../components/ui/dialog';
-import { Button } from '../components/ui/button';
-import { Input } from '../components/ui/input';
-import { Label } from '../components/ui/label';
+} from './ui/dialog';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
 import {
 	Select,
 	SelectContent,
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
-} from '../components/ui/select';
-import type { GiftCard } from '../types/gift-card';
+} from './ui/select';
+import type { CreateGiftCardDetails, GiftCard } from '../types/gift-card';
 import { currencies } from '../types/gift-card';
-import { predefinedSuppliers, allAvailableStores } from '../types/supplier';
+import { allAvailableStores, Supplier } from '../types/supplier';
 import { X, Plus, CreditCard, Smartphone, Store, Search } from 'lucide-react';
-import { ScrollArea } from '../components/ui/scroll-area';
-import { useNavigate } from 'react-router-dom';
+import { ScrollArea } from './ui/scroll-area';
+import { useSupplier } from '../hooks/useSupplier';
+import Loading from './loading';
 
-interface AddGiftCardDialogProps {
+interface GiftCardDialogProps {
+	giftCard?: GiftCard;
+	onSubmit: (data: CreateGiftCardDetails) => Promise<void>;
 	onClose: () => void;
 }
 
-export function AddGiftCardDialog({ onClose }: AddGiftCardDialogProps) {
-	const navigate = useNavigate();
-	const [formData, setFormData] = useState<Omit<GiftCard, '_id'>>({
+export function GiftCardDialog({
+	onClose,
+	onSubmit,
+	giftCard,
+}: GiftCardDialogProps) {
+	const [formData, setFormData] = useState<CreateGiftCardDetails>({
 		supplier: '',
 		name: '',
 		cardNumber: '',
@@ -49,12 +55,28 @@ export function AddGiftCardDialog({ onClose }: AddGiftCardDialogProps) {
 		cvv: '',
 		supportedStores: [],
 		isPhysical: true,
+		supplierImage: null,
+		supplierName: '',
+		stores_images: [],
+		supplierId: 'other',
+		...giftCard,
 	});
 	const [customSupplier, setCustomSupplier] = useState('');
 	const [showCustomSupplier, setShowCustomSupplier] = useState(false);
 	const [storeInput, setStoreInput] = useState('');
 	const [storeSearch, setStoreSearch] = useState('');
 	const [showStoreSelector, setShowStoreSelector] = useState(false);
+	const { suppliers, loading } = useSupplier();
+	const newSuppliers = useMemo(() => {
+		const otherSupplier: Supplier = {
+			_id: 'other',
+			name: 'Other',
+			stores: [],
+			fromColor: '#000',
+			toColor: '#000',
+		};
+		return [...suppliers, otherSupplier];
+	}, [suppliers]);
 
 	// Filter available stores based on search
 	const filteredStores = allAvailableStores.filter((store) =>
@@ -72,7 +94,7 @@ export function AddGiftCardDialog({ onClose }: AddGiftCardDialogProps) {
 	};
 
 	const handleSupplierChange = (value: string) => {
-		const supplier = predefinedSuppliers.find((s) => s._id === value);
+		const supplier = newSuppliers.find((s) => s._id === value);
 
 		if (supplier) {
 			if (supplier._id === 'other') {
@@ -90,7 +112,7 @@ export function AddGiftCardDialog({ onClose }: AddGiftCardDialogProps) {
 					...prev,
 					supplierId: supplier._id,
 					supplier: supplier.name,
-					supportedStores: supplier.stores, // Set supported stores from supplier
+					supportedStores: supplier.stores.map((store) => store.name), // Set supported stores from supplier
 				}));
 			}
 		}
@@ -163,17 +185,14 @@ export function AddGiftCardDialog({ onClose }: AddGiftCardDialogProps) {
 		}
 	};
 
-	const handleSubmit = (e: React.FormEvent) => {
+	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
-
-		// In a real app, this would be an API call to save the new gift card
-		// For now, we'll just simulate success and refresh the page
-
-		setTimeout(() => {
-			onClose();
-			navigate('/'); // Redirect to the home page or another page
-		}, 500);
+		await onSubmit(formData);
 	};
+
+	if (loading) {
+		return <Loading />;
+	}
 
 	return (
 		<Dialog open={true} onOpenChange={onClose}>
@@ -183,13 +202,27 @@ export function AddGiftCardDialog({ onClose }: AddGiftCardDialogProps) {
 				</DialogHeader>
 				<form onSubmit={handleSubmit} className="space-y-6">
 					<div className="space-y-2">
-						<Label htmlFor="supplier">Supplier</Label>
+						<Label htmlFor="name" className="font-semibold">
+							Card Name <span className="text-red-500">*</span>
+						</Label>
+						<Input
+							id="name"
+							name="name"
+							value={formData.name || ''}
+							onChange={handleChange}
+							required
+						/>
+					</div>
+					<div className="space-y-2">
+						<Label htmlFor="supplier">
+							Supplier <span className="text-red-500">*</span>
+						</Label>
 						<Select onValueChange={handleSupplierChange}>
 							<SelectTrigger>
 								<SelectValue placeholder="Select a supplier" />
 							</SelectTrigger>
 							<SelectContent>
-								{predefinedSuppliers.map((supplier) => (
+								{newSuppliers.map((supplier) => (
 									<SelectItem
 										key={supplier._id}
 										value={supplier._id}

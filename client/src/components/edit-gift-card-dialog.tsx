@@ -48,7 +48,7 @@ export function EditGiftCardDialog({
 	const [formData, setFormData] = useState<GiftCard>({
 		...giftCard,
 		supportedStores: giftCard.supportedStores || [],
-		currency: giftCard.currency || 'ILS', // Ensure currency has a default
+		currency: giftCard.currency || 'ILS',
 	});
 	const [customSupplier, setCustomSupplier] = useState('');
 	const [showCustomSupplier, setShowCustomSupplier] = useState(false);
@@ -65,7 +65,7 @@ export function EditGiftCardDialog({
 	useEffect(() => {
 		const supplier = getSupplierByName(giftCard.supplier);
 
-		if (supplier.id === 'other') {
+		if (supplier._id === 'other') {
 			setShowCustomSupplier(true);
 			setCustomSupplier(giftCard.supplier);
 			setFormData((prev) => ({
@@ -76,7 +76,7 @@ export function EditGiftCardDialog({
 		} else {
 			setFormData((prev) => ({
 				...prev,
-				supplierId: supplier.id,
+				supplierId: supplier._id,
 			}));
 			setShowStoreSelector(false);
 		}

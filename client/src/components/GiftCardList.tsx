@@ -1,46 +1,18 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import type { GiftCard } from '../types/gift-card';
-import { GiftCardItem } from '../components/gift-card-item';
+import { GiftCardItem } from './GiftCardItem';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
 import Loading from './loading';
-import { getUserCards } from '../services/cardService';
-import { toastError } from '../lib/utils';
+import { useGiftCards } from '../hooks/useGiftCards';
 
 export function GiftCardList() {
 	const navigate = useNavigate();
-	const { logout } = useAuth();
-	const [giftCards, setGiftCards] = useState<GiftCard[]>([]);
-	const [otherCards, setOtherCards] = useState<GiftCard[]>([]);
-	const [loading, setLoading] = useState(true);
+	const { giftCards, loading } = useGiftCards();
+	const [otherCards] = useState<GiftCard[]>([]);
 	const [searchParams] = useSearchParams();
 	const searchQuery = searchParams.get('q') || '';
-
-	useEffect(() => {
-		// In a real app, this would be an API call
-		const fetchGiftCards = async () => {
-			setLoading(true);
-
-			try {
-				const data = await getUserCards(searchQuery);
-
-				setGiftCards(data.cards);
-			} catch (error) {
-				if ((error as Error).message === 'Please login') {
-					logout();
-					navigate('/login');
-					return;
-				}
-				toastError(error);
-			}
-
-			setLoading(false);
-		};
-
-		fetchGiftCards();
-	}, [searchQuery]);
 
 	const handleSupplierClick = (supplierId: string) => {
 		navigate(`/supplier/${supplierId}`);

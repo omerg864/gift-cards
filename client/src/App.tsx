@@ -18,6 +18,8 @@ import { GoogleOAuthProvider } from '@react-oauth/google';
 import ConfirmEmailPage from './pages/ConfirmEmail';
 import ProtectedRoute from './components/routes/ProtectedRoute';
 import UserRestrictedRoute from './components/routes/UserRestrictedRoute';
+import { GiftCardProvider } from './context/GiftCardContext';
+import { SupplierProvider } from './context/SupplierContext';
 
 function App() {
 	return (
@@ -28,85 +30,92 @@ function App() {
 			>
 				<AuthProvider>
 					<Header />
-					<Routes>
-						<Route
-							path="/"
-							element={
-								<ProtectedRoute>
-									<Home />
-								</ProtectedRoute>
-							}
-						/>
-						<Route
-							path="/card/:id"
-							element={
-								<ProtectedRoute>
-									<CardDetails />
-								</ProtectedRoute>
-							}
-						/>
-						<Route
-							path="/supplier/:id"
-							element={
-								<ProtectedRoute>
-									<SupplierDetails />
-								</ProtectedRoute>
-							}
-						/>
-						<Route
-							path="/login"
-							element={
-								<UserRestrictedRoute>
-									<LoginPage />
-								</UserRestrictedRoute>
-							}
-						/>
-						<Route path="/register" element={<RegisterPage />} />
-						<Route
-							path="/profile"
-							element={
-								<ProtectedRoute>
-									<ProfilePage />
-								</ProtectedRoute>
-							}
-						/>
-						<Route
-							path="/settings"
-							element={
-								<ProtectedRoute>
-									<SettingsPage />
-								</ProtectedRoute>
-							}
-						/>
-						<Route
-							path="/forgot-password"
-							element={
-								<UserRestrictedRoute>
-									<ForgotPasswordPage />
-								</UserRestrictedRoute>
-							}
-						/>
-						<Route
-							path="/verify/:token"
-							element={<ConfirmEmailPage />}
-						/>
-						<Route
-							path="/verify-email"
-							element={
-								<UserRestrictedRoute>
-									<VerifyEmailPage />
-								</UserRestrictedRoute>
-							}
-						/>
-						<Route
-							path="/forgot/password/:token/:email"
-							element={
-								<UserRestrictedRoute>
-									<ResetPasswordPage />
-								</UserRestrictedRoute>
-							}
-						/>
-					</Routes>
+					<SupplierProvider>
+						<GiftCardProvider>
+							<Routes>
+								<Route
+									path="/"
+									element={
+										<ProtectedRoute>
+											<Home />
+										</ProtectedRoute>
+									}
+								/>
+								<Route
+									path="/card/:id"
+									element={
+										<ProtectedRoute>
+											<CardDetails />
+										</ProtectedRoute>
+									}
+								/>
+								<Route
+									path="/supplier/:id"
+									element={
+										<ProtectedRoute>
+											<SupplierDetails />
+										</ProtectedRoute>
+									}
+								/>
+								<Route
+									path="/login"
+									element={
+										<UserRestrictedRoute>
+											<LoginPage />
+										</UserRestrictedRoute>
+									}
+								/>
+								<Route
+									path="/register"
+									element={<RegisterPage />}
+								/>
+								<Route
+									path="/profile"
+									element={
+										<ProtectedRoute>
+											<ProfilePage />
+										</ProtectedRoute>
+									}
+								/>
+								<Route
+									path="/settings"
+									element={
+										<ProtectedRoute>
+											<SettingsPage />
+										</ProtectedRoute>
+									}
+								/>
+								<Route
+									path="/forgot-password"
+									element={
+										<UserRestrictedRoute>
+											<ForgotPasswordPage />
+										</UserRestrictedRoute>
+									}
+								/>
+								<Route
+									path="/verify/:token"
+									element={<ConfirmEmailPage />}
+								/>
+								<Route
+									path="/verify-email"
+									element={
+										<UserRestrictedRoute>
+											<VerifyEmailPage />
+										</UserRestrictedRoute>
+									}
+								/>
+								<Route
+									path="/forgot/password/:token/:email"
+									element={
+										<UserRestrictedRoute>
+											<ResetPasswordPage />
+										</UserRestrictedRoute>
+									}
+								/>
+							</Routes>
+						</GiftCardProvider>
+					</SupplierProvider>
 				</AuthProvider>
 			</GoogleOAuthProvider>
 		</>

@@ -38,13 +38,13 @@ const createCardAndSupplier = async (
 	name: string,
 	supplierName: string,
 	description: string,
-	physicalCard: boolean,
+	isPhysical: boolean,
 	amount: number,
 	currency: string,
 	stores: Store[],
-	supplierImage: File,
+	supplierImage: File | null,
 	stores_images: File[]
-) => {
+): Promise<CardSupplierResponse> => {
 	try {
 		const accessToken = await checkToken();
 		if (!accessToken) {
@@ -54,11 +54,13 @@ const createCardAndSupplier = async (
 		formData.append('name', name);
 		formData.append('supplierName', supplierName);
 		formData.append('description', description);
-		formData.append('physicalCard', String(physicalCard));
+		formData.append('isPhysical', String(isPhysical));
 		formData.append('amount', String(amount));
 		formData.append('currency', currency);
 		formData.append('stores', JSON.stringify(stores));
-		formData.append('supplier', supplierImage);
+		if (supplierImage) {
+			formData.append('supplierImage', supplierImage);
+		}
 		stores_images.forEach((image) => {
 			formData.append('stores_images', image);
 		});
@@ -82,10 +84,10 @@ const createCard = async (
 	name: string,
 	supplier: string,
 	description: string,
-	physicalCard: boolean,
+	isPhysical: boolean,
 	amount: number,
 	currency: string
-) => {
+): Promise<CardSupplierResponse> => {
 	try {
 		const accessToken = await checkToken();
 		if (!accessToken) {
@@ -95,7 +97,7 @@ const createCard = async (
 		formData.append('name', name);
 		formData.append('supplier', supplier);
 		formData.append('description', description);
-		formData.append('physicalCard', String(physicalCard));
+		formData.append('isPhysical', String(isPhysical));
 		formData.append('amount', String(amount));
 		formData.append('currency', currency);
 

@@ -2,17 +2,28 @@ import { Supplier } from './supplier';
 
 export interface GiftCard {
 	_id: string;
+	user: string;
 	name: string;
-	supplier: string | Supplier;
-	supplierId?: string;
-	cardNumber?: string;
-	expirationDate?: string;
-	amount: number;
-	currency: string; // Added currency field
-	description?: string; // Added description field
-	cvv?: string;
-	supportedStores: string[];
+	supplier: Supplier | string;
+	description?: string;
 	isPhysical: boolean;
+	amount: number;
+	currency: string;
+	cardNumber?: string;
+	expirationMonth?: number;
+	expirationYear?: number;
+	cvv?: string;
+	encryptionKey?: string;
+	encryptedCardNumber?: string;
+}
+
+export interface CreateGiftCardDetails extends Omit<GiftCard, '_id' | 'user'> {
+	supplierName: string;
+	supplierImage: File | null;
+	supportedStores: string[];
+	stores_images: File[];
+	supplierId: string;
+	expirationDate: string;
 }
 
 // Currency options

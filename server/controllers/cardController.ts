@@ -18,7 +18,7 @@ const getCards = asyncHandler(async (req, res) => {
 
 const createCardAndSupplier = asyncHandler(async (req, res) => {
 	const user = req.user!;
-	const { name, supplierName, description, physicalCard, amount, currency } =
+	const { name, supplierName, description, isPhysical, amount, currency } =
 		req.body;
 
 	let { stores = '[]' } = req.body;
@@ -49,7 +49,7 @@ const createCardAndSupplier = asyncHandler(async (req, res) => {
 		name,
 		supplier: newSupplier.id,
 		description,
-		physicalCard,
+		isPhysical,
 		amount,
 		currency,
 	});
@@ -67,7 +67,7 @@ const createCardAndSupplier = asyncHandler(async (req, res) => {
 
 const createCard = asyncHandler(async (req, res) => {
 	const user = req.user!;
-	const { name, supplier, description, physicalCard, amount, currency } =
+	const { name, supplier, description, isPhysical, amount, currency } =
 		req.body;
 
 	if (!supplier || !name || isNaN(amount) || !currency) {
@@ -79,7 +79,7 @@ const createCard = asyncHandler(async (req, res) => {
 		name,
 		supplier,
 		description,
-		physicalCard,
+		isPhysical,
 		amount,
 		currency,
 	});
@@ -98,7 +98,7 @@ const createCard = asyncHandler(async (req, res) => {
 const updateCardWithNewSupplier = asyncHandler(async (req, res) => {
 	const user = req.user!;
 	const cardId = req.params.id;
-	const { name, supplierName, description, physicalCard, amount, currency } =
+	const { name, supplierName, description, isPhysical, amount, currency } =
 		req.body;
 
 	let { stores = '[]' } = req.body;
@@ -129,7 +129,7 @@ const updateCardWithNewSupplier = asyncHandler(async (req, res) => {
 		name,
 		supplier: newSupplier.id,
 		description,
-		physicalCard,
+		isPhysical,
 		amount,
 		currency,
 	});
@@ -149,7 +149,7 @@ const updateCardWithNewSupplier = asyncHandler(async (req, res) => {
 const updateCard = asyncHandler(async (req, res) => {
 	const user = req.user!;
 	const cardId = req.params.id;
-	const { name, supplier, description, physicalCard, amount, currency } =
+	const { name, supplier, description, isPhysical, amount, currency } =
 		req.body;
 	if (!supplier || !name || isNaN(amount) || !currency) {
 		res.status(400);
@@ -160,7 +160,7 @@ const updateCard = asyncHandler(async (req, res) => {
 		name,
 		supplier,
 		description,
-		physicalCard,
+		isPhysical,
 		amount,
 		currency,
 	});

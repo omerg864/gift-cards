@@ -4,7 +4,7 @@ export interface Supplier {
 	fromColor: string;
 	toColor: string;
 	logo?: string;
-	stores: string[]; // Added supported stores to supplier
+	stores: Store[];
 }
 
 export interface Store {
@@ -25,21 +25,29 @@ export const predefinedSuppliers: Supplier[] = [
 			'Whole Foods',
 			'Amazon Books',
 			'Amazon Go',
-		],
+		].map((store) => ({
+			name: store,
+		})),
 	},
 	{
 		_id: 'starbucks',
 		name: 'Starbucks',
 		fromColor: '#047857', // Green-600
 		toColor: '#065F46', // Green-900
-		stores: ['Starbucks', 'Starbucks Reserve', 'Teavana'],
+		stores: ['Starbucks', 'Starbucks Reserve', 'Teavana'].map((store) => ({
+			name: store,
+		})),
 	},
 	{
 		_id: 'target',
 		name: 'Target',
 		fromColor: '#DC2626', // Red-600
 		toColor: '#991B1B', // Red-800
-		stores: ['Target', 'Target Online', 'Shipt', 'Target Optical'],
+		stores: ['Target', 'Target Online', 'Shipt', 'Target Optical'].map(
+			(store) => ({
+				name: store,
+			})
+		),
 	},
 	{
 		_id: 'walmart',
@@ -52,7 +60,9 @@ export const predefinedSuppliers: Supplier[] = [
 			"Sam's Club",
 			'Walmart Pharmacy',
 			'Walmart Grocery',
-		],
+		].map((store) => ({
+			name: store,
+		})),
 	},
 	{
 		_id: 'bestbuy',
@@ -64,7 +74,9 @@ export const predefinedSuppliers: Supplier[] = [
 			'Best Buy Online',
 			'Best Buy Mobile',
 			'Geek Squad',
-		],
+		].map((store) => ({
+			name: store,
+		})),
 	},
 	{
 		_id: 'apple',
@@ -77,21 +89,27 @@ export const predefinedSuppliers: Supplier[] = [
 			'App Store',
 			'iTunes',
 			'Apple Music',
-		],
+		].map((store) => ({
+			name: store,
+		})),
 	},
 	{
 		_id: 'netflix',
 		name: 'Netflix',
 		fromColor: '#B91C1C', // Red-700
 		toColor: '#7F1D1D', // Red-900
-		stores: ['Netflix'],
+		stores: ['Netflix'].map((store) => ({
+			name: store,
+		})),
 	},
 	{
 		_id: 'spotify',
 		name: 'Spotify',
 		fromColor: '#10B981', // Green-500
 		toColor: '#065F46', // Green-800
-		stores: ['Spotify'],
+		stores: ['Spotify'].map((store) => ({
+			name: store,
+		})),
 	},
 	{
 		_id: 'visa',
@@ -104,7 +122,9 @@ export const predefinedSuppliers: Supplier[] = [
 			'Restaurants',
 			'Travel',
 			'Entertainment',
-		],
+		].map((store) => ({
+			name: store,
+		})),
 	},
 	{
 		_id: 'mastercard',
@@ -117,7 +137,9 @@ export const predefinedSuppliers: Supplier[] = [
 			'Restaurants',
 			'Travel',
 			'Entertainment',
-		],
+		].map((store) => ({
+			name: store,
+		})),
 	},
 	{
 		_id: 'other',
@@ -130,7 +152,11 @@ export const predefinedSuppliers: Supplier[] = [
 
 // List of all stores across all suppliers for selection when "other" is chosen
 export const allAvailableStores: string[] = Array.from(
-	new Set(predefinedSuppliers.flatMap((supplier) => supplier.stores))
+	new Set(
+		predefinedSuppliers.flatMap((supplier) =>
+			supplier.stores.map((store) => store.name)
+		)
+	)
 )
 	.filter((store) => store !== '')
 	.sort();
