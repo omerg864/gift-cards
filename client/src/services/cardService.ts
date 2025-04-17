@@ -116,9 +116,89 @@ const createCard = async (
 	}
 };
 
-const updateCardWithNewSupplier = async () => {};
+const updateCardWithNewSupplier = async (
+	id: string,
+	name: string,
+	supplierName: string,
+	description: string,
+	isPhysical: boolean,
+	amount: number,
+	currency: string,
+	stores: Store[],
+	supplierImage: File | null,
+	stores_images: File[]
+): Promise<CardSupplierResponse> => {
+	try {
+		const accessToken = await checkToken();
+		if (!accessToken) {
+			throw new Error('Please login');
+		}
+		const formData = new FormData();
+		formData.append('name', name);
+		formData.append('supplierName', supplierName);
+		formData.append('description', description);
+		formData.append('isPhysical', String(isPhysical));
+		formData.append('amount', String(amount));
+		formData.append('currency', currency);
+		formData.append('stores', JSON.stringify(stores));
+		if (supplierImage) {
+			formData.append('supplierImage', supplierImage);
+		}
+		stores_images.forEach((image) => {
+			formData.append('stores_images', image);
+		});
 
-const updateCard = async () => {};
+		const response = await client.put<CardSupplierResponse>(
+			`/card/supplier/${id}`,
+			formData,
+			{
+				headers: {
+					Authorization: `Bearer ${accessToken}`,
+				},
+			}
+		);
+		return response.data;
+	} catch (error) {
+		return axiosErrorHandler(error);
+	}
+};
+
+const updateCard = async (
+	id: string,
+	name: string,
+	supplier: string,
+	description: string,
+	isPhysical: boolean,
+	amount: number,
+	currency: string
+): Promise<CardSupplierResponse> => {
+	try {
+		const accessToken = await checkToken();
+		if (!accessToken) {
+			throw new Error('Please login');
+		}
+		const formData = new FormData();
+		formData.append('name', name);
+		formData.append('supplier', supplier);
+		formData.append('description', description);
+		formData.append('isPhysical', String(isPhysical));
+		formData.append('amount', String(amount));
+		formData.append('currency', currency);
+
+		const response = await client.put<CardSupplierResponse>(
+			`/card/${id}`,
+			formData,
+			{
+				headers: {
+					Authorization: `Bearer ${accessToken}`,
+				},
+			}
+		);
+		return response.data;
+	} catch (error) {
+		return axiosErrorHandler(error);
+	}
+};
 
 export {
 	getUserCards,

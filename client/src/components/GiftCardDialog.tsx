@@ -1,13 +1,8 @@
-'use client';
-
 import { Badge } from './ui/badge';
 import { Switch } from './ui/switch';
 import { Textarea } from './ui/textarea';
 import { Checkbox } from './ui/checkbox';
-
-import type React from 'react';
-
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
 	Dialog,
 	DialogContent,
@@ -190,6 +185,14 @@ export function GiftCardDialog({
 		await onSubmit(formData);
 	};
 
+	useEffect(() => {
+		if (giftCard) {
+			console.log('GiftCard:', giftCard);
+			handleSupplierChange((giftCard.supplier as Supplier)._id);
+			console.log('FormData:', formData);
+		}
+	}, [giftCard]);
+
 	if (loading) {
 		return <Loading />;
 	}
@@ -217,7 +220,12 @@ export function GiftCardDialog({
 						<Label htmlFor="supplier">
 							Supplier <span className="text-red-500">*</span>
 						</Label>
-						<Select onValueChange={handleSupplierChange}>
+						<Select
+							defaultValue={
+								(giftCard?.supplier as Supplier)._id || ''
+							}
+							onValueChange={handleSupplierChange}
+						>
 							<SelectTrigger>
 								<SelectValue placeholder="Select a supplier" />
 							</SelectTrigger>
@@ -589,7 +597,7 @@ export function GiftCardDialog({
 							type="submit"
 							className="w-full bg-teal-600 hover:bg-teal-700"
 						>
-							Add Gift Card
+							{giftCard ? 'Update Gift Card' : 'Add Gift Card'}
 						</Button>
 					</DialogFooter>
 				</form>

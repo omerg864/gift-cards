@@ -19,12 +19,17 @@ import {
 	Smartphone,
 	FileText,
 } from 'lucide-react';
-import type { GiftCard } from '../types/gift-card';
-import { getSupplierByName } from '../types/supplier';
+import type { CreateGiftCardDetails, GiftCard } from '../types/gift-card';
+import { Store as IStore, Supplier } from '../types/supplier';
 import { getCurrencySymbol } from '../types/gift-card';
-import { EditGiftCardDialog } from '../components/edit-gift-card-dialog';
 import { useNavigate, useParams } from 'react-router';
 import { GiftCardItem } from '../components/GiftCardItem';
+import { useGiftCards } from '../hooks/useGiftCards';
+import Loading from '../components/loading';
+import { GiftCardDialog } from '../components/GiftCardDialog';
+import { toast } from 'react-toastify';
+import { updateCard, updateCardWithNewSupplier } from '../services/cardService';
+import { toastError } from '../lib/utils';
 
 export default function CardDetailsPage() {
 	const navigate = useNavigate();
@@ -34,99 +39,40 @@ export default function CardDetailsPage() {
 	const [showCVV, setShowCVV] = useState(false);
 	const [showEditDialog, setShowEditDialog] = useState(false);
 	const [storeFilter, setStoreFilter] = useState('');
-	const [filteredStores, setFilteredStores] = useState<string[]>([]);
+	const [filteredStores, setFilteredStores] = useState<IStore[]>([]);
+	const {
+		giftCards,
+		loading: giftCardLoading,
+		refetchCards,
+	} = useGiftCards();
 
 	useEffect(() => {
-		// In a real app, this would be an API call to fetch the specific card
-		const fetchGiftCard = () => {
-			setLoading(true);
-
-			// Simulate API call with mock data
-			setTimeout(() => {
-				const mockCards: GiftCard[] = [
-					{
-						id: '1',
-						supplier: 'Amazon',
-						supplierId: 'amazon',
-						cardNumber: '1234 5678 9012 3456',
-						expirationDate: '12/2025',
-						amount: 100,
-						currency: 'ILS',
-						description:
-							"Gift card for my nephew's birthday. Can be used for online purchases on Amazon.",
-						cvv: '123',
-						supportedStores: [
-							'Amazon',
-							'Amazon Fresh',
-							'Whole Foods',
-						],
-						isPhysical: true,
-					},
-					{
-						id: '2',
-						supplier: 'Starbucks',
-						supplierId: 'starbucks',
-						cardNumber: '8765 4321 9876 5432',
-						expirationDate: '06/2024',
-						amount: 25,
-						currency: 'USD',
-						description:
-							'Coffee gift card for Sarah. Perfect for her morning coffee runs.',
-						cvv: '456',
-						supportedStores: ['Starbucks', 'Starbucks Reserve'],
-						isPhysical: false,
-					},
-					{
-						id: '3',
-						supplier: 'Target',
-						supplierId: 'target',
-						cardNumber: '9876 5432 1098 7654',
-						expirationDate: '03/2026',
-						amount: 50,
-						currency: 'ILS',
-						description: 'Housewarming gift for David and Emma.',
-						cvv: '789',
-						supportedStores: ['Target', 'Target Online', 'Shipt'],
-						isPhysical: true,
-					},
-					{
-						id: '4',
-						supplier: 'Visa Gift Card',
-						supplierId: 'visa',
-						amount: 75,
-						currency: 'EUR',
-						description:
-							'Universal gift card that can be used at most retailers.',
-						supportedStores: [
-							'Walmart',
-							'Best Buy',
-							'Target',
-							'Amazon',
-							'Most Retailers',
-						],
-						isPhysical: false,
-					},
-				];
-
-				const card = mockCards.find((card) => card._id === params.id);
-				setGiftCard(card || null);
+		const fetchGiftCard = async () => {
+			if (params.id) {
+				const card = giftCards.find((card) => card._id === params.id);
 				if (card) {
-					setFilteredStores(card.supportedStores);
+					setGiftCard(card);
+					setFilteredStores((card.supplier as Supplier).stores);
+				} else {
+					setGiftCard(null);
 				}
-				setLoading(false);
-			}, 500);
+			}
+			setLoading(false);
 		};
 
 		fetchGiftCard();
-	}, [params.id]);
+	}, [params.id, giftCards]);
 
 	useEffect(() => {
 		if (giftCard) {
 			if (storeFilter.trim() === '') {
-				setFilteredStores(giftCard.supportedStores);
+				setFilteredStores((giftCard.supplier as Supplier).stores);
 			} else {
-				const filtered = giftCard.supportedStores.filter((store) =>
-					store.toLowerCase().includes(storeFilter.toLowerCase())
+				const filtered = (giftCard.supplier as Supplier).stores.filter(
+					(store) =>
+						store.name
+							.toLowerCase()
+							.includes(storeFilter.toLowerCase())
 				);
 				setFilteredStores(filtered);
 			}
@@ -152,48 +98,61 @@ export default function CardDetailsPage() {
 		navigate('/');
 	};
 
-	const handleUpdateCard = (updatedCard: GiftCard) => {
-		// In a real app, this would be an API call to update the card
-		setGiftCard(updatedCard);
-		setFilteredStores(updatedCard.supportedStores);
-		setShowEditDialog(false);
+	const handleUpdateCard = async (data: CreateGiftCardDetails) => {
+		console.log('Updated card data:', data);
+		if (!data) {
+			toast.error('No data provided');
+			return;
+		}
+		if (isNaN(data.amount) || data.amount <= 0) {
+			toast.error('Amount must be greater than 0');
+			return;
+		}
+		if (!data.name || !data.supplierId) {
+			toast.error('Name and Supplier are required');
+			return;
+		}
+		try {
+			if (data.supplierId === 'other') {
+				await updateCardWithNewSupplier(
+					params.id as string,
+					data.name,
+					data.supplier as string,
+					data.description || '',
+					data.isPhysical,
+					data.amount,
+					data.currency,
+					data.supportedStores.map((store) => ({
+						name: store,
+					})),
+					null,
+					[]
+				);
+			} else {
+				await updateCard(
+					params.id as string,
+					data.name,
+					data.supplierId,
+					data.description || '',
+					data.isPhysical,
+					data.amount,
+					data.currency
+				);
+			}
+			refetchCards();
+			setShowEditDialog(false);
+			toast.success('Card added successfully');
+		} catch (error) {
+			toastError(error);
+		}
 	};
 
 	const clearStoreFilter = () => {
 		setStoreFilter('');
 	};
 
-	// Store images mapping (in a real app, these would be actual store logos)
-	const getStoreImage = (storeName: string) => {
-		const storeMap: Record<string, string> = {
-			Amazon: '/placeholder.svg?height=40&width=40',
-			'Amazon Fresh': '/placeholder.svg?height=40&width=40',
-			'Whole Foods': '/placeholder.svg?height=40&width=40',
-			Starbucks: '/placeholder.svg?height=40&width=40',
-			'Starbucks Reserve': '/placeholder.svg?height=40&width=40',
-			Target: '/placeholder.svg?height=40&width=40',
-			'Target Online': '/placeholder.svg?height=40&width=40',
-			Shipt: '/placeholder.svg?height=40&width=40',
-			Walmart: '/placeholder.svg?height=40&width=40',
-			'Walmart.com': '/placeholder.svg?height=40&width=40',
-			"Sam's Club": '/placeholder.svg?height=40&width=40',
-			'Best Buy': '/placeholder.svg?height=40&width=40',
-			'Best Buy Online': '/placeholder.svg?height=40&width=40',
-			Netflix: '/placeholder.svg?height=40&width=40',
-			'Most Retailers': '/placeholder.svg?height=40&width=40',
-		};
-
-		return storeMap[storeName] || '/placeholder.svg?height=40&width=40';
-	};
-
-	if (loading) {
-		return (
-			<div className="container mx-auto px-4 py-8">
-				<div className="flex justify-center items-center h-40">
-					<div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-				</div>
-			</div>
-		);
+	if (loading || giftCardLoading) {
+		return <Loading />;
 	}
 
 	if (!giftCard) {
@@ -214,9 +173,6 @@ export default function CardDetailsPage() {
 			</div>
 		);
 	}
-
-	// Get the supplier color based on the supplier name
-	const supplier = getSupplierByName(giftCard.supplier);
 
 	// Get currency symbol
 	const currencySymbol = getCurrencySymbol(giftCard.currency);
@@ -297,19 +253,23 @@ export default function CardDetailsPage() {
 							</div>
 						)}
 
-						{giftCard.expirationDate && (
-							<div className="flex items-center gap-2">
-								<Calendar className="h-5 w-5 text-muted-foreground" />
-								<div>
-									<div className="text-sm text-muted-foreground">
-										Expires
-									</div>
-									<div className="font-medium">
-										{giftCard.expirationDate}
+						{giftCard.expirationMonth &&
+							giftCard.expirationYear && (
+								<div className="flex items-center gap-2">
+									<Calendar className="h-5 w-5 text-muted-foreground" />
+									<div>
+										<div className="text-sm text-muted-foreground">
+											Expires
+										</div>
+										<div className="font-medium">
+											{giftCard.expirationMonth < 10
+												? `0${giftCard.expirationMonth}`
+												: giftCard.expirationMonth}
+											/{giftCard.expirationYear}
+										</div>
 									</div>
 								</div>
-							</div>
-						)}
+							)}
 
 						{giftCard.cardNumber && (
 							<div className="flex items-center gap-2">
@@ -356,7 +316,8 @@ export default function CardDetailsPage() {
 							</h2>
 							<div className="text-sm text-muted-foreground">
 								{filteredStores.length} of{' '}
-								{giftCard.supportedStores.length} stores
+								{(giftCard.supplier as Supplier).stores.length}{' '}
+								stores
 							</div>
 						</div>
 
@@ -387,23 +348,25 @@ export default function CardDetailsPage() {
 										className="flex items-center gap-4 p-3 bg-background rounded-lg border"
 									>
 										<img
-											src={
-												getStoreImage(store) ||
-												'/placeholder.svg'
-											}
-											alt={store}
+											src={store.image || '/store.png'}
+											alt={store.name}
 											width={40}
 											height={40}
 											className="rounded-md"
 										/>
 										<div>
 											<div className="font-medium">
-												{store}
+												{store.name}
 											</div>
 											<div className="text-sm text-muted-foreground flex items-center">
 												<ShoppingBag className="h-3 w-3 mr-1" />
-												Accepts {giftCard.supplier} gift
-												cards
+												Accepts{' '}
+												{
+													(
+														giftCard.supplier as Supplier
+													).name
+												}{' '}
+												gift cards
 											</div>
 										</div>
 									</div>
@@ -423,10 +386,10 @@ export default function CardDetailsPage() {
 			</div>
 
 			{showEditDialog && (
-				<EditGiftCardDialog
+				<GiftCardDialog
 					giftCard={giftCard}
-					onUpdate={handleUpdateCard}
 					onClose={() => setShowEditDialog(false)}
+					onSubmit={handleUpdateCard}
 				/>
 			)}
 		</div>
