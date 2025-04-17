@@ -200,10 +200,29 @@ const updateCard = async (
 	}
 };
 
+const deleteCard = async (id: string): Promise<CardSupplierResponse> => {
+	try {
+		const accessToken = await checkToken();
+		if (!accessToken) {
+			throw new Error('Please login');
+		}
+		const response = await client.delete<CardSupplierResponse>(`/card/${id}`, {
+			headers: {
+				Authorization: `Bearer ${accessToken}`,
+			},
+		});
+		return response.data;
+	}
+	catch (error) {
+		return axiosErrorHandler(error);
+	}
+};
+
 export {
 	getUserCards,
 	createCardAndSupplier,
 	createCard,
 	updateCardWithNewSupplier,
 	updateCard,
+	deleteCard
 };

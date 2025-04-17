@@ -1,10 +1,32 @@
 import Card from '../models/cardModel';
 import { CardDocument, Card as ICard } from '../types/card';
+import { Supplier } from '../types/supplier';
 import { UserDocument } from '../types/user';
 
-const getUserCards = async (user: UserDocument): Promise<CardDocument[]> => {
+const getUserCards = async (
+	user: UserDocument,
+	query: string
+): Promise<CardDocument[]> => {
 	const cards = await Card.find({ user: user._id }).populate('supplier');
-	return cards;
+	if (!query) {
+		return cards;
+	}
+	const filteredCards = cards.filter((card) => {
+		if (query) {
+			const regex = new RegExp(query, 'i');
+			return (
+				card.name.match(regex) ||
+				(card.supplier as Supplier).name.match(regex) ||
+				card.description?.match(regex) ||
+				(card.supplier as Supplier).stores.some((store) =>
+					store.name.match(regex)
+				)
+			);
+		}
+		return true;
+	});
+
+	return filteredCards;
 };
 
 const newCard = async (

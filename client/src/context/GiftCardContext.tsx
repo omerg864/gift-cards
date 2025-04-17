@@ -1,9 +1,9 @@
 // src/context/GiftCardContext.tsx
-import { createContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useState, ReactNode, useEffect } from 'react';
 import type { GiftCard } from '../types/gift-card';
 import { getUserCards } from '../services/cardService';
 import { useAuth } from '../hooks/useAuth';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { toastError } from '../lib/utils';
 
 interface GiftCardContextType {
@@ -21,13 +21,11 @@ export const GiftCardProvider = ({ children }: { children: ReactNode }) => {
 	const [loading, setLoading] = useState(true);
 	const { logout } = useAuth();
 	const navigate = useNavigate();
-	const [searchParams] = useSearchParams();
-	const query = searchParams.get('q') || '';
 
-	const fetchCards = async (searchQuery: string = '') => {
+	const fetchCards = async () => {
 		setLoading(true);
 		try {
-			const data = await getUserCards(searchQuery);
+			const data = await getUserCards('');
 			setGiftCards(data.cards);
 		} catch (error) {
 			if ((error as Error).message === 'Please login') {
@@ -41,11 +39,11 @@ export const GiftCardProvider = ({ children }: { children: ReactNode }) => {
 	};
 
 	useEffect(() => {
-		fetchCards(query);
-	}, [query]);
+		fetchCards();
+	}, []);
 
-	const refetchCards = (newQuery?: string) => {
-		fetchCards(newQuery || query);
+	const refetchCards = () => {
+		fetchCards();
 	};
 
 	return (

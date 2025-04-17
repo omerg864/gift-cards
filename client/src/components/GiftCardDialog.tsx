@@ -222,7 +222,7 @@ export function GiftCardDialog({
 						</Label>
 						<Select
 							defaultValue={
-								(giftCard?.supplier as Supplier)._id || ''
+								(giftCard?.supplier as Supplier)?._id || ''
 							}
 							onValueChange={handleSupplierChange}
 						>

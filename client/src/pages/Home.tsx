@@ -1,5 +1,5 @@
 import { GiftCardList } from '../components/GiftCardList';
-import { SearchBar } from '../components/search-bar';
+import { SearchBar } from '../components/SearchBar';
 import { PlusCircle } from 'lucide-react';
 import { GiftCardDialog } from '../components/GiftCardDialog';
 import { useState } from 'react';

@@ -28,7 +28,11 @@ import { useGiftCards } from '../hooks/useGiftCards';
 import Loading from '../components/loading';
 import { GiftCardDialog } from '../components/GiftCardDialog';
 import { toast } from 'react-toastify';
-import { updateCard, updateCardWithNewSupplier } from '../services/cardService';
+import {
+	deleteCard,
+	updateCard,
+	updateCardWithNewSupplier,
+} from '../services/cardService';
 import { toastError } from '../lib/utils';
 
 export default function CardDetailsPage() {
@@ -87,10 +91,16 @@ export default function CardDetailsPage() {
 		setShowEditDialog(true);
 	};
 
-	const handleDelete = () => {
+	const handleDelete = async () => {
 		if (confirm('Are you sure you want to delete this gift card?')) {
-			// In a real app, this would be an API call to delete the card
-			navigate('/');
+			try {
+				await deleteCard(params.id as string);
+				refetchCards();
+				navigate('/');
+				toast.success('Card deleted successfully');
+			} catch (error) {
+				toastError(error);
+			}
 		}
 	};
 

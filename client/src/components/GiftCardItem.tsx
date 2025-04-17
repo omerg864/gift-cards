@@ -37,7 +37,9 @@ export function GiftCardItem({
 			<div
 				className={`absolute inset-0 rounded-xl p-6 flex flex-col justify-between`}
 				style={{
-					background: `linear-gradient(135deg, ${(giftCard.supplier as Supplier).fromColor}, ${(giftCard.supplier as Supplier).toColor})`,
+					background: `linear-gradient(135deg, ${
+						(giftCard.supplier as Supplier).fromColor
+					}, ${(giftCard.supplier as Supplier).toColor})`,
 				}}
 			>
 				{/* Card header */}
@@ -45,25 +47,31 @@ export function GiftCardItem({
 					<h3 className="text-xl font-bold text-white">
 						{giftCard.name.toUpperCase()}
 					</h3>
-					<p className="text-sm text-white/80 mb-2">
-						{(giftCard.supplier as Supplier).name}
-					</p>
-					<div className="w-fit bg-white/20 px-2 py-1 rounded-full text-white text-xs flex items-center">
-						{giftCard.isPhysical ? (
-							<>
-								<CreditCard className="h-3 w-3 mr-1" /> Physical
-							</>
-						) : (
-							<>
-								<Smartphone className="h-3 w-3 mr-1" /> Digital
-							</>
-						)}
-					</div>
+					{!supplierCard && (
+						<p className="text-sm text-white/80 mb-2">
+							{(giftCard.supplier as Supplier).name}
+						</p>
+					)}
+					{!supplierCard && (
+						<div className="w-fit bg-white/20 px-2 py-1 rounded-full text-white text-xs flex items-center">
+							{giftCard.isPhysical ? (
+								<>
+									<CreditCard className="h-3 w-3 mr-1" />{' '}
+									Physical
+								</>
+							) : (
+								<>
+									<Smartphone className="h-3 w-3 mr-1" />{' '}
+									Digital
+								</>
+							)}
+						</div>
+					)}
 				</div>
 
 				{/* Card details */}
 				<div className="space-y-2">
-					{giftCard.cardNumber && (
+					{!supplierCard && giftCard.cardNumber && (
 						<>
 							<div className="text-sm text-white/80 uppercase tracking-wide">
 								CARD NUMBER
@@ -84,12 +92,14 @@ export function GiftCardItem({
 				</div>
 
 				{/* Card type and amount badges */}
-				<div className="absolute top-6 right-6 flex flex-col items-end space-y-2">
-					<div className="bg-white/20 px-3 py-1 rounded-full text-white font-bold">
-						{currencySymbol}
-						{giftCard.amount}
+				{!supplierCard && (
+					<div className="absolute top-6 right-6 flex flex-col items-end space-y-2">
+						<div className="bg-white/20 px-3 py-1 rounded-full text-white font-bold">
+							{currencySymbol}
+							{giftCard.amount}
+						</div>
 					</div>
-				</div>
+				)}
 
 				{/* Card chip */}
 				<div className="absolute bottom-6 right-6">

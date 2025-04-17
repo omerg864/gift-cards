@@ -9,7 +9,8 @@ import { newUserSupplier } from '../services/supplierService';
 
 const getCards = asyncHandler(async (req, res) => {
 	const user = req.user!;
-	const cards = await getUserCards(user);
+	const { query } = req.query;
+	const cards = await getUserCards(user, query as string);
 	res.status(200).json({
 		success: true,
 		cards,
