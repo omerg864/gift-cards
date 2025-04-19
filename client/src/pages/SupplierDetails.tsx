@@ -4,29 +4,36 @@ import { useState, useEffect } from 'react';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import { ArrowLeft, Store, CreditCard, Smartphone, Plus } from 'lucide-react';
-import { getSupplierById } from '../types/supplier';
+import { Supplier } from '../types/supplier';
 import { GiftCardDialog } from '../components/GiftCardDialog';
 import { useNavigate, useParams } from 'react-router-dom';
-import { GiftCard } from '../types/gift-card';
+import { CreateGiftCardDetails } from '../types/gift-card';
+import { useSupplier } from '../hooks/useSupplier';
+import Loading from '../components/loading';
+import { toast } from 'react-toastify';
 
 export default function SupplierDetailsPage() {
 	const navigate = useNavigate();
-	const [loading, setLoading] = useState(true);
 	const [showAddDialog, setShowAddDialog] = useState(false);
-
+	const { suppliers, loading } = useSupplier();
+	const [supplier, setSupplier] = useState<Supplier | null>(null);
 	const params = useParams();
-
-	// Get supplier information
-	const supplier = getSupplierById(params.id!);
 
 	useEffect(() => {
 		// Simulate loading
-		const timer = setTimeout(() => {
-			setLoading(false);
-		}, 500);
+		const getSupplier = async () => {
+			const supplier = suppliers.find((s) => s._id === params.id);
+			if (supplier) {
+				setSupplier(supplier);
+			} else {
+				toast.error('Supplier not found');
+			}
+		};
 
-		return () => clearTimeout(timer);
-	}, []);
+		if (suppliers.length > 0) {
+			getSupplier();
+		}
+	}, [suppliers]);
 
 	const handleBack = () => {
 		navigate(-1);
@@ -36,18 +43,12 @@ export default function SupplierDetailsPage() {
 		setShowAddDialog(true);
 	};
 
-	const handleNewCardSubmit = async (data: Omit<GiftCard, '_id'>) => {
+	const handleNewCardSubmit = async (data: CreateGiftCardDetails) => {
 		console.log('Card data:', data);
 	};
 
-	if (loading) {
-		return (
-			<div className="container mx-auto px-4 py-8">
-				<div className="flex justify-center items-center h-40">
-					<div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-				</div>
-			</div>
-		);
+	if (loading || !supplier) {
+		return <Loading />;
 	}
 
 	return (
@@ -120,24 +121,22 @@ export default function SupplierDetailsPage() {
 						</h2>
 
 						<div className="space-y-4 max-h-[500px] overflow-y-auto pr-2">
-							{supplier.supportedStores.length > 0 ? (
-								supplier.supportedStores.map((store, index) => (
+							{supplier.stores.length > 0 ? (
+								supplier.stores.map((store, index) => (
 									<div
 										key={index}
 										className="flex items-center gap-4 p-3 bg-background rounded-lg border"
 									>
 										<img
-											src={`/placeholder.svg?height=40&width=40&text=${store.charAt(
-												0
-											)}`}
-											alt={store}
+											src={store.image || '/store.png'}
+											alt={store.image}
 											width={40}
 											height={40}
 											className="rounded-md"
 										/>
 										<div>
 											<div className="font-medium">
-												{store}
+												{store.image}
 											</div>
 											<div className="text-sm text-muted-foreground">
 												Accepts {supplier.name} gift
