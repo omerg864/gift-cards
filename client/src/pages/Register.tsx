@@ -31,7 +31,7 @@ import {
 import { email_regex, password_regex } from '../lib/regex';
 
 export default function RegisterPage() {
-	const { setUser, setEmail: setAuthEmail } = useAuth();
+	const { setUser, setEmail: setAuthEmail, handleAuthentication } = useAuth();
 	const navigate = useNavigate();
 	const [isLoading, setIsLoading] = useState(false);
 	const [name, setName] = useState('');
@@ -50,6 +50,7 @@ export default function RegisterPage() {
 		);
 		toast.success('Logged in successfully');
 		setUser(data.user);
+		handleAuthentication(true);
 		navigate('/');
 	};
 

@@ -3,7 +3,6 @@ import { createContext, useState, ReactNode, useEffect } from 'react';
 import type { GiftCard } from '../types/gift-card';
 import { getUserCards } from '../services/cardService';
 import { useAuth } from '../hooks/useAuth';
-import { useNavigate } from 'react-router-dom';
 import { toastError } from '../lib/utils';
 
 interface GiftCardContextType {
@@ -18,9 +17,9 @@ export const GiftCardContext = createContext<GiftCardContextType | undefined>(
 
 export const GiftCardProvider = ({ children }: { children: ReactNode }) => {
 	const [giftCards, setGiftCards] = useState<GiftCard[]>([]);
+	const { user } = useAuth();
 	const [loading, setLoading] = useState(true);
 	const { logout } = useAuth();
-	const navigate = useNavigate();
 
 	const fetchCards = async () => {
 		setLoading(true);
@@ -30,7 +29,7 @@ export const GiftCardProvider = ({ children }: { children: ReactNode }) => {
 		} catch (error) {
 			if ((error as Error).message === 'Please login') {
 				logout();
-				navigate('/login');
+				setLoading(false);
 				return;
 			}
 			toastError(error);
@@ -39,8 +38,10 @@ export const GiftCardProvider = ({ children }: { children: ReactNode }) => {
 	};
 
 	useEffect(() => {
-		fetchCards();
-	}, []);
+		if (user) {
+			fetchCards();
+		}
+	}, [user]);
 
 	const refetchCards = () => {
 		fetchCards();

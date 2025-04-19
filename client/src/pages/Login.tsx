@@ -33,7 +33,7 @@ import GoogleLogin from '../components/GoogleLoginButton';
 export default function LoginPage() {
 	const navigate = useNavigate();
 	const [isLoading, setIsLoading] = useState<boolean>(false);
-	const { setUser, setEmail: setAuthEmail } = useAuth();
+	const { setUser, setEmail: setAuthEmail, handleAuthentication } = useAuth();
 	const [email, setEmail] = useState('');
 	const [password, setPassword] = useState('');
 
@@ -64,6 +64,7 @@ export default function LoginPage() {
 		);
 		toast.success('Logged in successfully');
 		setUser(data.user);
+		handleAuthentication(true);
 		navigate('/');
 	};
 

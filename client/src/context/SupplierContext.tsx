@@ -1,15 +1,9 @@
 // src/context/SupplierContext.tsx
-import React, {
-	createContext,
-	useEffect,
-	useState,
-	ReactNode,
-} from 'react';
+import React, { createContext, useEffect, useState, ReactNode } from 'react';
 import type { Supplier } from '../types/supplier';
 import { getSuppliers } from '../services/supplierService';
 import { toastError } from '../lib/utils';
 import { useAuth } from '../hooks/useAuth';
-import { useNavigate } from 'react-router-dom';
 
 interface SupplierContextType {
 	suppliers: Supplier[];
@@ -24,8 +18,7 @@ export const SupplierContext = createContext<SupplierContextType | undefined>(
 export const SupplierProvider = ({ children }: { children: ReactNode }) => {
 	const [suppliers, setSuppliers] = useState<Supplier[]>([]);
 	const [loading, setLoading] = useState(true);
-	const { logout } = useAuth();
-	const navigate = useNavigate();
+	const { logout, user } = useAuth();
 
 	const fetchSuppliers = async () => {
 		setLoading(true);
@@ -35,7 +28,6 @@ export const SupplierProvider = ({ children }: { children: ReactNode }) => {
 		} catch (error) {
 			if ((error as Error).message === 'Please login') {
 				logout();
-				navigate('/login');
 				return;
 			}
 			toastError(error);
@@ -44,8 +36,10 @@ export const SupplierProvider = ({ children }: { children: ReactNode }) => {
 	};
 
 	useEffect(() => {
-		fetchSuppliers();
-	}, []);
+		if (user) {
+			fetchSuppliers();
+		}
+	}, [user]);
 
 	return (
 		<SupplierContext.Provider

@@ -19,10 +19,9 @@ import {
 	UserPlus,
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 export function Header() {
-	const navigate = useNavigate();
 	const { user, logout } = useAuth();
 	const [mounted, setMounted] = useState(false);
 
@@ -33,7 +32,6 @@ export function Header() {
 
 	const handleLogout = () => {
 		logout();
-		navigate('/login');
 	};
 
 	if (!mounted) return null;
@@ -60,7 +58,7 @@ export function Header() {
 								>
 									<Avatar className="h-8 w-8">
 										<AvatarImage
-											src={user.avatar || ''}
+											src={user.image || ''}
 											alt={user.name}
 										/>
 										<AvatarFallback>

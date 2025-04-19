@@ -1,14 +1,13 @@
 import { Navigate } from 'react-router-dom';
-import { useAuth } from '../../hooks/useAuth';
 
 interface ProtectedRouteProps {
 	children: React.ReactNode;
+	isAuthenticated: boolean;
 }
-const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
-	const { user } = useAuth();
+const ProtectedRoute = ({ children, isAuthenticated }: ProtectedRouteProps) => {
 	const path = window.location.pathname.slice(1);
 
-	if (!user) {
+	if (!isAuthenticated) {
 		return (
 			<Navigate
 				to={path ? `/login?redirect=${path}` : '/login'}

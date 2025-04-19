@@ -23,6 +23,8 @@ interface AuthContextType {
 	user: User | null;
 	logout: () => void;
 	updateUser: (userData: Partial<User>) => void;
+	isAuthenticated: boolean;
+	handleAuthentication: (isAuthenticated: boolean) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -30,6 +32,9 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
 	const [user, setUser] = useState<User | null>(null);
 	const [email, setEmail] = useState<string | null>(null);
+	const [isAuthenticated, setIsAuthenticated] = useState<boolean>(
+		() => localStorage.getItem('isAuthenticated') === 'true'
+	);
 
 	// Load user from localStorage on mount
 	useEffect(() => {
@@ -38,7 +43,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 			try {
 				setUser(JSON.parse(storedUser));
 			} catch (error) {
-				localStorage.removeItem(USER);
+				logout();
 				console.error('Failed to parse stored user:', error);
 			}
 		}
@@ -66,6 +71,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 	}, [email]);
 
 	const logout = () => {
+		localStorage.setItem('isAuthenticated', 'false');
+		setIsAuthenticated(false);
 		setUser(null);
 		setEmail(null);
 		localStorage.removeItem(USER);
@@ -73,6 +80,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 		localStorage.removeItem(REFRESH_TOKEN);
 		localStorage.removeItem(AUTH_EXPIRATION);
 		localStorage.removeItem(EMAIL);
+	};
+
+	const handleAuthentication = (isAuthenticated: boolean) => {
+		setIsAuthenticated(isAuthenticated);
+		localStorage.setItem('isAuthenticated', String(isAuthenticated));
 	};
 
 	const updateUser = (userData: Partial<User>) => {
@@ -90,6 +102,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 				email,
 				logout,
 				updateUser,
+				isAuthenticated,
+				handleAuthentication,
 			}}
 		>
 			{children}
