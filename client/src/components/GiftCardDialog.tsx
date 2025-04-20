@@ -30,6 +30,7 @@ import Loading from './loading';
 import { useEncryption } from '../context/EncryptionContext';
 import { validateGlobalKey } from '../lib/cryptoHelpers';
 import { useAuth } from '../hooks/useAuth';
+import { GiftCardItem } from './GiftCardItem';
 
 interface GiftCardDialogProps {
 	giftCard?: GiftCard;
@@ -496,9 +497,10 @@ export function GiftCardDialog({
 									</div>
 								)
 							) : (
-									<span className="text-sm text-muted-foreground block">
-										Your saved encryption key will be used to securely encrypt the card details.
-									</span>
+								<span className="text-sm text-muted-foreground block">
+									Your saved encryption key will be used to
+									securely encrypt the card details.
+								</span>
 							)}
 							<div className="space-y-4 mt-4">
 								<div className="space-y-2">
@@ -636,6 +638,35 @@ export function GiftCardDialog({
 									</div>
 								</div>
 							</div>
+						</details>
+					</div>
+					<div className="border-t pt-4">
+						<details>
+							<summary className="cursor-pointer text-sm font-medium mb-2">
+								Preview
+							</summary>
+							<GiftCardItem
+								giftCard={{
+									...formData,
+									supplier:
+										suppliers.find(
+											(s) => s._id === formData.supplierId
+										) ||
+										({
+											_id: 'other',
+											name: formData.supplier as string,
+											stores: formData.supportedStores.map(
+												(store) => ({
+													name: store,
+												})
+											),
+											fromColor: '#6B7280',
+											toColor: '#374151',
+										} satisfies Supplier),
+									_id: '',
+									user: user?._id || '',
+								}}
+							/>
 						</details>
 					</div>
 
