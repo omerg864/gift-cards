@@ -71,18 +71,10 @@ export function GiftCardItem({
 
 				{/* Card details */}
 				<div className="space-y-2">
-					{!supplierCard && giftCard.cardNumber && (
-						<>
-							<div className="text-sm text-white/80 uppercase tracking-wide">
-								CARD NUMBER
-							</div>
-							<div className="text-lg font-mono tracking-widest text-white">
-								{giftCard.cardNumber.substring(0, 4)} •••• ••••{' '}
-								{giftCard.cardNumber.substring(
-									giftCard.cardNumber.length - 4
-								)}
-							</div>
-						</>
+					{!supplierCard && giftCard.last4 && (
+						<div className="text-lg font-mono tracking-widest text-white">
+							•••• •••• •••• {giftCard.last4}
+						</div>
 					)}
 					{handleCardClick && (
 						<div className="text-sm text-white/80">

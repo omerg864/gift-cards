@@ -472,10 +472,14 @@ export function GiftCardDialog({
 							<summary className="cursor-pointer text-sm font-medium mb-2">
 								Optional Card Details
 							</summary>
-							{!keyValidated &&
+							{!keyValidated ? (
 								(formData.cardNumber !== '' ||
 									formData.cvv !== '') && (
 									<div className="space-y-2">
+										<span className="text-sm text-muted-foreground block">
+											To securely store your card details,
+											please enter your encryption key.
+										</span>
 										<Label htmlFor="encryptionKey">
 											Encryption Key{' '}
 											<span className="text-red-500">
@@ -490,7 +494,12 @@ export function GiftCardDialog({
 											required
 										/>
 									</div>
-								)}
+								)
+							) : (
+									<span className="text-sm text-muted-foreground block">
+										Your saved encryption key will be used to securely encrypt the card details.
+									</span>
+							)}
 							<div className="space-y-4 mt-4">
 								<div className="space-y-2">
 									<Label htmlFor="cardNumber">

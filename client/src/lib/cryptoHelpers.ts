@@ -84,8 +84,8 @@ export const validateGlobalKey = (
 
 export const decryptCardFields = (
 	encryptedFields: {
-		cardNumber: string;
-		cvv: string;
+		cardNumber?: string;
+		cvv?: string;
 	},
 	password: string,
 	salt: string
@@ -94,12 +94,18 @@ export const decryptCardFields = (
 	cvv: string;
 } => {
 	const key = deriveKey(password, salt);
-	const cardNumber = CryptoJS.AES.decrypt(
-		encryptedFields.cardNumber,
-		key
-	).toString(CryptoJS.enc.Utf8);
-	const cvv = CryptoJS.AES.decrypt(encryptedFields.cvv, key).toString(
-		CryptoJS.enc.Utf8
-	);
+	let cardNumber = '';
+	let cvv = '';
+	if (encryptedFields.cardNumber) {
+		cardNumber = CryptoJS.AES.decrypt(
+			encryptedFields.cardNumber,
+			key
+		).toString(CryptoJS.enc.Utf8);
+	}
+	if (encryptedFields.cvv) {
+		cvv = CryptoJS.AES.decrypt(encryptedFields.cvv, key).toString(
+			CryptoJS.enc.Utf8
+		);
+	}
 	return { cardNumber, cvv };
 };

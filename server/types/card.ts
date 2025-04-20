@@ -10,12 +10,10 @@ export interface Card {
     isPhysical: boolean;
     amount: number;
     currency: string;
-    cardNumber?: string;
-    expirationMonth?: number;
-    expirationYear?: number;
+    last4?: string;
+    expiry?: Date;
     cvv?: string;
-    encryptionKey?: string;
-    encryptedCardNumber?: string;
+    cardNumber?: string;
 }
 
 export interface CardDocument extends Card, Document {}

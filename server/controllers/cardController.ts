@@ -19,8 +19,18 @@ const getCards = asyncHandler(async (req, res) => {
 
 const createCardAndSupplier = asyncHandler(async (req, res) => {
 	const user = req.user!;
-	const { name, supplierName, description, isPhysical, amount, currency } =
-		req.body;
+	const {
+		name,
+		supplierName,
+		description,
+		isPhysical,
+		amount,
+		currency,
+		cardNumber,
+		cvv,
+		last4,
+		expiry,
+	} = req.body;
 
 	let { stores = '[]' } = req.body;
 	stores = JSON.parse(stores);
@@ -53,6 +63,10 @@ const createCardAndSupplier = asyncHandler(async (req, res) => {
 		isPhysical,
 		amount,
 		currency,
+		cardNumber,
+		cvv,
+		last4,
+		expiry,
 	});
 
 	if (!card) {
@@ -68,8 +82,18 @@ const createCardAndSupplier = asyncHandler(async (req, res) => {
 
 const createCard = asyncHandler(async (req, res) => {
 	const user = req.user!;
-	const { name, supplier, description, isPhysical, amount, currency } =
-		req.body;
+	const {
+		name,
+		supplier,
+		description,
+		isPhysical,
+		amount,
+		currency,
+		cardNumber,
+		cvv,
+		last4,
+		expiry,
+	} = req.body;
 
 	if (!supplier || !name || isNaN(amount) || !currency) {
 		res.status(400);
@@ -83,6 +107,10 @@ const createCard = asyncHandler(async (req, res) => {
 		isPhysical,
 		amount,
 		currency,
+		cardNumber,
+		cvv,
+		last4,
+		expiry,
 	});
 
 	if (!card) {
@@ -99,8 +127,18 @@ const createCard = asyncHandler(async (req, res) => {
 const updateCardWithNewSupplier = asyncHandler(async (req, res) => {
 	const user = req.user!;
 	const cardId = req.params.id;
-	const { name, supplierName, description, isPhysical, amount, currency } =
-		req.body;
+	const {
+		name,
+		supplierName,
+		description,
+		isPhysical,
+		amount,
+		currency,
+		cardNumber,
+		cvv,
+		last4,
+		expiry,
+	} = req.body;
 
 	let { stores = '[]' } = req.body;
 	stores = JSON.parse(stores);
@@ -133,6 +171,10 @@ const updateCardWithNewSupplier = asyncHandler(async (req, res) => {
 		isPhysical,
 		amount,
 		currency,
+		cardNumber,
+		cvv,
+		last4,
+		expiry,
 	});
 
 	if (!card) {
@@ -150,8 +192,18 @@ const updateCardWithNewSupplier = asyncHandler(async (req, res) => {
 const updateCard = asyncHandler(async (req, res) => {
 	const user = req.user!;
 	const cardId = req.params.id;
-	const { name, supplier, description, isPhysical, amount, currency } =
-		req.body;
+	const {
+		name,
+		supplier,
+		description,
+		isPhysical,
+		amount,
+		currency,
+		cardNumber,
+		cvv,
+		last4,
+		expiry,
+	} = req.body;
 	if (!supplier || !name || isNaN(amount) || !currency) {
 		res.status(400);
 		throw new Error('Please add all required fields');
@@ -164,6 +216,10 @@ const updateCard = asyncHandler(async (req, res) => {
 		isPhysical,
 		amount,
 		currency,
+		cardNumber,
+		cvv,
+		last4,
+		expiry,
 	});
 
 	if (!card) {

@@ -10,10 +10,9 @@ export interface GiftCard {
 	amount: number;
 	currency: string;
 	cardNumber?: string;
-	expirationMonth?: number;
-	expirationYear?: number;
+	expiry?: Date;
+	last4?: string;
 	cvv?: string;
-	encryptedCardNumber?: string;
 }
 
 export interface CreateGiftCardDetails extends Omit<GiftCard, '_id' | 'user'> {

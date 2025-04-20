@@ -34,21 +34,34 @@ import {
 	updateCardWithNewSupplier,
 } from '../services/cardService';
 import { toastError } from '../lib/utils';
+import {
+	decryptCardFields,
+	encryptCard,
+	validateGlobalKey,
+} from '../lib/cryptoHelpers';
+import { useAuth } from '../hooks/useAuth';
+import EncryptionDialog from '../components/EncryptionDialog';
+import { useEncryption } from '../context/EncryptionContext';
 
 export default function CardDetailsPage() {
 	const navigate = useNavigate();
 	const params = useParams();
 	const [giftCard, setGiftCard] = useState<GiftCard | null>(null);
 	const [loading, setLoading] = useState(true);
-	const [showCVV, setShowCVV] = useState(false);
+	const [showEncryptedData, setShowEncryptedData] = useState(false);
 	const [showEditDialog, setShowEditDialog] = useState(false);
 	const [storeFilter, setStoreFilter] = useState('');
 	const [filteredStores, setFilteredStores] = useState<IStore[]>([]);
+	const [showEncryptionDialog, setShowEncryptionDialog] = useState(false);
+	const [cvv, setCvv] = useState<string>('');
+	const [cardNumber, setCardNumber] = useState<string>('');
 	const {
 		giftCards,
 		loading: giftCardLoading,
 		refetchCards,
 	} = useGiftCards();
+	const { user } = useAuth();
+	const { globalKey, setGlobalKey } = useEncryption();
 
 	useEffect(() => {
 		const fetchGiftCard = async () => {
@@ -83,8 +96,45 @@ export default function CardDetailsPage() {
 		}
 	}, [storeFilter, giftCard]);
 
-	const toggleCVV = () => {
-		setShowCVV(!showCVV);
+	const decryptData = (key: string) => {
+		const decryptedData = decryptCardFields(
+			{
+				cardNumber: giftCard?.cardNumber,
+				cvv: giftCard?.cvv,
+			},
+			key,
+			user!.salt!
+		);
+		setCvv(decryptedData.cvv);
+		setCardNumber(decryptedData.cardNumber);
+		setShowEncryptedData(!showEncryptedData);
+	};
+
+	const toggleEncryptedData = () => {
+		if (!user) {
+			toast.error('Unable to perform encryption');
+			return;
+		}
+		if (!user.salt || !user.verifyToken) {
+			toast.error('Unable to perform encryption');
+			return;
+		}
+		if (!globalKey) {
+			setShowEncryptionDialog(true);
+			return;
+		}
+		if (!validateGlobalKey(user.verifyToken, globalKey, user.salt)) {
+			setGlobalKey('');
+			setShowEncryptionDialog(true);
+			return;
+		}
+		if (showEncryptedData) {
+			setCvv('');
+			setCardNumber('');
+			setShowEncryptedData(!showEncryptedData);
+			return;
+		}
+		decryptData(globalKey);
 	};
 
 	const handleEdit = () => {
@@ -122,6 +172,44 @@ export default function CardDetailsPage() {
 			toast.error('Name and Supplier are required');
 			return;
 		}
+		if (!user) {
+			toast.error('unable to perform encryption');
+			return;
+		}
+
+		if (!user.salt || !user.verifyToken) {
+			toast.error('unable to perform encryption');
+			return;
+		}
+		if (data.cvv || data.cardNumber) {
+			if (!data.encryptionKey) {
+				toast.error('Please provide encryption key');
+				return;
+			}
+			if (
+				!validateGlobalKey(
+					user.verifyToken,
+					data.encryptionKey,
+					user.salt
+				)
+			) {
+				toast.error('invalid encryption key');
+				return;
+			}
+		}
+		let last4, cvv, cardNumber;
+		if (data.cardNumber) {
+			last4 = data.cardNumber.slice(-4);
+		}
+		if (data.cardNumber || data.cvv) {
+			const encryptedData = encryptCard(
+				{ cardNumber: data.cardNumber, cvv: data.cvv },
+				data.encryptionKey,
+				user.salt
+			);
+			cardNumber = encryptedData.cardNumber;
+			cvv = encryptedData.cvv;
+		}
 		try {
 			if (data.supplierId === 'other') {
 				await updateCardWithNewSupplier(
@@ -136,7 +224,11 @@ export default function CardDetailsPage() {
 						name: store,
 					})),
 					null,
-					[]
+					[],
+					cardNumber,
+					last4,
+					data.expiry,
+					cvv
 				);
 			} else {
 				await updateCard(
@@ -146,7 +238,11 @@ export default function CardDetailsPage() {
 					data.description || '',
 					data.isPhysical,
 					data.amount,
-					data.currency
+					data.currency,
+					cardNumber,
+					last4,
+					data.expiry,
+					cvv
 				);
 			}
 			refetchCards();
@@ -263,33 +359,42 @@ export default function CardDetailsPage() {
 							</div>
 						)}
 
-						{giftCard.expirationMonth &&
-							giftCard.expirationYear && (
-								<div className="flex items-center gap-2">
-									<Calendar className="h-5 w-5 text-muted-foreground" />
-									<div>
-										<div className="text-sm text-muted-foreground">
-											Expires
-										</div>
-										<div className="font-medium">
-											{giftCard.expirationMonth < 10
-												? `0${giftCard.expirationMonth}`
-												: giftCard.expirationMonth}
-											/{giftCard.expirationYear}
-										</div>
+						{giftCard.expiry && (
+							<div className="flex items-center gap-2">
+								<Calendar className="h-5 w-5 text-muted-foreground" />
+								<div>
+									<div className="text-sm text-muted-foreground">
+										Expires
+									</div>
+									<div className="font-medium">
+										{new Date(
+											giftCard.expiry
+										).toLocaleDateString('en-US', {
+											year: 'numeric',
+											month: '2-digit',
+											day: '2-digit',
+										})}
 									</div>
 								</div>
-							)}
+							</div>
+						)}
 
 						{giftCard.cardNumber && (
 							<div className="flex items-center gap-2">
-								<CreditCard className="h-5 w-5 text-muted-foreground" />
+								<button
+									onClick={toggleEncryptedData}
+									className="h-5 w-5 text-muted-foreground"
+								>
+									{showEncryptedData ? <EyeOff /> : <Eye />}
+								</button>
 								<div>
 									<div className="text-sm text-muted-foreground">
 										Card Number
 									</div>
-									<div className="font-medium font-mono">
-										{giftCard.cardNumber}
+									<div className="font-medium">
+										{showEncryptedData
+											? cardNumber
+											: '••• ••• •••• ' + giftCard.last4}
 									</div>
 								</div>
 							</div>
@@ -298,17 +403,17 @@ export default function CardDetailsPage() {
 						{giftCard.cvv && (
 							<div className="flex items-center gap-2">
 								<button
-									onClick={toggleCVV}
+									onClick={toggleEncryptedData}
 									className="h-5 w-5 text-muted-foreground"
 								>
-									{showCVV ? <EyeOff /> : <Eye />}
+									{showEncryptedData ? <EyeOff /> : <Eye />}
 								</button>
 								<div>
 									<div className="text-sm text-muted-foreground">
 										CVV
 									</div>
 									<div className="font-medium">
-										{showCVV ? giftCard.cvv : '•••'}
+										{showEncryptedData ? cvv : '•••'}
 									</div>
 								</div>
 							</div>
@@ -395,6 +500,12 @@ export default function CardDetailsPage() {
 				</div>
 			</div>
 
+			{showEncryptionDialog && (
+				<EncryptionDialog
+					onClose={() => setShowEncryptionDialog(false)}
+					onSave={decryptData}
+				/>
+			)}
 			{showEditDialog && (
 				<GiftCardDialog
 					giftCard={giftCard}

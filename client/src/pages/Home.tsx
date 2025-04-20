@@ -73,7 +73,7 @@ export default function Home() {
 		if (data.cardNumber || data.cvv) {
 			const encryptedData = encryptCard(
 				{ cardNumber: data.cardNumber, cvv: data.cvv },
-				encryptionKey,
+				data.encryptionKey,
 				user.salt
 			);
 			cardNumber = encryptedData.cardNumber;

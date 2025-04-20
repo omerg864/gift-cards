@@ -32,20 +32,14 @@ const cardScheme = new mongoose.Schema<CardDocument>(
 			type: String,
 			required: true,
 		},
-        encryptionKey: {
-            type: String,
-        },
-        encryptedCardNumber: {
-            type: String,
-        },
 		cardNumber: {
 			type: String,
 		},
-		expirationMonth: {
-			type: Number,
+		expiry: {
+			type: Date,
 		},
-		expirationYear: {
-			type: Number,
+		last4: {
+			type: String,
 		},
 		cvv: {
 			type: String,
