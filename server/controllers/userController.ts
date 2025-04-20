@@ -629,6 +629,27 @@ const resetPassword = asyncHandler(
 	}
 );
 
+const createEncryptionKey = asyncHandler(
+	async (req: Request, res: Response): Promise<void> => {
+		const user = req.user!;
+		const { salt, verifyToken } = req.body;
+
+		if (!salt || !verifyToken) {
+			res.status(400);
+			throw new Error('Salt and verify token are required');
+		}
+
+		user.salt = salt;
+		user.verifyToken = verifyToken;
+		await user.save();
+
+		res.json({
+			success: true,
+			message: 'Encryption key created successfully',
+		});
+	}
+);
+
 export {
 	login,
 	register,
@@ -644,4 +665,5 @@ export {
 	changePassword,
 	sendEmailPasswordReset,
 	resetPassword,
+	createEncryptionKey
 };

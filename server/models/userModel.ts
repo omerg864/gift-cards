@@ -33,6 +33,12 @@ const userScheme = new mongoose.Schema<UserDocument>(
 			type: Boolean,
 			default: false,
 		},
+		salt: {
+			type: String,
+		},
+		verifyToken: {
+			type: String,
+		},
 		tokens: [
 			{
 				token: {

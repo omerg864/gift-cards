@@ -13,7 +13,6 @@ export interface GiftCard {
 	expirationMonth?: number;
 	expirationYear?: number;
 	cvv?: string;
-	encryptionKey?: string;
 	encryptedCardNumber?: string;
 }
 
@@ -24,6 +23,9 @@ export interface CreateGiftCardDetails extends Omit<GiftCard, '_id' | 'user'> {
 	stores_images: File[];
 	supplierId: string;
 	expirationDate: string;
+	encryptionKey: string;
+	expiry?: Date;
+	last4?: string;
 }
 
 // Currency options

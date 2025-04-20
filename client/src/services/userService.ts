@@ -1,5 +1,5 @@
 import { DeviceDetails, User } from '../types/user';
-import { axiosErrorHandler, client } from './client';
+import { axiosErrorHandler, checkToken, client } from './client';
 
 export interface LoginResponse {
 	accessToken: string;
@@ -134,6 +134,30 @@ const resetPassword = async (
 	}
 };
 
+const setEncryptionKey = async (salt: string, verifyToken: string) => {
+	try {
+		const accessToken = await checkToken();
+		if (!accessToken) {
+			throw new Error('Please login');
+		}
+		const response = await client.post<MessageResponse>(
+			'user/encryption',
+			{
+				salt,
+				verifyToken,
+			},
+			{
+				headers: {
+					Authorization: `Bearer ${accessToken}`,
+				},
+			}
+		);
+		return response.data;
+	} catch (error) {
+		return axiosErrorHandler(error);
+	}
+};
+
 export {
 	login,
 	googleLogin,
@@ -142,4 +166,5 @@ export {
 	verifyEmail,
 	forgotPassword,
 	resetPassword,
+	setEncryptionKey,
 };

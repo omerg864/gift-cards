@@ -20,6 +20,7 @@ import UserRestrictedRoute from './components/routes/UserRestrictedRoute';
 import { GiftCardProvider } from './context/GiftCardContext';
 import { SupplierProvider } from './context/SupplierContext';
 import { useAuth } from './hooks/useAuth';
+import { EncryptionProvider } from './context/EncryptionContext';
 
 function App() {
 	const { isAuthenticated } = useAuth();
@@ -30,110 +31,112 @@ function App() {
 				clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}
 			>
 				<Header />
-				<SupplierProvider>
-					<GiftCardProvider>
-						<Routes>
-							<Route
-								path="/"
-								element={
-									<ProtectedRoute
-										isAuthenticated={isAuthenticated}
-									>
-										<Home />
-									</ProtectedRoute>
-								}
-							/>
-							<Route
-								path="/card/:id"
-								element={
-									<ProtectedRoute
-										isAuthenticated={isAuthenticated}
-									>
-										<CardDetails />
-									</ProtectedRoute>
-								}
-							/>
-							<Route
-								path="/supplier/:id"
-								element={
-									<ProtectedRoute
-										isAuthenticated={isAuthenticated}
-									>
-										<SupplierDetails />
-									</ProtectedRoute>
-								}
-							/>
-							<Route
-								path="/login"
-								element={
-									<UserRestrictedRoute
-										isAuthenticated={isAuthenticated}
-									>
-										<LoginPage />
-									</UserRestrictedRoute>
-								}
-							/>
-							<Route
-								path="/register"
-								element={<RegisterPage />}
-							/>
-							<Route
-								path="/profile"
-								element={
-									<ProtectedRoute
-										isAuthenticated={isAuthenticated}
-									>
-										<ProfilePage />
-									</ProtectedRoute>
-								}
-							/>
-							<Route
-								path="/settings"
-								element={
-									<ProtectedRoute
-										isAuthenticated={isAuthenticated}
-									>
-										<SettingsPage />
-									</ProtectedRoute>
-								}
-							/>
-							<Route
-								path="/forgot-password"
-								element={
-									<UserRestrictedRoute
-										isAuthenticated={isAuthenticated}
-									>
-										<ForgotPasswordPage />
-									</UserRestrictedRoute>
-								}
-							/>
-							<Route
-								path="/verify/:token"
-								element={<ConfirmEmailPage />}
-							/>
-							<Route
-								path="/verify-email"
-								element={
-									<UserRestrictedRoute
-										isAuthenticated={isAuthenticated}
-									>
-										<VerifyEmailPage />
-									</UserRestrictedRoute>
-								}
-							/>
-							<Route
-								path="/forgot/password/:token/:email"
-								element={
-									<UserRestrictedRoute
-										isAuthenticated={isAuthenticated}
-									>
-										<ResetPasswordPage />
-									</UserRestrictedRoute>
-								}
-							/>
-						</Routes>
-					</GiftCardProvider>
-				</SupplierProvider>
+				<EncryptionProvider>
+					<SupplierProvider>
+						<GiftCardProvider>
+							<Routes>
+								<Route
+									path="/"
+									element={
+										<ProtectedRoute
+											isAuthenticated={isAuthenticated}
+										>
+											<Home />
+										</ProtectedRoute>
+									}
+								/>
+								<Route
+									path="/card/:id"
+									element={
+										<ProtectedRoute
+											isAuthenticated={isAuthenticated}
+										>
+											<CardDetails />
+										</ProtectedRoute>
+									}
+								/>
+								<Route
+									path="/supplier/:id"
+									element={
+										<ProtectedRoute
+											isAuthenticated={isAuthenticated}
+										>
+											<SupplierDetails />
+										</ProtectedRoute>
+									}
+								/>
+								<Route
+									path="/login"
+									element={
+										<UserRestrictedRoute
+											isAuthenticated={isAuthenticated}
+										>
+											<LoginPage />
+										</UserRestrictedRoute>
+									}
+								/>
+								<Route
+									path="/register"
+									element={<RegisterPage />}
+								/>
+								<Route
+									path="/profile"
+									element={
+										<ProtectedRoute
+											isAuthenticated={isAuthenticated}
+										>
+											<ProfilePage />
+										</ProtectedRoute>
+									}
+								/>
+								<Route
+									path="/settings"
+									element={
+										<ProtectedRoute
+											isAuthenticated={isAuthenticated}
+										>
+											<SettingsPage />
+										</ProtectedRoute>
+									}
+								/>
+								<Route
+									path="/forgot-password"
+									element={
+										<UserRestrictedRoute
+											isAuthenticated={isAuthenticated}
+										>
+											<ForgotPasswordPage />
+										</UserRestrictedRoute>
+									}
+								/>
+								<Route
+									path="/verify/:token"
+									element={<ConfirmEmailPage />}
+								/>
+								<Route
+									path="/verify-email"
+									element={
+										<UserRestrictedRoute
+											isAuthenticated={isAuthenticated}
+										>
+											<VerifyEmailPage />
+										</UserRestrictedRoute>
+									}
+								/>
+								<Route
+									path="/forgot/password/:token/:email"
+									element={
+										<UserRestrictedRoute
+											isAuthenticated={isAuthenticated}
+										>
+											<ResetPasswordPage />
+										</UserRestrictedRoute>
+									}
+								/>
+							</Routes>
+						</GiftCardProvider>
+					</SupplierProvider>
+				</EncryptionProvider>
 			</GoogleOAuthProvider>
 		</>
 	);

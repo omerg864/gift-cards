@@ -13,6 +13,7 @@ import {
 	changePassword,
 	sendEmailPasswordReset,
 	resetPassword,
+	createEncryptionKey
 } from '../controllers/userController';
 import { upload } from '../config/cloud';
 import { authUser } from '../middleware/authMiddleware';
@@ -34,5 +35,6 @@ router.put('/password', authUser, changePassword);
 router.put('/update', authUser, upload.single('image'), updateUser);
 router.get('/disconnect/:id', authUser, disconnectDevice);
 router.get('/disconnect', authUser, disconnectAllDevices);
+router.post('/encryption', authUser, createEncryptionKey);
 
 export default router;

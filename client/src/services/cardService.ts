@@ -43,7 +43,11 @@ const createCardAndSupplier = async (
 	currency: string,
 	stores: Store[],
 	supplierImage: File | null,
-	stores_images: File[]
+	stores_images: File[],
+	cardNumber?: string,
+	last4?: string,
+	expiry?: Date,
+	cvv?: string
 ): Promise<CardSupplierResponse> => {
 	try {
 		const accessToken = await checkToken();
@@ -64,6 +68,18 @@ const createCardAndSupplier = async (
 		stores_images.forEach((image) => {
 			formData.append('stores_images', image);
 		});
+		if (cardNumber) {
+			formData.append('cardNumber', cardNumber);
+		}
+		if (last4) {
+			formData.append('last4', last4);
+		}
+		if (expiry) {
+			formData.append('expiry', expiry.toISOString());
+		}
+		if (cvv) {
+			formData.append('cvv', cvv);
+		}
 
 		const response = await client.post<CardSupplierResponse>(
 			'/card/supplier',
@@ -86,7 +102,11 @@ const createCard = async (
 	description: string,
 	isPhysical: boolean,
 	amount: number,
-	currency: string
+	currency: string,
+	cardNumber?: string,
+	last4?: string,
+	expiry?: Date,
+	cvv?: string
 ): Promise<CardSupplierResponse> => {
 	try {
 		const accessToken = await checkToken();
@@ -100,6 +120,18 @@ const createCard = async (
 		formData.append('isPhysical', String(isPhysical));
 		formData.append('amount', String(amount));
 		formData.append('currency', currency);
+		if (cardNumber) {
+			formData.append('cardNumber', cardNumber);
+		}
+		if (last4) {
+			formData.append('last4', last4);
+		}
+		if (expiry) {
+			formData.append('expiry', expiry.toISOString());
+		}
+		if (cvv) {
+			formData.append('cvv', cvv);
+		}
 
 		const response = await client.post<CardSupplierResponse>(
 			'/card',
@@ -126,7 +158,11 @@ const updateCardWithNewSupplier = async (
 	currency: string,
 	stores: Store[],
 	supplierImage: File | null,
-	stores_images: File[]
+	stores_images: File[],
+	cardNumber?: string,
+	last4?: string,
+	expiry?: Date,
+	cvv?: string
 ): Promise<CardSupplierResponse> => {
 	try {
 		const accessToken = await checkToken();
@@ -147,6 +183,19 @@ const updateCardWithNewSupplier = async (
 		stores_images.forEach((image) => {
 			formData.append('stores_images', image);
 		});
+
+		if (cardNumber) {
+			formData.append('cardNumber', cardNumber);
+		}
+		if (last4) {
+			formData.append('last4', last4);
+		}
+		if (expiry) {
+			formData.append('expiry', expiry.toISOString());
+		}
+		if (cvv) {
+			formData.append('cvv', cvv);
+		}
 
 		const response = await client.put<CardSupplierResponse>(
 			`/card/supplier/${id}`,
@@ -170,7 +219,11 @@ const updateCard = async (
 	description: string,
 	isPhysical: boolean,
 	amount: number,
-	currency: string
+	currency: string,
+	cardNumber?: string,
+	last4?: string,
+	expiry?: Date,
+	cvv?: string
 ): Promise<CardSupplierResponse> => {
 	try {
 		const accessToken = await checkToken();
@@ -184,6 +237,19 @@ const updateCard = async (
 		formData.append('isPhysical', String(isPhysical));
 		formData.append('amount', String(amount));
 		formData.append('currency', currency);
+
+		if (cardNumber) {
+			formData.append('cardNumber', cardNumber);
+		}
+		if (last4) {
+			formData.append('last4', last4);
+		}
+		if (expiry) {
+			formData.append('expiry', expiry.toISOString());
+		}
+		if (cvv) {
+			formData.append('cvv', cvv);
+		}
 
 		const response = await client.put<CardSupplierResponse>(
 			`/card/${id}`,
@@ -206,14 +272,16 @@ const deleteCard = async (id: string): Promise<CardSupplierResponse> => {
 		if (!accessToken) {
 			throw new Error('Please login');
 		}
-		const response = await client.delete<CardSupplierResponse>(`/card/${id}`, {
-			headers: {
-				Authorization: `Bearer ${accessToken}`,
-			},
-		});
+		const response = await client.delete<CardSupplierResponse>(
+			`/card/${id}`,
+			{
+				headers: {
+					Authorization: `Bearer ${accessToken}`,
+				},
+			}
+		);
 		return response.data;
-	}
-	catch (error) {
+	} catch (error) {
 		return axiosErrorHandler(error);
 	}
 };
@@ -224,5 +292,5 @@ export {
 	createCard,
 	updateCardWithNewSupplier,
 	updateCard,
-	deleteCard
+	deleteCard,
 };

@@ -27,6 +27,9 @@ import { X, Plus, CreditCard, Smartphone, Store, Search } from 'lucide-react';
 import { ScrollArea } from './ui/scroll-area';
 import { useSupplier } from '../hooks/useSupplier';
 import Loading from './loading';
+import { useEncryption } from '../context/EncryptionContext';
+import { validateGlobalKey } from '../lib/cryptoHelpers';
+import { useAuth } from '../hooks/useAuth';
 
 interface GiftCardDialogProps {
 	giftCard?: GiftCard;
@@ -39,6 +42,8 @@ export function GiftCardDialog({
 	onSubmit,
 	giftCard,
 }: GiftCardDialogProps) {
+	const { globalKey } = useEncryption();
+	const { user } = useAuth();
 	const [formData, setFormData] = useState<CreateGiftCardDetails>({
 		supplier: '',
 		name: '',
@@ -54,8 +59,11 @@ export function GiftCardDialog({
 		supplierName: '',
 		stores_images: [],
 		supplierId: 'other',
+		encryptionKey: '',
 		...giftCard,
 	});
+
+	const [keyValidated, setKeyValidated] = useState(false);
 	const [customSupplier, setCustomSupplier] = useState('');
 	const [showCustomSupplier, setShowCustomSupplier] = useState(false);
 	const [storeInput, setStoreInput] = useState('');
@@ -192,6 +200,24 @@ export function GiftCardDialog({
 			console.log('FormData:', formData);
 		}
 	}, [giftCard]);
+
+	useEffect(() => {
+		if (
+			globalKey &&
+			user &&
+			validateGlobalKey(
+				user?.verifyToken || '',
+				globalKey,
+				user?.salt || ''
+			)
+		) {
+			setFormData((prev) => ({
+				...prev,
+				encryptionKey: globalKey,
+			}));
+			setKeyValidated(true);
+		}
+	}, [globalKey, user]);
 
 	if (loading) {
 		return <Loading />;
@@ -446,6 +472,25 @@ export function GiftCardDialog({
 							<summary className="cursor-pointer text-sm font-medium mb-2">
 								Optional Card Details
 							</summary>
+							{!keyValidated &&
+								(formData.cardNumber !== '' ||
+									formData.cvv !== '') && (
+									<div className="space-y-2">
+										<Label htmlFor="encryptionKey">
+											Encryption Key{' '}
+											<span className="text-red-500">
+												*
+											</span>
+										</Label>
+										<Input
+											id="encryptionKey"
+											name="encryptionKey"
+											value={formData.encryptionKey}
+											onChange={handleChange}
+											required
+										/>
+									</div>
+								)}
 							<div className="space-y-4 mt-4">
 								<div className="space-y-2">
 									<Label htmlFor="cardNumber">

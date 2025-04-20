@@ -8,10 +8,24 @@ import { toast } from 'react-toastify';
 import { toastError } from '../lib/utils';
 import { createCard, createCardAndSupplier } from '../services/cardService';
 import { useGiftCards } from '../hooks/useGiftCards';
+import { useEncryption } from '../context/EncryptionContext';
+import { useAuth } from '../hooks/useAuth';
+import { Input } from '../components/ui/input';
+import { setEncryptionKey as setEncryptionKeyServer } from '../services/userService';
+import {
+	encryptCard,
+	generateSaltAndVerifyToken,
+	validateGlobalKey,
+} from '../lib/cryptoHelpers';
 
 export default function Home() {
 	const [showDialog, setShowDialog] = useState<boolean>(false);
+	const [encryptionKey, setEncryptionKey] = useState<string>('');
+	const [confirmEncryptionKey, setConfirmEncryptionKey] =
+		useState<string>('');
 	const { refetchCards } = useGiftCards();
+	const { setGlobalKey } = useEncryption();
+	const { user, updateUser } = useAuth();
 
 	const handleAddCard = async (data: CreateGiftCardDetails) => {
 		console.log('Card data:', data);
@@ -27,6 +41,44 @@ export default function Home() {
 			toast.error('Name and Supplier are required');
 			return;
 		}
+		if (!user) {
+			toast.error('unable to perform encryption');
+			return;
+		}
+
+		if (!user.salt || !user.verifyToken) {
+			toast.error('unable to perform encryption');
+			return;
+		}
+		if (data.cvv || data.cardNumber) {
+			if (!data.encryptionKey) {
+				toast.error('Please provide encryption key');
+				return;
+			}
+			if (
+				!validateGlobalKey(
+					user.verifyToken,
+					data.encryptionKey,
+					user.salt
+				)
+			) {
+				toast.error('invalid encryption key');
+				return;
+			}
+		}
+		let last4, cvv, cardNumber;
+		if (data.cardNumber) {
+			last4 = data.cardNumber.slice(-4);
+		}
+		if (data.cardNumber || data.cvv) {
+			const encryptedData = encryptCard(
+				{ cardNumber: data.cardNumber, cvv: data.cvv },
+				encryptionKey,
+				user.salt
+			);
+			cardNumber = encryptedData.cardNumber;
+			cvv = encryptedData.cvv;
+		}
 		try {
 			if (data.supplierId === 'other') {
 				await createCardAndSupplier(
@@ -40,7 +92,11 @@ export default function Home() {
 						name: store,
 					})),
 					null,
-					[]
+					[],
+					cardNumber,
+					last4,
+					data.expiry,
+					cvv
 				);
 			} else {
 				await createCard(
@@ -49,7 +105,11 @@ export default function Home() {
 					data.description || '',
 					data.isPhysical,
 					data.amount,
-					data.currency
+					data.currency,
+					cardNumber,
+					last4,
+					data.expiry,
+					cvv
 				);
 			}
 			refetchCards();
@@ -59,6 +119,96 @@ export default function Home() {
 			toastError(error);
 		}
 	};
+
+	const saveEncryptionKey = async (e: React.FormEvent<HTMLFormElement>) => {
+		e.preventDefault();
+
+		if (!encryptionKey) {
+			toast.error('Encryption key is required');
+			return;
+		}
+		if (encryptionKey !== confirmEncryptionKey) {
+			toast.error('Encryption keys do not match');
+			return;
+		}
+
+		const { salt, verifyToken } = generateSaltAndVerifyToken(encryptionKey);
+
+		try {
+			await setEncryptionKeyServer(salt, verifyToken);
+			updateUser({ salt, verifyToken });
+			setGlobalKey(encryptionKey);
+			toast.success('Encryption key set successfully');
+		} catch (error) {
+			toastError(error);
+		}
+	};
+
+	if (user && !user?.verifyToken) {
+		return (
+			<main className="min-h-screen bg-[#0B0E14] text-white p-8">
+				<div className="max-w-7xl mx-auto">
+					<div className="bg-[#1A1D23] p-6 rounded-md shadow-md">
+						<h2 className="text-2xl font-semibold mb-4">
+							Set Your Encryption Key
+						</h2>
+						<p className="text-sm text-gray-400 mb-6">
+							This encryption key will be used to securely encrypt
+							the card number and CVV of your gift cards. Please
+							note that this key cannot be recovered if lost.
+						</p>
+						<form onSubmit={saveEncryptionKey}>
+							<div className="mb-4">
+								<label
+									htmlFor="encryptionKey"
+									className="block text-sm font-medium mb-2"
+								>
+									Encryption Key
+								</label>
+								<Input
+									type="password"
+									id="encryptionKey"
+									placeholder="Enter encryption key"
+									className="w-full"
+									required
+									value={encryptionKey}
+									onChange={(e) =>
+										setEncryptionKey(e.target.value)
+									}
+								/>
+							</div>
+							<div className="mb-4">
+								<label
+									htmlFor="confirmEncryptionKey"
+									className="block text-sm font-medium mb-2"
+								>
+									Confirm Encryption Key
+								</label>
+								<Input
+									type="password"
+									id="confirmEncryptionKey"
+									placeholder="Confirm encryption key"
+									className="w-full"
+									required
+									value={confirmEncryptionKey}
+									onChange={(e) =>
+										setConfirmEncryptionKey(e.target.value)
+									}
+								/>
+							</div>
+							<button
+								type="submit"
+								className="flex items-center px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors"
+							>
+								<PlusCircle className="mr-2 h-4 w-4" />
+								Set Encryption Key
+							</button>
+						</form>
+					</div>
+				</div>
+			</main>
+		);
+	}
 	return (
 		<main className="min-h-screen bg-[#0B0E14] text-white p-8">
 			<div className="max-w-7xl mx-auto">

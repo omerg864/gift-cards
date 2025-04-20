@@ -10,6 +10,8 @@ export interface User {
 	resetPasswordTokenExpiry?: Date;
 	tokens: IToken[];
 	admin?: boolean;
+	verifyToken?: string;
+	salt?: string;
 }
 
 export interface IToken {
