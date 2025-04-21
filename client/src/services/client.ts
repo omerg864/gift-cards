@@ -26,7 +26,7 @@ const refreshToken = async (refreshToken: string | undefined) => {
 		localStorage.setItem(AUTH_EXPIRATION, expiration.toISOString());
 		return res.data.accessToken;
 	} catch (error) {
-		console.log('Token refresh failed: ', error);
+		console.error('Token refresh failed: ', error);
 		return null;
 	}
 };
@@ -39,7 +39,6 @@ const checkToken = async (): Promise<string | null> => {
 		if (!storedRefreshToken) {
 			return null;
 		}
-		console.log('Refreshing token...');
 		token = await refreshToken(storedRefreshToken);
 		if (!token) {
 			return null;

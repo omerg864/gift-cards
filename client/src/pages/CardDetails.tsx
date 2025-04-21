@@ -42,6 +42,7 @@ import {
 import { useAuth } from '../hooks/useAuth';
 import EncryptionDialog from '../components/EncryptionDialog';
 import { useEncryption } from '../context/EncryptionContext';
+import { getDarkerColor } from '../lib/colors';
 
 export default function CardDetailsPage() {
 	const navigate = useNavigate();
@@ -159,7 +160,6 @@ export default function CardDetailsPage() {
 	};
 
 	const handleUpdateCard = async (data: CreateGiftCardDetails) => {
-		console.log('Updated card data:', data);
 		if (!data) {
 			toast.error('No data provided');
 			return;
@@ -212,6 +212,14 @@ export default function CardDetailsPage() {
 		}
 		try {
 			if (data.supplierId === 'other') {
+				if (!data.supplier) {
+					toast.error('Supplier name is required');
+					return;
+				}
+				if (!data.fromColor) {
+					toast.error('Please provide a color');
+					return;
+				}
 				await updateCardWithNewSupplier(
 					params.id as string,
 					data.name,
@@ -225,6 +233,8 @@ export default function CardDetailsPage() {
 					})),
 					null,
 					[],
+					data.fromColor,
+					getDarkerColor(data.fromColor),
 					cardNumber,
 					last4,
 					data.expiry,

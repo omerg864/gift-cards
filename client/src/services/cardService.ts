@@ -44,6 +44,8 @@ const createCardAndSupplier = async (
 	stores: Store[],
 	supplierImage: File | null,
 	stores_images: File[],
+	formColor: string,
+	toColor: string,
 	cardNumber?: string,
 	last4?: string,
 	expiry?: Date,
@@ -62,6 +64,8 @@ const createCardAndSupplier = async (
 		formData.append('amount', String(amount));
 		formData.append('currency', currency);
 		formData.append('stores', JSON.stringify(stores));
+		formData.append('fromColor', formColor);
+		formData.append('toColor', toColor);
 		if (supplierImage) {
 			formData.append('supplierImage', supplierImage);
 		}
@@ -159,6 +163,8 @@ const updateCardWithNewSupplier = async (
 	stores: Store[],
 	supplierImage: File | null,
 	stores_images: File[],
+	formColor: string,
+	toColor: string,
 	cardNumber?: string,
 	last4?: string,
 	expiry?: Date,
@@ -177,6 +183,8 @@ const updateCardWithNewSupplier = async (
 		formData.append('amount', String(amount));
 		formData.append('currency', currency);
 		formData.append('stores', JSON.stringify(stores));
+		formData.append('fromColor', formColor);
+		formData.append('toColor', toColor);
 		if (supplierImage) {
 			formData.append('supplierImage', supplierImage);
 		}

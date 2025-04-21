@@ -17,11 +17,8 @@ export function GiftCardItem({
 }: GiftCardItemProps) {
 	const currencySymbol = getCurrencySymbol(giftCard.currency);
 
-	console.log(giftCard.supplier);
-
 	const onClick = () => {
 		if (supplierCard && handleCardClick) {
-			console.log('Supplier card clicked');
 			handleCardClick((giftCard.supplier as Supplier)._id);
 		} else if (handleCardClick) {
 			handleCardClick(giftCard._id);

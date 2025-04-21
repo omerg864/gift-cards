@@ -25,6 +25,7 @@ export interface CreateGiftCardDetails extends Omit<GiftCard, '_id' | 'user'> {
 	encryptionKey: string;
 	expiry?: Date;
 	last4?: string;
+	fromColor: string;
 }
 
 // Currency options

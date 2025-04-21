@@ -17,6 +17,7 @@ import {
 	generateSaltAndVerifyToken,
 	validateGlobalKey,
 } from '../lib/cryptoHelpers';
+import { getDarkerColor } from '../lib/colors';
 
 export default function Home() {
 	const [showDialog, setShowDialog] = useState<boolean>(false);
@@ -28,7 +29,6 @@ export default function Home() {
 	const { user, updateUser } = useAuth();
 
 	const handleAddCard = async (data: CreateGiftCardDetails) => {
-		console.log('Card data:', data);
 		if (!data) {
 			toast.error('No data provided');
 			return;
@@ -81,6 +81,14 @@ export default function Home() {
 		}
 		try {
 			if (data.supplierId === 'other') {
+				if (!data.supplier) {
+					toast.error('Supplier name is required');
+					return;
+				}
+				if (!data.fromColor) {
+					toast.error('color is required');
+					return;
+				}
 				await createCardAndSupplier(
 					data.name,
 					data.supplier as string,
@@ -93,6 +101,8 @@ export default function Home() {
 					})),
 					null,
 					[],
+					data.fromColor,
+					getDarkerColor(data.fromColor),
 					cardNumber,
 					last4,
 					data.expiry,

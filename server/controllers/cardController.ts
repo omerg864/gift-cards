@@ -30,12 +30,21 @@ const createCardAndSupplier = asyncHandler(async (req, res) => {
 		cvv,
 		last4,
 		expiry,
+		fromColor,
+		toColor,
 	} = req.body;
 
 	let { stores = '[]' } = req.body;
 	stores = JSON.parse(stores);
 
-	if (!supplierName || !name || isNaN(amount) || !currency) {
+	if (
+		!supplierName ||
+		!name ||
+		isNaN(amount) ||
+		!currency ||
+		!fromColor ||
+		!toColor
+	) {
 		res.status(400);
 		throw new Error('Please add all required fields');
 	}
@@ -46,8 +55,8 @@ const createCardAndSupplier = asyncHandler(async (req, res) => {
 		'',
 		undefined,
 		stores,
-		'#6B7280',
-		'#374151',
+		fromColor,
+		toColor,
 		user
 	);
 
@@ -138,12 +147,21 @@ const updateCardWithNewSupplier = asyncHandler(async (req, res) => {
 		cvv,
 		last4,
 		expiry,
+		fromColor,
+		toColor,
 	} = req.body;
 
 	let { stores = '[]' } = req.body;
 	stores = JSON.parse(stores);
 
-	if (!supplierName || !name || isNaN(amount) || !currency) {
+	if (
+		!supplierName ||
+		!name ||
+		isNaN(amount) ||
+		!currency ||
+		!fromColor ||
+		!toColor
+	) {
 		res.status(400);
 		throw new Error('Please add all required fields');
 	}
@@ -154,8 +172,8 @@ const updateCardWithNewSupplier = asyncHandler(async (req, res) => {
 		'',
 		undefined,
 		stores,
-		'#6B7280',
-		'#374151',
+		fromColor,
+		toColor,
 		user
 	);
 

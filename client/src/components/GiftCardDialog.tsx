@@ -2,7 +2,7 @@ import { Badge } from './ui/badge';
 import { Switch } from './ui/switch';
 import { Textarea } from './ui/textarea';
 import { Checkbox } from './ui/checkbox';
-import { useEffect, useMemo, useState } from 'react';
+import { ChangeEvent, useEffect, useMemo, useRef, useState } from 'react';
 import {
 	Dialog,
 	DialogContent,
@@ -31,6 +31,9 @@ import { useEncryption } from '../context/EncryptionContext';
 import { validateGlobalKey } from '../lib/cryptoHelpers';
 import { useAuth } from '../hooks/useAuth';
 import { GiftCardItem } from './GiftCardItem';
+import { getDarkerColor } from '../lib/colors';
+import { useCallback } from 'react';
+import { debounce } from 'lodash';
 
 interface GiftCardDialogProps {
 	giftCard?: GiftCard;
@@ -61,6 +64,7 @@ export function GiftCardDialog({
 		stores_images: [],
 		supplierId: 'other',
 		encryptionKey: '',
+		fromColor: '#6B7280',
 		...giftCard,
 	});
 
@@ -76,11 +80,13 @@ export function GiftCardDialog({
 			_id: 'other',
 			name: 'Other',
 			stores: [],
-			fromColor: '#000',
-			toColor: '#000',
+			fromColor: '#6B7280',
+			toColor: '#374151',
 		};
 		return [...suppliers, otherSupplier];
 	}, [suppliers]);
+
+	const colorRef = useRef(formData.fromColor);
 
 	// Filter available stores based on search
 	const filteredStores = allAvailableStores.filter((store) =>
@@ -189,6 +195,27 @@ export function GiftCardDialog({
 		}
 	};
 
+	const updateColor = useCallback(
+		(color: string) => {
+			setFormData((prev) => ({
+				...prev,
+				fromColor: color,
+			}));
+		},
+		[setFormData]
+	);
+
+	const debouncedUpdateColor = useMemo(
+		() => debounce(updateColor, 300),
+		[updateColor]
+	);
+
+	const handleColorChange = (e: ChangeEvent<HTMLInputElement>) => {
+		const value = e.target.value;
+		colorRef.current = value;
+		debouncedUpdateColor(value);
+	};
+
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		await onSubmit(formData);
@@ -196,9 +223,7 @@ export function GiftCardDialog({
 
 	useEffect(() => {
 		if (giftCard) {
-			console.log('GiftCard:', giftCard);
 			handleSupplierChange((giftCard.supplier as Supplier)._id);
-			console.log('FormData:', formData);
 		}
 	}, [giftCard]);
 
@@ -269,12 +294,17 @@ export function GiftCardDialog({
 						</Select>
 
 						{showCustomSupplier && (
-							<div className="mt-2">
+							<div className="mt-2 space-y-2">
 								<Input
 									placeholder="Enter custom supplier name"
 									value={customSupplier}
 									onChange={handleCustomSupplierChange}
 									required
+								/>
+								<Input
+									type="color"
+									value={formData.fromColor}
+									onChange={handleColorChange}
 								/>
 							</div>
 						)}
@@ -660,8 +690,10 @@ export function GiftCardDialog({
 													name: store,
 												})
 											),
-											fromColor: '#6B7280',
-											toColor: '#374151',
+											fromColor: formData.fromColor,
+											toColor: getDarkerColor(
+												formData.fromColor
+											),
 										} satisfies Supplier),
 									_id: '',
 									user: user?._id || '',
