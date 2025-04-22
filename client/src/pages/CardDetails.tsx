@@ -48,7 +48,7 @@ export default function CardDetailsPage() {
 	const navigate = useNavigate();
 	const params = useParams();
 	const [giftCard, setGiftCard] = useState<GiftCard | null>(null);
-	const [loading, setLoading] = useState(true);
+	const [loading, setLoading] = useState(false);
 	const [showEncryptedData, setShowEncryptedData] = useState(false);
 	const [showEditDialog, setShowEditDialog] = useState(false);
 	const [storeFilter, setStoreFilter] = useState('');
@@ -75,7 +75,6 @@ export default function CardDetailsPage() {
 					setGiftCard(null);
 				}
 			}
-			setLoading(false);
 		};
 
 		fetchGiftCard();
@@ -196,7 +195,9 @@ export default function CardDetailsPage() {
 				toast.error('invalid encryption key');
 				return;
 			}
+			setGlobalKey(data.encryptionKey);
 		}
+		setLoading(true);
 		let last4, cvv, cardNumber;
 		if (data.cardNumber) {
 			last4 = data.cardNumber.slice(-4);
@@ -256,11 +257,15 @@ export default function CardDetailsPage() {
 				);
 			}
 			refetchCards();
+			setShowEncryptedData(false);
+			setCvv('');
+			setCardNumber('');
 			setShowEditDialog(false);
 			toast.success('Card added successfully');
 		} catch (error) {
 			toastError(error);
 		}
+		setLoading(false);
 	};
 
 	const clearStoreFilter = () => {

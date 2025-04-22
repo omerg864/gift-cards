@@ -28,12 +28,13 @@ import { ScrollArea } from './ui/scroll-area';
 import { useSupplier } from '../hooks/useSupplier';
 import Loading from './loading';
 import { useEncryption } from '../context/EncryptionContext';
-import { validateGlobalKey } from '../lib/cryptoHelpers';
+import { decryptCardFields, validateGlobalKey } from '../lib/cryptoHelpers';
 import { useAuth } from '../hooks/useAuth';
 import { GiftCardItem } from './GiftCardItem';
 import { getDarkerColor } from '../lib/colors';
 import { useCallback } from 'react';
 import { debounce } from 'lodash';
+import { toast } from 'react-toastify';
 
 interface GiftCardDialogProps {
 	giftCard?: GiftCard;
@@ -46,17 +47,15 @@ export function GiftCardDialog({
 	onSubmit,
 	giftCard,
 }: GiftCardDialogProps) {
-	const { globalKey } = useEncryption();
+	const { globalKey, setGlobalKey } = useEncryption();
 	const { user } = useAuth();
 	const [formData, setFormData] = useState<CreateGiftCardDetails>({
 		supplier: '',
 		name: '',
-		cardNumber: '',
 		expirationDate: '',
 		amount: 0,
 		currency: 'ILS', // Default to ILS
 		description: '',
-		cvv: '',
 		supportedStores: [],
 		isPhysical: true,
 		supplierImage: null,
@@ -66,6 +65,8 @@ export function GiftCardDialog({
 		encryptionKey: '',
 		fromColor: '#6B7280',
 		...giftCard,
+		cardNumber: '',
+		cvv: '',
 	});
 
 	const [keyValidated, setKeyValidated] = useState(false);
@@ -74,6 +75,7 @@ export function GiftCardDialog({
 	const [storeInput, setStoreInput] = useState('');
 	const [storeSearch, setStoreSearch] = useState('');
 	const [showStoreSelector, setShowStoreSelector] = useState(false);
+	const [decodedToForm, setDecodedToForm] = useState(false);
 	const { suppliers, loading } = useSupplier();
 	const newSuppliers = useMemo(() => {
 		const otherSupplier: Supplier = {
@@ -219,6 +221,38 @@ export function GiftCardDialog({
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		await onSubmit(formData);
+	};
+
+	const decodeDataToForm = (key: string | null) => {
+		if (!giftCard) {
+			toast.error('No gift card data to decode');
+			return;
+		}
+		if (!key) {
+			toast.error('No encryption key provided');
+			return;
+		}
+		if (!user) {
+			toast.error('User not found');
+			return;
+		}
+		if (!user.salt || !user.verifyToken) {
+			toast.error('Unable to perform decryption');
+			return;
+		}
+		if (!validateGlobalKey(user.verifyToken, key, user.salt)) {
+			toast.error('Invalid encryption key');
+			return;
+		}
+		const decryptedData = decryptCardFields(giftCard, key, user.salt);
+		setFormData((prev) => ({
+			...prev,
+			cardNumber: decryptedData.cardNumber,
+			cvv: decryptedData.cvv,
+			encryptionKey: key,
+		}));
+		setGlobalKey(key);
+		setDecodedToForm(true);
 	};
 
 	useEffect(() => {
@@ -503,141 +537,164 @@ export function GiftCardDialog({
 							<summary className="cursor-pointer text-sm font-medium mb-2">
 								Optional Card Details
 							</summary>
-							{!keyValidated ? (
-								(formData.cardNumber !== '' ||
-									formData.cvv !== '') && (
-									<div className="space-y-2">
-										<span className="text-sm text-muted-foreground block">
-											To securely store your card details,
-											please enter your encryption key.
-										</span>
-										<Label htmlFor="encryptionKey">
-											Encryption Key{' '}
-											<span className="text-red-500">
-												*
-											</span>
-										</Label>
-										<Input
-											id="encryptionKey"
-											name="encryptionKey"
-											value={formData.encryptionKey}
-											onChange={handleChange}
-											required
-										/>
-									</div>
+							{giftCard ? (
+								(giftCard.cardNumber !== '' ||
+									giftCard.cvv !== '') &&
+								formData.cvv === '' &&
+								formData.cardNumber === '' ? (
+									<>
+										{!decodedToForm && (
+											<>
+												{keyValidated ? (
+													<Button
+														type="button"
+														className="w-full bg-teal-600 hover:bg-teal-700 my-2"
+														onClick={() =>
+															decodeDataToForm(
+																globalKey
+															)
+														}
+													>
+														Decode Data
+													</Button>
+												) : (
+													<>
+														<div className="space-y-2">
+															<span className="text-sm text-muted-foreground block">
+																To securely
+																store your card
+																details, please
+																enter your
+																encryption key.
+															</span>
+															<Label htmlFor="encryptionKey">
+																Encryption Key
+															</Label>
+															<Input
+																id="encryptionKey"
+																name="encryptionKey"
+																value={
+																	formData.encryptionKey
+																}
+																onChange={
+																	handleChange
+																}
+															/>
+														</div>
+														<Button
+															type="button"
+															className="w-full bg-teal-600 hover:bg-teal-700 my-2"
+															onClick={() =>
+																decodeDataToForm(
+																	formData.encryptionKey
+																)
+															}
+														>
+															Decode Data
+														</Button>
+													</>
+												)}
+											</>
+										)}
+									</>
+								) : (
+									<>
+										{(formData.cvv !== '' ||
+											formData.cardNumber !== '') && (
+											<>
+												{keyValidated ? (
+													<>
+														<span className="text-sm text-muted-foreground block">
+															Your saved
+															encryption key will
+															be used to securely
+															encrypt the card
+															details.
+														</span>
+													</>
+												) : (
+													<>
+														<div className="space-y-2">
+															<span className="text-sm text-muted-foreground block">
+																To securely
+																store your card
+																details, please
+																enter your
+																encryption key.
+															</span>
+															<Label htmlFor="encryptionKey">
+																Encryption Key{' '}
+																<span className="text-red-500">
+																	*
+																</span>
+															</Label>
+															<Input
+																id="encryptionKey"
+																name="encryptionKey"
+																value={
+																	formData.encryptionKey
+																}
+																onChange={
+																	handleChange
+																}
+																required
+															/>
+														</div>
+													</>
+												)}
+											</>
+										)}
+									</>
 								)
 							) : (
-								<span className="text-sm text-muted-foreground block">
-									Your saved encryption key will be used to
-									securely encrypt the card details.
-								</span>
+								<>
+									{!keyValidated ? (
+										(formData.cardNumber !== '' ||
+											formData.cvv !== '') && (
+											<div className="space-y-2">
+												<span className="text-sm text-muted-foreground block">
+													To securely store your card
+													details, please enter your
+													encryption key.
+												</span>
+												<Label htmlFor="encryptionKey">
+													Encryption Key{' '}
+													<span className="text-red-500">
+														*
+													</span>
+												</Label>
+												<Input
+													id="encryptionKey"
+													name="encryptionKey"
+													value={
+														formData.encryptionKey
+													}
+													onChange={handleChange}
+													required
+												/>
+											</div>
+										)
+									) : (
+										<span className="text-sm text-muted-foreground block">
+											Your saved encryption key will be
+											used to securely encrypt the card
+											details.
+										</span>
+									)}
+								</>
 							)}
 							<div className="space-y-4 mt-4">
 								<div className="space-y-2">
 									<Label htmlFor="cardNumber">
 										Card Number (Optional)
 									</Label>
-									<div className="grid grid-cols-4 gap-2">
-										<Input
-											type="text"
-											maxLength={4}
-											placeholder="0000"
-											className="text-center"
-											onChange={(e) => {
-												const value = e.target.value;
-												if (
-													value.length === 4 &&
-													e.target.nextElementSibling
-												) {
-													(
-														e.target
-															.nextElementSibling as HTMLInputElement
-													).focus();
-												}
-												const parts =
-													formData.cardNumber?.split(
-														' '
-													) || ['', '', '', ''];
-												parts[0] = value;
-												setFormData({
-													...formData,
-													cardNumber: parts.join(' '),
-												});
-											}}
-										/>
-										<Input
-											type="text"
-											maxLength={4}
-											placeholder="0000"
-											className="text-center"
-											onChange={(e) => {
-												const value = e.target.value;
-												if (
-													value.length === 4 &&
-													e.target.nextElementSibling
-												) {
-													(
-														e.target
-															.nextElementSibling as HTMLInputElement
-													).focus();
-												}
-												const parts =
-													formData.cardNumber?.split(
-														' '
-													) || ['', '', '', ''];
-												parts[1] = value;
-												setFormData({
-													...formData,
-													cardNumber: parts.join(' '),
-												});
-											}}
-										/>
-										<Input
-											type="text"
-											maxLength={4}
-											placeholder="0000"
-											className="text-center"
-											onChange={(e) => {
-												const value = e.target.value;
-												if (
-													value.length === 4 &&
-													e.target.nextElementSibling
-												) {
-													(
-														e.target
-															.nextElementSibling as HTMLInputElement
-													).focus();
-												}
-												const parts =
-													formData.cardNumber?.split(
-														' '
-													) || ['', '', '', ''];
-												parts[2] = value;
-												setFormData({
-													...formData,
-													cardNumber: parts.join(' '),
-												});
-											}}
-										/>
-										<Input
-											type="text"
-											maxLength={4}
-											placeholder="0000"
-											className="text-center"
-											onChange={(e) => {
-												const value = e.target.value;
-												const parts =
-													formData.cardNumber?.split(
-														' '
-													) || ['', '', '', ''];
-												parts[3] = value;
-												setFormData({
-													...formData,
-													cardNumber: parts.join(' '),
-												});
-											}}
-										/>
-									</div>
+									<Input
+										id="cardNumber"
+										name="cardNumber"
+										value={formData.cardNumber}
+										onChange={handleChange}
+										className="w-full"
+									/>
 								</div>
 
 								<div className="grid grid-cols-2 gap-4">

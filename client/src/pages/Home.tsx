@@ -65,6 +65,7 @@ export default function Home() {
 				toast.error('invalid encryption key');
 				return;
 			}
+			setGlobalKey(data.encryptionKey);
 		}
 		let last4, cvv, cardNumber;
 		if (data.cardNumber) {
