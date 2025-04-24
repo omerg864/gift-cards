@@ -2,7 +2,7 @@
 
 import type React from 'react';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
@@ -23,50 +23,16 @@ import { Alert, AlertDescription } from '../components/ui/alert';
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
 import { AlertCircle, Check, User, Lock, CreditCard } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
-import { useNavigate } from 'react-router-dom';
+import ProfileTab from '../components/ProfileTab';
 
 export default function ProfilePage() {
-	const navigate = useNavigate();
-	const { user, updateUser, isLoading } = useAuth();
-	const [name, setName] = useState('');
-	const [email, setEmail] = useState('');
+	const { user } = useAuth();
 	const [currentPassword, setCurrentPassword] = useState('');
 	const [newPassword, setNewPassword] = useState('');
 	const [confirmPassword, setConfirmPassword] = useState('');
 	const [error, setError] = useState('');
 	const [success, setSuccess] = useState('');
 	const [activeTab, setActiveTab] = useState('profile');
-
-	useEffect(() => {
-		if (!user && !isLoading) {
-			navigate('/login');
-			return;
-		}
-
-		if (user) {
-			setName(user.name);
-			setEmail(user.email);
-		}
-	}, [user, isLoading]);
-
-	const handleProfileUpdate = (e: React.FormEvent) => {
-		e.preventDefault();
-		setError('');
-		setSuccess('');
-
-		if (!name || !email) {
-			setError('Name and email are required');
-			return;
-		}
-
-		try {
-			updateUser({ name, email });
-			setSuccess('Profile updated successfully');
-		} catch (err) {
-			setError('Failed to update profile');
-			console.error(err);
-		}
-	};
 
 	const handlePasswordUpdate = (e: React.FormEvent) => {
 		e.preventDefault();
@@ -90,10 +56,6 @@ export default function ProfilePage() {
 		setConfirmPassword('');
 	};
 
-	if (!user && !isLoading) {
-		return null; // Will redirect to login
-	}
-
 	return (
 		<div className="container mx-auto px-4 py-8">
 			<h1 className="text-3xl font-bold mb-8">Your Profile</h1>
@@ -105,7 +67,7 @@ export default function ProfilePage() {
 							<div className="flex flex-col items-center space-y-4">
 								<Avatar className="h-24 w-24">
 									<AvatarImage
-										src={user?.avatar || ''}
+										src={user?.image || ''}
 										alt={user?.name || ''}
 									/>
 									<AvatarFallback className="text-2xl">
@@ -174,97 +136,13 @@ export default function ProfilePage() {
 						<TabsList className="md:hidden grid w-full grid-cols-3">
 							<TabsTrigger value="profile">Profile</TabsTrigger>
 							<TabsTrigger value="password">Password</TabsTrigger>
-							<TabsTrigger value="cards">Cards</TabsTrigger>
+							<TabsTrigger value="encryption">
+								Encryption Key
+							</TabsTrigger>
 						</TabsList>
 
 						<TabsContent value="profile">
-							<Card>
-								<CardHeader>
-									<CardTitle>Profile Information</CardTitle>
-									<CardDescription>
-										Update your personal information
-									</CardDescription>
-								</CardHeader>
-								<CardContent>
-									<form
-										onSubmit={handleProfileUpdate}
-										className="space-y-4"
-									>
-										{error && (
-											<Alert variant="destructive">
-												<AlertCircle className="h-4 w-4" />
-												<AlertDescription>
-													{error}
-												</AlertDescription>
-											</Alert>
-										)}
-										{success && (
-											<Alert className="bg-green-50 text-green-800 border-green-200">
-												<Check className="h-4 w-4" />
-												<AlertDescription>
-													{success}
-												</AlertDescription>
-											</Alert>
-										)}
-										<div className="space-y-2">
-											<Label htmlFor="name">Name</Label>
-											<Input
-												id="name"
-												value={name}
-												onChange={(e) =>
-													setName(e.target.value)
-												}
-												required
-											/>
-										</div>
-										<div className="space-y-2">
-											<Label htmlFor="email">Email</Label>
-											<Input
-												id="email"
-												type="email"
-												value={email}
-												onChange={(e) =>
-													setEmail(e.target.value)
-												}
-												required
-											/>
-										</div>
-										<div className="space-y-2">
-											<Label htmlFor="avatar">
-												Profile Picture
-											</Label>
-											<div className="flex items-center space-x-4">
-												<Avatar className="h-12 w-12">
-													<AvatarImage
-														src={user?.avatar || ''}
-														alt={user?.name || ''}
-													/>
-													<AvatarFallback>
-														{user?.name
-															.charAt(0)
-															.toUpperCase() ||
-															'U'}
-													</AvatarFallback>
-												</Avatar>
-												<Button
-													type="button"
-													variant="outline"
-													size="sm"
-												>
-													Change
-												</Button>
-											</div>
-											<p className="text-xs text-muted-foreground mt-1">
-												Recommended: Square image, at
-												least 300x300px
-											</p>
-										</div>
-										<Button type="submit">
-											Save Changes
-										</Button>
-									</form>
-								</CardContent>
-							</Card>
+							<ProfileTab />
 						</TabsContent>
 
 						<TabsContent value="password">
@@ -352,7 +230,7 @@ export default function ProfilePage() {
 							</Card>
 						</TabsContent>
 
-						<TabsContent value="cards">
+						<TabsContent value="encryption">
 							<Card>
 								<CardHeader>
 									<CardTitle>My Gift Cards</CardTitle>

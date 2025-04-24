@@ -21,6 +21,7 @@ import { GiftCardProvider } from './context/GiftCardContext';
 import { SupplierProvider } from './context/SupplierContext';
 import { useAuth } from './hooks/useAuth';
 import { EncryptionProvider } from './context/EncryptionContext';
+import SuppliersList from './pages/SuppliersList';
 
 function App() {
 	const { isAuthenticated } = useAuth();
@@ -62,6 +63,16 @@ function App() {
 											isAuthenticated={isAuthenticated}
 										>
 											<SupplierDetails />
+										</ProtectedRoute>
+									}
+								/>
+								<Route
+									path="/supplier/list"
+									element={
+										<ProtectedRoute
+											isAuthenticated={isAuthenticated}
+										>
+											<SuppliersList />
 										</ProtectedRoute>
 									}
 								/>

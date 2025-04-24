@@ -24,6 +24,11 @@ export interface MessageResponse {
 	success: boolean;
 }
 
+export interface UserResponse {
+	user: User;
+	success: boolean;
+}
+
 const login = async (
 	email: string,
 	password: string,
@@ -158,6 +163,40 @@ const setEncryptionKey = async (salt: string, verifyToken: string) => {
 	}
 };
 
+const updateUser = async (
+	name: string,
+	deleteImage: boolean,
+	file: File | null
+) => {
+	const formData = new FormData();
+	formData.append('name', name);
+	if (deleteImage) {
+		formData.append('deleteImage', 'true');
+	}
+	if (file) {
+		formData.append('image', file);
+	}
+	try {
+		const accessToken = await checkToken();
+		if (!accessToken) {
+			throw new Error('Please login');
+		}
+		const response = await client.put<UserResponse>(
+			`user/update`,
+			formData,
+			{
+				headers: {
+					Authorization: `Bearer ${accessToken}`,
+					'Content-Type': 'multipart/form-data',
+				},
+			}
+		);
+		return response.data;
+	} catch (error) {
+		return axiosErrorHandler(error);
+	}
+};
+
 export {
 	login,
 	googleLogin,
@@ -167,4 +206,5 @@ export {
 	forgotPassword,
 	resetPassword,
 	setEncryptionKey,
+	updateUser,
 };

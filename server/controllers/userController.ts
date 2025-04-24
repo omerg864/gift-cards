@@ -225,17 +225,18 @@ const updateUser = asyncHandler(
 		const user = req.user!;
 		const {
 			name,
-			deletePicture,
+			deleteImage,
 		}: {
 			name: string;
-			deletePicture: string | undefined;
+			deleteImage: string | undefined;
 		} = req.body;
 		if (!name) {
 			res.status(400);
 			throw new Error('First name and last name and gender are required');
 		}
 		let image: string | undefined | null = user.image;
-		let deletePictureBool = deletePicture === 'true';
+		let deletePictureBool = deleteImage === 'true';
+		console.log('deletePictureBool', deletePictureBool);
 		if (req.file) {
 			if (user.image) {
 				await deleteFromCloudinary(user.image);
@@ -253,7 +254,7 @@ const updateUser = asyncHandler(
 			image = undefined;
 		}
 		const userUpdated = await updateUserById(user.id, {
-			image,
+			image: image ? image : undefined,
 			name,
 		});
 		res.json({
@@ -665,5 +666,5 @@ export {
 	changePassword,
 	sendEmailPasswordReset,
 	resetPassword,
-	createEncryptionKey
+	createEncryptionKey,
 };
