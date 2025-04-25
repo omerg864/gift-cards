@@ -1,5 +1,5 @@
 // src/context/SupplierContext.tsx
-import React, { createContext, useEffect, useState, ReactNode } from 'react';
+import React, { createContext, useEffect, useState, ReactNode, useRef } from 'react';
 import type { Supplier } from '../types/supplier';
 import { getSuppliers } from '../services/supplierService';
 import { toastError } from '../lib/utils';
@@ -18,6 +18,7 @@ export const SupplierContext = createContext<SupplierContextType | undefined>(
 export const SupplierProvider = ({ children }: { children: ReactNode }) => {
 	const [suppliers, setSuppliers] = useState<Supplier[]>([]);
 	const [loading, setLoading] = useState(true);
+	const hasRun = useRef(false);
 	const { logout, user } = useAuth();
 
 	const fetchSuppliers = async () => {
@@ -36,7 +37,8 @@ export const SupplierProvider = ({ children }: { children: ReactNode }) => {
 	};
 
 	useEffect(() => {
-		if (user) {
+		if (user && !hasRun.current) {
+			hasRun.current = true;
 			fetchSuppliers();
 		}
 	}, [user]);

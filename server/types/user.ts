@@ -4,7 +4,7 @@ export interface User {
 	name: string;
 	email: string;
 	password: string;
-	image?: string;
+	image?: string | null;
 	isVerified?: boolean;
 	verificationToken?: string;
 	resetPasswordTokenExpiry?: Date;

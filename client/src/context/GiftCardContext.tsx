@@ -1,5 +1,5 @@
 // src/context/GiftCardContext.tsx
-import { createContext, useState, ReactNode, useEffect } from 'react';
+import { createContext, useState, ReactNode, useEffect, useRef } from 'react';
 import type { GiftCard } from '../types/gift-card';
 import { getUserCards } from '../services/cardService';
 import { useAuth } from '../hooks/useAuth';
@@ -17,9 +17,9 @@ export const GiftCardContext = createContext<GiftCardContextType | undefined>(
 
 export const GiftCardProvider = ({ children }: { children: ReactNode }) => {
 	const [giftCards, setGiftCards] = useState<GiftCard[]>([]);
-	const { user } = useAuth();
+	const { user, logout } = useAuth();
 	const [loading, setLoading] = useState(true);
-	const { logout } = useAuth();
+	const hasRun = useRef(false);
 
 	const fetchCards = async () => {
 		setLoading(true);
@@ -38,7 +38,8 @@ export const GiftCardProvider = ({ children }: { children: ReactNode }) => {
 	};
 
 	useEffect(() => {
-		if (user) {
+		if (user && !hasRun.current) {
+			hasRun.current = true;
 			fetchCards();
 		}
 	}, [user]);

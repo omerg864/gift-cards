@@ -14,6 +14,9 @@ import {
 	getUserById,
 	updateUserById,
 } from '../services/userService';
+import { updateAllCards } from '../services/cardService';
+import async from 'async';
+import { CardDocument } from '../types/card';
 
 const createUserLogin = async (
 	res: Response,
@@ -251,10 +254,10 @@ const updateUser = asyncHandler(
 			if (user.image) {
 				await deleteFromCloudinary(user.image);
 			}
-			image = undefined;
+			image = null;
 		}
 		const userUpdated = await updateUserById(user.id, {
-			image: image ? image : undefined,
+			image,
 			name,
 		});
 		res.json({
@@ -651,6 +654,59 @@ const createEncryptionKey = asyncHandler(
 	}
 );
 
+const resetEncryptionKey = asyncHandler(async (req: Request, res: Response) => {
+	const user = req.user!;
+	const { salt, verifyToken, cards } = req.body;
+
+	if (!salt || !verifyToken) {
+		res.status(400);
+		throw new Error('Salt and verify token are required');
+	}
+
+	user.salt = salt;
+	user.verifyToken = verifyToken;
+
+	const promises = [];
+	promises.push(user.save());
+	if (cards && cards.length > 0) {
+		promises.push(updateAllCards(user, cards));
+	}
+	const [userUpdate, cardsUpdate] = await Promise.all(promises);
+
+	res.json({
+		success: true,
+		message: 'Encryption key reset successfully',
+		cards: cardsUpdate ?? [],
+	});
+});
+
+const changeEncryptionKey = asyncHandler(
+	async (req: Request, res: Response): Promise<void> => {
+		const user = req.user!;
+		const { salt, verifyToken, cards } = req.body;
+
+		if (!salt || !verifyToken) {
+			res.status(400);
+			throw new Error('Salt and verify token are required');
+		}
+		const promises = [];
+
+		user.salt = salt;
+		user.verifyToken = verifyToken;
+		promises.push(user.save());
+		if (cards && cards.length > 0) {
+			promises.push(updateAllCards(user, cards));
+		}
+		const [userUpdate, cardsUpdate] = await Promise.all(promises);
+
+		res.json({
+			success: true,
+			message: 'Encryption key changed successfully',
+			cards: cardsUpdate ?? [],
+		});
+	}
+);
+
 export {
 	login,
 	register,
@@ -667,4 +723,6 @@ export {
 	sendEmailPasswordReset,
 	resetPassword,
 	createEncryptionKey,
+	resetEncryptionKey,
+	changeEncryptionKey,
 };

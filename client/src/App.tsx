@@ -17,10 +17,7 @@ import { GoogleOAuthProvider } from '@react-oauth/google';
 import ConfirmEmailPage from './pages/ConfirmEmail';
 import ProtectedRoute from './components/routes/ProtectedRoute';
 import UserRestrictedRoute from './components/routes/UserRestrictedRoute';
-import { GiftCardProvider } from './context/GiftCardContext';
-import { SupplierProvider } from './context/SupplierContext';
 import { useAuth } from './hooks/useAuth';
-import { EncryptionProvider } from './context/EncryptionContext';
 import SuppliersList from './pages/SuppliersList';
 
 function App() {
@@ -32,9 +29,6 @@ function App() {
 				clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}
 			>
 				<Header />
-				<EncryptionProvider>
-					<SupplierProvider>
-						<GiftCardProvider>
 							<Routes>
 								<Route
 									path="/"
@@ -145,9 +139,6 @@ function App() {
 									}
 								/>
 							</Routes>
-						</GiftCardProvider>
-					</SupplierProvider>
-				</EncryptionProvider>
 			</GoogleOAuthProvider>
 		</>
 	);

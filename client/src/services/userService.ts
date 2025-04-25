@@ -197,6 +197,27 @@ const updateUser = async (
 	}
 };
 
+const updateUserPassword = async (password: string) => {
+	try {
+		const accessToken = await checkToken();
+		if (!accessToken) {
+			throw new Error('Please login');
+		}
+		const response = await client.put<MessageResponse>(
+			`user/password`,
+			{ password },
+			{
+				headers: {
+					Authorization: `Bearer ${accessToken}`,
+				},
+			}
+		);
+		return response.data;
+	} catch (error) {
+		return axiosErrorHandler(error);
+	}
+};
+
 export {
 	login,
 	googleLogin,
@@ -207,4 +228,5 @@ export {
 	resetPassword,
 	setEncryptionKey,
 	updateUser,
+	updateUserPassword
 };

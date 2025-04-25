@@ -2,6 +2,7 @@ import Card from '../models/cardModel';
 import { CardDocument, Card as ICard } from '../types/card';
 import { Supplier } from '../types/supplier';
 import { UserDocument } from '../types/user';
+import async from 'async';
 
 const getUserCards = async (
 	user: UserDocument,
@@ -64,4 +65,30 @@ const deleteCardById = async (
 	return card;
 };
 
-export { getUserCards, newCard, updateCardById, deleteCardById };
+const updateAllCards = async (
+	user: UserDocument,
+	data: Partial<CardDocument>[]
+): Promise<(CardDocument | null)[]> => {
+	const promises = [];
+	for (const cardData of data) {
+		const card = await Card.findOneAndUpdate(
+			{ _id: cardData._id, user: user._id },
+			cardData,
+			{
+				new: true,
+				runValidators: true,
+			}
+		);
+		promises.push(card);
+	}
+	await Promise.all(promises);
+	return promises;
+};
+
+export {
+	getUserCards,
+	newCard,
+	updateCardById,
+	deleteCardById,
+	updateAllCards,
+};
