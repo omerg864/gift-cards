@@ -86,7 +86,9 @@ export default function ProfilePage() {
 							</Button>
 							<Button
 								variant={
-									activeTab === 'cards' ? 'default' : 'ghost'
+									activeTab === 'encryption'
+										? 'default'
+										: 'ghost'
 								}
 								className="w-full justify-start"
 								onClick={() => {

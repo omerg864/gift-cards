@@ -1,93 +1,189 @@
 import { useState } from 'react';
 import { Button } from './ui/button';
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from './ui/card';
-import { Input } from './ui/input';
-import { Label } from './ui/label';
 import { toast } from 'react-toastify';
 import { useAuth } from '../hooks/useAuth';
 import { useEncryption } from '../context/EncryptionContext';
+import { useGiftCards } from '../hooks/useGiftCards';
+import {
+	decryptCardFields,
+	encryptCard,
+	generateSaltAndVerifyToken,
+	validateGlobalKey,
+} from '../lib/cryptoHelpers';
+import { updateEncryptionKey } from '../services/userService';
+import { toastError } from '../lib/utils';
+import Loading from './loading';
+import EncryptionForm from './EncryptionForm';
 
 const EncryptionTab = () => {
-	const [currentKey, setCurrentKey] = useState('');
-	const [newKey, setNewKey] = useState('');
-	const [confirmKey, setConfirmKey] = useState('');
+	const [isLoading, setIsLoading] = useState(false);
 	const { user, updateUser } = useAuth();
 	const { setGlobalKey } = useEncryption();
+	const { giftCards, updateCards } = useGiftCards();
+	const [resetKeyForm, setResetKeyForm] = useState(false);
 
-	const handlePasswordUpdate = async (e: React.FormEvent) => {
-		e.preventDefault();
+	const handleEncryptionUpdate = async (
+		newKey: string,
+		confirmKey: string,
+		currentKey: string
+	) => {
+		if (!user) {
+			toast.error('User not found');
+			return false;
+		}
+		if (!user.salt || !user.verifyToken) {
+			toast.error('User encryption data not found');
+			return false;
+		}
 
 		if (!currentKey || !newKey || !confirmKey) {
-			toast.error('All password fields are required');
-			return;
+			toast.error('All Encryption fields are required');
+			return false;
+		}
+		if (!validateGlobalKey(user.verifyToken, currentKey, user.salt)) {
+			toast.error('Current Encryption Key is incorrect');
+			return false;
 		}
 
 		if (newKey !== confirmKey) {
-			toast.error('New passwords do not match');
-			return;
+			toast.error('New encryption keys do not match');
+			return false;
 		}
 
-		// In a real app, this would validate the current password and update with the new one
-		toast.success('Password updated successfully');
-		setCurrentKey('');
-		setNewKey('');
-		setConfirmKey('');
+		const { salt, verifyToken } = generateSaltAndVerifyToken(newKey);
+
+		const updatedCards = giftCards
+			.filter((card) => card.cardNumber || card.cvv)
+			.map((card) => {
+				const decryptedCard = {
+					_id: card._id,
+					...encryptCard(
+						decryptCardFields(card, currentKey, user.salt!),
+						newKey,
+						salt
+					),
+				};
+				return decryptedCard;
+			});
+
+		setIsLoading(true);
+		try {
+			await updateEncryptionKey(salt, verifyToken, updatedCards);
+			updateCards(updatedCards);
+			setGlobalKey(newKey);
+			updateUser({
+				salt,
+				verifyToken,
+			});
+			toast.success('Encryption Key updated successfully');
+		} catch (error) {
+			toastError(error);
+			return false;
+		}
+		setIsLoading(false);
+		return true;
 	};
 
+	const handleEncryptionReset = async (
+		newKey: string,
+		confirmKey: string
+	) => {
+		if (!user) {
+			toast.error('User not found');
+			return false;
+		}
+		if (!user.salt || !user.verifyToken) {
+			toast.error('User encryption data not found');
+			return false;
+		}
+
+		if (!newKey || !confirmKey) {
+			toast.error('All Encryption fields are required');
+			return false;
+		}
+
+		if (newKey !== confirmKey) {
+			toast.error('New encryption keys do not match');
+			return false;
+		}
+
+		const { salt, verifyToken } = generateSaltAndVerifyToken(newKey);
+
+		const updatedCards = giftCards
+			.filter((card) => card.cardNumber || card.cvv)
+			.map((card) => {
+				const decryptedCard = {
+					_id: card._id,
+					cvv: '',
+					cardNumber: '',
+					last4: '',
+				};
+				return decryptedCard;
+			});
+
+		setIsLoading(true);
+		try {
+			await updateEncryptionKey(salt, verifyToken, updatedCards);
+			updateCards(updatedCards);
+			setGlobalKey(newKey);
+			updateUser({
+				salt,
+				verifyToken,
+			});
+			toast.success('Encryption Key updated successfully');
+		} catch (error) {
+			toastError(error);
+			return false;
+		}
+		setIsLoading(false);
+		return true;
+	};
+
+	if (isLoading) {
+		return <Loading />;
+	}
+
+	if (resetKeyForm) {
+		return (
+			<EncryptionForm
+				title="Reset Encryption Key"
+				description="Reset your Encryption Key. This will erase all encrypted data on your cards."
+				handleEncryption={handleEncryptionReset}
+			>
+				<>
+					<Button type="submit" variant="destructive">
+						Reset Encryption Key
+					</Button>
+					<Button
+						type="button"
+						onClick={() => setResetKeyForm(false)}
+						variant="secondary"
+					>
+						cancel
+					</Button>
+				</>
+			</EncryptionForm>
+		);
+	}
+
 	return (
-		<Card>
-			<CardHeader>
-				<CardTitle>Change Encryption Key</CardTitle>
-				<CardDescription>
-					Update your Encryption Key for all of your cards.
-				</CardDescription>
-			</CardHeader>
-			<CardContent>
-				<form onSubmit={handlePasswordUpdate} className="space-y-4">
-					<div className="space-y-2">
-						<Label htmlFor="currentKey">
-							Current Encryption Key
-						</Label>
-						<Input
-							id="currentKey"
-							type="password"
-							value={currentKey}
-							onChange={(e) => setCurrentKey(e.target.value)}
-							required
-						/>
-					</div>
-					<div className="space-y-2">
-						<Label htmlFor="newKey">New Encryption Key</Label>
-						<Input
-							id="newKey"
-							type="password"
-							value={newKey}
-							onChange={(e) => setNewKey(e.target.value)}
-							required
-						/>
-					</div>
-					<div className="space-y-2">
-						<Label htmlFor="confirmKey">
-							Confirm New Encryption Key
-						</Label>
-						<Input
-							id="confirmKey"
-							type="password"
-							value={confirmKey}
-							onChange={(e) => setConfirmKey(e.target.value)}
-							required
-						/>
-					</div>
-					<Button type="submit">Update Encryption Key</Button>
-				</form>
-			</CardContent>
-		</Card>
+		<EncryptionForm
+			title="Change Encryption Key"
+			description="Update your Encryption Key for all of your cards."
+			currentKeyActive={true}
+			handleEncryption={handleEncryptionUpdate}
+		>
+			<>
+				<Button type="submit">Update Encryption Key</Button>
+				<Button
+					type="button"
+					variant="destructive"
+					onClick={() => setResetKeyForm(true)}
+				>
+					Reset Encryption Key
+				</Button>
+			</>
+		</EncryptionForm>
 	);
 };
 

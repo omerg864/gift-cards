@@ -11,19 +11,6 @@ export const deriveKey = (password: string, salt: string): string => {
 	}).toString();
 };
 
-export const encryptData = (data: any, password: string) => {
-	const salt = CryptoJS.lib.WordArray.random(SALT_LENGTH).toString();
-	const key = deriveKey(password, salt);
-	const encryptedData = CryptoJS.AES.encrypt(
-		JSON.stringify(data),
-		key
-	).toString();
-	return {
-		encryptedData,
-		salt,
-	};
-};
-
 export const generateSaltAndVerifyToken = (password: string) => {
 	const salt = CryptoJS.lib.WordArray.random(SALT_LENGTH).toString();
 	const key = deriveKey(password, salt);

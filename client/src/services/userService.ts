@@ -1,4 +1,6 @@
+import { GiftCard } from '../types/gift-card';
 import { DeviceDetails, User } from '../types/user';
+import { CardsResponse } from './cardService';
 import { axiosErrorHandler, checkToken, client } from './client';
 
 export interface LoginResponse {
@@ -218,6 +220,64 @@ const updateUserPassword = async (password: string) => {
 	}
 };
 
+const updateEncryptionKey = async (
+	salt: string,
+	verifyToken: string,
+	cards: Partial<GiftCard>[]
+) => {
+	try {
+		const accessToken = await checkToken();
+		if (!accessToken) {
+			throw new Error('Please login');
+		}
+		const response = await client.put<CardsResponse>(
+			'user/encryption',
+			{
+				salt,
+				verifyToken,
+				cards,
+			},
+			{
+				headers: {
+					Authorization: `Bearer ${accessToken}`,
+				},
+			}
+		);
+		return response.data;
+	} catch (error) {
+		return axiosErrorHandler(error);
+	}
+};
+
+const resetEncryptionKey = async (
+	salt: string,
+	verifyToken: string,
+	cards: Partial<GiftCard>[]
+) => {
+	try {
+		const accessToken = await checkToken();
+		if (!accessToken) {
+			throw new Error('Please login');
+		}
+		const response = await client.put<CardsResponse>(
+			'user/encryption/reset',
+			{
+				salt,
+				verifyToken,
+				cards,
+			},
+			{
+				headers: {
+					Authorization: `Bearer ${accessToken}`,
+				},
+			}
+		);
+		return response.data;
+	} catch (error) {
+		return axiosErrorHandler(error);
+	}
+};
+
 export {
 	login,
 	googleLogin,
@@ -228,5 +288,7 @@ export {
 	resetPassword,
 	setEncryptionKey,
 	updateUser,
-	updateUserPassword
+	updateUserPassword,
+	updateEncryptionKey,
+	resetEncryptionKey,
 };

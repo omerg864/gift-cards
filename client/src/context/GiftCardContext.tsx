@@ -9,6 +9,7 @@ interface GiftCardContextType {
 	giftCards: GiftCard[];
 	loading: boolean;
 	refetchCards: (query?: string) => void;
+	updateCards: (cards: Partial<GiftCard>[]) => void;
 }
 
 export const GiftCardContext = createContext<GiftCardContextType | undefined>(
@@ -48,8 +49,19 @@ export const GiftCardProvider = ({ children }: { children: ReactNode }) => {
 		fetchCards();
 	};
 
+	const updateCards = (cards: Partial<GiftCard>[]) => {
+		setGiftCards((prevCards) =>
+			prevCards.map((card) => {
+				const updatedCard = cards.find((c) => c._id === card._id);
+				return updatedCard ? { ...card, ...updatedCard } : card;
+			})
+		);
+	};
+
 	return (
-		<GiftCardContext.Provider value={{ giftCards, loading, refetchCards }}>
+		<GiftCardContext.Provider
+			value={{ giftCards, loading, refetchCards, updateCards }}
+		>
 			{children}
 		</GiftCardContext.Provider>
 	);
