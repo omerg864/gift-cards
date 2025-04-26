@@ -15,13 +15,13 @@ const newUserSupplier = async (
 	toColor: string,
 	user: UserDocument
 ): Promise<SupplierDocument> => {
-	let image: string | undefined = undefined;
+	let logo: string | undefined = undefined;
 	let store_images: string[] = [];
 	if (files) {
 		// supplier image
 		if ((files as FieldFiles).supplier) {
 			const supplierImage = (files as FieldFiles).supplier[0];
-			image = await uploadToCloudinary(
+			logo = await uploadToCloudinary(
 				supplierImage.buffer,
 				`${process.env.CLOUDINARY_BASE_FOLDER}/suppliers/${user._id}`,
 				uuid()
@@ -52,7 +52,7 @@ const newUserSupplier = async (
 		user: user._id,
 		name,
 		stores,
-		image,
+		logo,
 		description,
 		fromColor,
 		toColor,
@@ -103,17 +103,17 @@ const updateSupplier = async (
 	file: Express.Request['file'] | undefined,
 	deleteImage: boolean
 ) => {
-	let image: string | undefined = undefined;
+	let logo: string | undefined = undefined;
 	if (deleteImage) {
-		if (supplier.image) {
-			await deleteFromCloudinary(supplier.image);
+		if (supplier.logo) {
+			await deleteFromCloudinary(supplier.logo);
 		}
-		image = undefined;
+		logo = undefined;
 	} else if (file) {
-		if (supplier.image) {
-			await deleteFromCloudinary(supplier.image);
+		if (supplier.logo) {
+			await deleteFromCloudinary(supplier.logo);
 		}
-		image = await uploadToCloudinary(
+		logo = await uploadToCloudinary(
 			file.buffer,
 			`${process.env.CLOUDINARY_BASE_FOLDER}/suppliers/${user._id}`,
 			uuid()
@@ -122,7 +122,7 @@ const updateSupplier = async (
 
 	const updatedSupplier = await Supplier.findByIdAndUpdate(
 		supplier._id,
-		{ ...data, image },
+		{ ...data, logo },
 		{
 			new: true,
 			runValidators: true,
@@ -143,8 +143,8 @@ const deleteUserSupplierById = async (user: UserDocument, id: string) => {
 	}
 
 	let promises: Promise<any>[] = [];
-	if (supplier.image) {
-		promises.push(deleteFromCloudinary(supplier.image));
+	if (supplier.logo) {
+		promises.push(deleteFromCloudinary(supplier.logo));
 	}
 
 	for (const store of supplier.stores) {

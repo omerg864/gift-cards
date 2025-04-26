@@ -44,7 +44,10 @@ export function SupplierCard({ supplier, handleCardClick }: SupplierCardProps) {
 				{/* Card chip */}
 				<div className="absolute bottom-6 right-6">
 					{supplier.logo ? (
-						<img className="w-12 h-12" src={supplier.logo} />
+						<img
+							className="w-12 h-12 rounded-md"
+							src={supplier.logo}
+						/>
 					) : (
 						<div className="w-12 h-8 rounded-md bg-gradient-to-br from-yellow-100/80 to-yellow-200/80"></div>
 					)}

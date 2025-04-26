@@ -19,15 +19,16 @@ const getSuppliers = AsyncHandler(async (req, res) => {
 
 const createUserSupplier = AsyncHandler(async (req, res) => {
 	const user = req.user!;
-	const { name, description, cardTypes, fromColor, toColor } = req.body;
-	let { stores = '[]' } = req.body;
+	const { name, description, fromColor, toColor } = req.body;
+	let { stores = '[]', cardTypes = '["digital"]' } = req.body;
 	stores = JSON.parse(stores);
+	cardTypes = JSON.parse(cardTypes);
 
 	if (!name || !fromColor || !toColor) {
 		res.status(400);
 		throw new Error('Please add all required fields');
 	}
-	if (!cardTypes || cardTypes.length === 0) {
+	if (!Array.isArray(cardTypes) || !cardTypes || cardTypes.length === 0) {
 		res.status(400);
 		throw new Error('Card types are required');
 	}

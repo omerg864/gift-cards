@@ -26,7 +26,7 @@ const supplierScheme = new mongoose.Schema<SupplierDocument>(
 				},
 			},
 		],
-		image: {
+		logo: {
 			type: String,
 		},
 		description: {

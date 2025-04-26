@@ -8,13 +8,14 @@ import Loading from './loading';
 import { useGiftCards } from '../hooks/useGiftCards';
 import { Supplier } from '../types/supplier';
 import { useSupplier } from '../hooks/useSupplier';
+import { SupplierCard } from './SupplierCard';
 
 export function GiftCardList() {
 	const navigate = useNavigate();
 	const { giftCards, loading } = useGiftCards();
 	const { suppliers, loading: loadingSuppliers } = useSupplier();
 	const [filteredCards, setFilteredCards] = useState<GiftCard[]>(giftCards);
-	const [otherCards, setOtherCards] = useState<GiftCard[]>([]);
+	const [supplierCards, setSupplierCards] = useState<Supplier[]>([]);
 	const [searchParams] = useSearchParams();
 	const searchQuery = searchParams.get('q') || '';
 
@@ -38,24 +39,12 @@ export function GiftCardList() {
 						store.name.match(regex)
 					)
 			);
-			const suppliersFiltered = suppliers
-				.filter(
-					(supplier) =>
-						supplier.name.match(regex) ||
-						supplier.stores.some((store) => store.name.match(regex))
-				)
-				.map((supplier) => ({
-					name: supplier.name,
-					_id: supplier._id,
-					supplier: {
-						...supplier,
-					},
-					isPhysical: false,
-					amount: 0,
-					currency: 'USD',
-					user: '',
-				}));
-			setOtherCards(suppliersFiltered);
+			const suppliersFiltered = suppliers.filter(
+				(supplier) =>
+					supplier.name.match(regex) ||
+					supplier.stores.some((store) => store.name.match(regex))
+			);
+			setSupplierCards(suppliersFiltered);
 			setFilteredCards(filtered);
 		} else {
 			setFilteredCards(giftCards);
@@ -89,18 +78,17 @@ export function GiftCardList() {
 				)}
 			</div>
 
-			{searchQuery && otherCards.length > 0 && (
+			{searchQuery && supplierCards.length > 0 && (
 				<div>
 					<h2 className="text-2xl font-semibold mb-6">
 						Other Suppliers Gift Cards
 					</h2>
 					<div className="flex gap-6 flex-wrap w-full justify-center lg:justify-start">
-						{otherCards.map((card) => (
-							<GiftCardItem
-								supplierCard={true}
+						{supplierCards.map((supplier) => (
+							<SupplierCard
 								handleCardClick={handleSupplierClick}
-								key={card._id}
-								giftCard={card}
+								key={supplier._id}
+								supplier={supplier}
 							/>
 						))}
 					</div>

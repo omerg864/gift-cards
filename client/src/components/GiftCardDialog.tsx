@@ -69,6 +69,7 @@ export function GiftCardDialog({
 		cvv: '',
 	});
 
+	const [disabledCardTypes, setDisabledCardTypes] = useState<boolean>(false);
 	const [keyValidated, setKeyValidated] = useState(false);
 	const [customSupplier, setCustomSupplier] = useState('');
 	const [showCustomSupplier, setShowCustomSupplier] = useState(false);
@@ -118,6 +119,16 @@ export function GiftCardDialog({
 				}));
 				setShowStoreSelector(true);
 			} else {
+				const onlyPhysicalType =
+					supplier.cardTypes.includes('physical') &&
+					supplier.cardTypes.length === 1;
+				const onlyDigitalType =
+					supplier.cardTypes.includes('digital') &&
+					supplier.cardTypes.length === 1;
+				console.log('cardTypes', supplier.cardTypes);
+				console.log('onlyPhysicalType', onlyPhysicalType);
+				console.log('onlyDigitalType', onlyDigitalType);
+				setDisabledCardTypes(onlyPhysicalType || onlyDigitalType);
 				setShowCustomSupplier(false);
 				setShowStoreSelector(false);
 				setFormData((prev) => ({
@@ -125,6 +136,11 @@ export function GiftCardDialog({
 					supplierId: supplier._id,
 					supplier: supplier.name,
 					supportedStores: supplier.stores.map((store) => store.name), // Set supported stores from supplier
+					isPhysical: onlyPhysicalType
+						? true
+						: onlyDigitalType
+						? false
+						: prev.isPhysical,
 				}));
 			}
 		}
@@ -412,6 +428,7 @@ export function GiftCardDialog({
 						</div>
 						<Switch
 							id="isPhysical"
+							disabled={disabledCardTypes}
 							checked={formData.isPhysical}
 							onCheckedChange={togglePhysical}
 						/>
