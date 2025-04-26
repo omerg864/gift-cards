@@ -27,7 +27,7 @@ export const SupplierProvider = ({ children }: { children: ReactNode }) => {
 	const [stores, setStores] = useState<Store[]>([]);
 	const [loading, setLoading] = useState(true);
 	const hasRun = useRef(false);
-	const { logout, user } = useAuth();
+	const { logout, accessToken } = useAuth();
 
 	const fetchSuppliers = async () => {
 		setLoading(true);
@@ -53,11 +53,11 @@ export const SupplierProvider = ({ children }: { children: ReactNode }) => {
 	};
 
 	useEffect(() => {
-		if (user && !hasRun.current) {
+		if (accessToken && !hasRun.current) {
 			hasRun.current = true;
 			fetchSuppliers();
 		}
-	}, [user]);
+	}, [accessToken]);
 
 	return (
 		<SupplierContext.Provider

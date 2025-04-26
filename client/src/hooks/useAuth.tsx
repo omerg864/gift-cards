@@ -15,6 +15,7 @@ import {
 	USER,
 } from '../lib/constants';
 import { User } from '../types/user';
+import { checkToken } from '../services/client';
 
 interface AuthContextType {
 	setUser: (user: User | null) => void;
@@ -25,6 +26,7 @@ interface AuthContextType {
 	updateUser: (userData: Partial<User>) => void;
 	isAuthenticated: boolean;
 	handleAuthentication: (isAuthenticated: boolean) => void;
+	accessToken: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -35,6 +37,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 	const [isAuthenticated, setIsAuthenticated] = useState<boolean>(
 		() => localStorage.getItem('isAuthenticated') === 'true'
 	);
+	const [accessToken, setAccessToken] = useState<boolean>(false);
+
+	useEffect(() => {
+		const accessTokenOK = async () => {
+			const accessTokenFetched = await checkToken();
+			if (!accessTokenFetched) {
+				logout();
+				return;
+			}
+			setAccessToken(true);
+		};
+		if (isAuthenticated) {
+			accessTokenOK();
+		}
+	}, [isAuthenticated]);
 
 	// Load user from localStorage on mount
 	useEffect(() => {
@@ -96,6 +113,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 	return (
 		<AuthContext.Provider
 			value={{
+				accessToken,
 				setUser,
 				user,
 				setEmail,

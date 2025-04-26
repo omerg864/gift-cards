@@ -26,7 +26,7 @@ export default function Home() {
 		useState<string>('');
 	const { refetchCards } = useGiftCards();
 	const { setGlobalKey } = useEncryption();
-	const { user, updateUser } = useAuth();
+	const { user, updateUser, isAuthenticated } = useAuth();
 
 	const handleAddCard = async (data: CreateGiftCardDetails) => {
 		if (!data) {
@@ -127,6 +127,7 @@ export default function Home() {
 			setShowDialog(false);
 			toast.success('Card added successfully');
 		} catch (error) {
+			console.error('Error adding card:', error);
 			toastError(error);
 		}
 	};
@@ -155,7 +156,7 @@ export default function Home() {
 		}
 	};
 
-	if (user && !user?.verifyToken || !user?.salt) {
+	if (isAuthenticated && user && (!user?.verifyToken || !user?.salt)) {
 		return (
 			<main className="bg-[#0B0E14] text-white p-8">
 				<div className="max-w-7xl mx-auto">

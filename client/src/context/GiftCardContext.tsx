@@ -18,7 +18,7 @@ export const GiftCardContext = createContext<GiftCardContextType | undefined>(
 
 export const GiftCardProvider = ({ children }: { children: ReactNode }) => {
 	const [giftCards, setGiftCards] = useState<GiftCard[]>([]);
-	const { user, logout } = useAuth();
+	const { logout, accessToken } = useAuth();
 	const [loading, setLoading] = useState(true);
 	const hasRun = useRef(false);
 
@@ -39,11 +39,11 @@ export const GiftCardProvider = ({ children }: { children: ReactNode }) => {
 	};
 
 	useEffect(() => {
-		if (user && !hasRun.current) {
+		if (accessToken && !hasRun.current) {
 			hasRun.current = true;
 			fetchCards();
 		}
-	}, [user]);
+	}, [accessToken]);
 
 	const refetchCards = () => {
 		fetchCards();

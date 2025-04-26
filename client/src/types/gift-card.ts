@@ -21,7 +21,6 @@ export interface CreateGiftCardDetails extends Omit<GiftCard, '_id' | 'user'> {
 	supportedStores: string[];
 	stores_images: File[];
 	supplierId: string;
-	expirationDate: string;
 	encryptionKey: string;
 	expiry?: Date;
 	last4?: string;

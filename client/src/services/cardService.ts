@@ -148,6 +148,7 @@ const createCard = async (
 		);
 		return response.data;
 	} catch (error) {
+		console.error('Error creating card and supplier:', error);
 		return axiosErrorHandler(error);
 	}
 };

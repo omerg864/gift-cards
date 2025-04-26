@@ -52,7 +52,6 @@ export function GiftCardDialog({
 	const [formData, setFormData] = useState<CreateGiftCardDetails>({
 		supplier: '',
 		name: '',
-		expirationDate: '',
 		amount: 0,
 		currency: 'ILS', // Default to ILS
 		description: '',
@@ -102,7 +101,14 @@ export function GiftCardDialog({
 		const { name, value } = e.target;
 		setFormData((prev) => ({
 			...prev,
-			[name]: name === 'amount' ? Number.parseFloat(value) || 0 : value,
+			[name]:
+				name === 'amount'
+					? Number.parseFloat(value) || 0
+					: name === 'expiry'
+					? value
+						? new Date(value)
+						: undefined
+					: value,
 		}));
 	};
 
@@ -125,9 +131,6 @@ export function GiftCardDialog({
 				const onlyDigitalType =
 					supplier.cardTypes.includes('digital') &&
 					supplier.cardTypes.length === 1;
-				console.log('cardTypes', supplier.cardTypes);
-				console.log('onlyPhysicalType', onlyPhysicalType);
-				console.log('onlyDigitalType', onlyDigitalType);
 				setDisabledCardTypes(onlyPhysicalType || onlyDigitalType);
 				setShowCustomSupplier(false);
 				setShowStoreSelector(false);
@@ -590,6 +593,7 @@ export function GiftCardDialog({
 															<Input
 																id="encryptionKey"
 																name="encryptionKey"
+																type="password"
 																value={
 																	formData.encryptionKey
 																}
@@ -648,6 +652,7 @@ export function GiftCardDialog({
 															<Input
 																id="encryptionKey"
 																name="encryptionKey"
+																type="password"
 																value={
 																	formData.encryptionKey
 																}
@@ -683,6 +688,7 @@ export function GiftCardDialog({
 												<Input
 													id="encryptionKey"
 													name="encryptionKey"
+													type="password"
 													value={
 														formData.encryptionKey
 													}
@@ -716,15 +722,15 @@ export function GiftCardDialog({
 
 								<div className="grid grid-cols-2 gap-4">
 									<div className="space-y-2">
-										<Label htmlFor="expirationDate">
+										<Label htmlFor="expiry">
 											Expiration Date (Optional)
 										</Label>
 										<Input
-											id="expirationDate"
-											name="expirationDate"
-											value={formData.expirationDate}
+											id="expiry"
+											name="expiry"
+											type="date"
+											value={formData.expiry?.toString()}
 											onChange={handleChange}
-											placeholder="MM/YYYY"
 										/>
 									</div>
 									<div className="space-y-2">
