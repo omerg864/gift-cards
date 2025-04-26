@@ -19,13 +19,17 @@ const getSuppliers = AsyncHandler(async (req, res) => {
 
 const createUserSupplier = AsyncHandler(async (req, res) => {
 	const user = req.user!;
-	const { name, description, cardTypes } = req.body;
+	const { name, description, cardTypes, fromColor, toColor } = req.body;
 	let { stores = '[]' } = req.body;
 	stores = JSON.parse(stores);
 
-	if (!name) {
+	if (!name || !fromColor || !toColor) {
 		res.status(400);
 		throw new Error('Please add all required fields');
+	}
+	if (!cardTypes || cardTypes.length === 0) {
+		res.status(400);
+		throw new Error('Card types are required');
 	}
 
 	const supplier = await newUserSupplier(
@@ -34,8 +38,8 @@ const createUserSupplier = AsyncHandler(async (req, res) => {
 		description,
 		cardTypes,
 		stores,
-		'#6B7280',
-		'#374151',
+		fromColor,
+		toColor,
 		user
 	);
 
@@ -127,5 +131,5 @@ export {
 	createUserSupplier,
 	getSupplierById,
 	updateUserSupplier,
-	deleteUserSupplier
+	deleteUserSupplier,
 };

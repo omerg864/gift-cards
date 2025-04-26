@@ -50,7 +50,7 @@ const createCardAndSupplier = asyncHandler(async (req, res) => {
 	}
 
 	const newSupplier = await newUserSupplier(
-		req.files,
+		undefined,
 		supplierName,
 		'',
 		undefined,
@@ -167,7 +167,7 @@ const updateCardWithNewSupplier = asyncHandler(async (req, res) => {
 	}
 
 	const newSupplier = await newUserSupplier(
-		req.files,
+		undefined,
 		supplierName,
 		'',
 		undefined,

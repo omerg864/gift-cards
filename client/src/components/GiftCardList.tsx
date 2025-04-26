@@ -92,9 +92,9 @@ export function GiftCardList() {
 			{searchQuery && otherCards.length > 0 && (
 				<div>
 					<h2 className="text-2xl font-semibold mb-6">
-						Other Available Gift Cards
+						Other Suppliers Gift Cards
 					</h2>
-					<div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+					<div className="flex gap-6 flex-wrap w-full justify-center lg:justify-start">
 						{otherCards.map((card) => (
 							<GiftCardItem
 								supplierCard={true}

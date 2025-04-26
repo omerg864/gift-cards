@@ -1,11 +1,11 @@
 import express from 'express';
 import { upload } from '../config/cloud';
 import {
-    getSuppliers,
+	getSuppliers,
 	createUserSupplier,
 	getSupplierById,
 	updateUserSupplier,
-	deleteUserSupplier
+	deleteUserSupplier,
 } from '../controllers/supplierController';
 import { authUser } from '../middleware/authMiddleware';
 
@@ -21,6 +21,5 @@ router.post('/', authUser, uploadFields, createUserSupplier);
 router.get('/:id', authUser, getSupplierById);
 router.put('/:id', authUser, uploadFields, updateUserSupplier);
 router.delete('/:id', authUser, deleteUserSupplier);
-
 
 export default router;

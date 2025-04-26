@@ -1,4 +1,4 @@
-import { Supplier } from '../types/supplier';
+import { CreateSupplierDetails, Supplier } from '../types/supplier';
 import { client, checkToken, axiosErrorHandler } from './client';
 
 export interface SuppliersResponse {
@@ -23,4 +23,41 @@ const getSuppliers = async (): Promise<SuppliersResponse> => {
 	}
 };
 
-export { getSuppliers };
+const createUserSupplier = async (
+	data: CreateSupplierDetails
+): Promise<SuppliersResponse> => {
+	try {
+		const accessToken = await checkToken();
+		if (!accessToken) {
+			throw new Error('Please login');
+		}
+		const formData = new FormData();
+		formData.append('name', data.name);
+		if (data.description) {
+			formData.append('description', data.description);
+		}
+		formData.append('fromColor', data.fromColor);
+		formData.append('toColor', data.toColor);
+		formData.append('cardTypes', JSON.stringify(data.cardTypes));
+		formData.append('stores', JSON.stringify(data.stores));
+		if (data.logo) {
+			formData.append('supplier', data.logo);
+		}
+
+		const response = await client.post<SuppliersResponse>(
+			'/supplier',
+			formData,
+			{
+				headers: {
+					Authorization: `Bearer ${accessToken}`,
+					'Content-Type': 'multipart/form-data',
+				},
+			}
+		);
+		return response.data;
+	} catch (error) {
+		return axiosErrorHandler(error);
+	}
+};
+
+export { getSuppliers, createUserSupplier };

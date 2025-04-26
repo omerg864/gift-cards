@@ -155,9 +155,9 @@ export default function Home() {
 		}
 	};
 
-	if (user && !user?.verifyToken) {
+	if (user && !user?.verifyToken || !user?.salt) {
 		return (
-			<main className="min-h-screen bg-[#0B0E14] text-white p-8">
+			<main className="bg-[#0B0E14] text-white p-8">
 				<div className="max-w-7xl mx-auto">
 					<div className="bg-[#1A1D23] p-6 rounded-md shadow-md">
 						<h2 className="text-2xl font-semibold mb-4">
@@ -221,7 +221,7 @@ export default function Home() {
 		);
 	}
 	return (
-		<main className="min-h-screen bg-[#0B0E14] text-white p-8">
+		<main className="bg-[#0B0E14] text-white p-8">
 			<div className="max-w-7xl mx-auto">
 				<h1 className="text-3xl font-bold mb-8">My Gift Cards</h1>
 

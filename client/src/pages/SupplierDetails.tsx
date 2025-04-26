@@ -136,7 +136,7 @@ export default function SupplierDetailsPage() {
 										/>
 										<div>
 											<div className="font-medium">
-												{store.image}
+												{store.name}
 											</div>
 											<div className="text-sm text-muted-foreground">
 												Accepts {supplier.name} gift

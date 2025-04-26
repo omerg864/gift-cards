@@ -17,6 +17,7 @@ import {
 	User,
 	LogIn,
 	UserPlus,
+	BriefcaseBusiness,
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { Link } from 'react-router-dom';
@@ -97,6 +98,15 @@ export function Header() {
 									>
 										<CreditCard className="mr-2 h-4 w-4" />
 										<span>My Gift Cards</span>
+									</Link>
+								</DropdownMenuItem>
+								<DropdownMenuItem asChild>
+									<Link
+										to="/supplier/list"
+										className="cursor-pointer flex w-full items-center"
+									>
+										<BriefcaseBusiness className="mr-2 h-4 w-4" />
+										<span>Suppliers</span>
 									</Link>
 								</DropdownMenuItem>
 								<DropdownMenuItem asChild>

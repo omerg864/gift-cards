@@ -22,7 +22,7 @@ import {
 } from './ui/select';
 import type { CreateGiftCardDetails, GiftCard } from '../types/gift-card';
 import { currencies } from '../types/gift-card';
-import { allAvailableStores, Supplier } from '../types/supplier';
+import { Supplier } from '../types/supplier';
 import { X, Plus, CreditCard, Smartphone, Store, Search } from 'lucide-react';
 import { ScrollArea } from './ui/scroll-area';
 import { useSupplier } from '../hooks/useSupplier';
@@ -76,24 +76,24 @@ export function GiftCardDialog({
 	const [storeSearch, setStoreSearch] = useState('');
 	const [showStoreSelector, setShowStoreSelector] = useState(false);
 	const [decodedToForm, setDecodedToForm] = useState(false);
-	const { suppliers, loading } = useSupplier();
+	const { suppliers, loading, stores } = useSupplier();
 	const newSuppliers = useMemo(() => {
 		const otherSupplier: Supplier = {
 			_id: 'other',
 			name: 'Other',
 			stores: [],
 			fromColor: '#6B7280',
+			cardTypes: ['physical', 'digital'],
 			toColor: '#374151',
 		};
 		return [...suppliers, otherSupplier];
 	}, [suppliers]);
 
-	const colorRef = useRef(formData.fromColor);
-
-	// Filter available stores based on search
-	const filteredStores = allAvailableStores.filter((store) =>
-		store.toLowerCase().includes(storeSearch.toLowerCase())
+	const filteredStores = stores.filter((store) =>
+		store.name.toLowerCase().includes(storeSearch.toLowerCase())
 	);
+
+	const colorRef = useRef(formData.fromColor);
 
 	const handleChange = (
 		e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -474,25 +474,25 @@ export function GiftCardDialog({
 										<div className="space-y-1">
 											{filteredStores.map((store) => (
 												<div
-													key={store}
+													key={store.name}
 													className="flex items-center space-x-2"
 												>
 													<Checkbox
-														id={`store-${store}`}
+														id={`store-${store.name}`}
 														checked={formData.supportedStores.includes(
-															store
+															store.name
 														)}
 														onCheckedChange={() =>
 															toggleStoreSelection(
-																store
+																store.name
 															)
 														}
 													/>
 													<label
-														htmlFor={`store-${store}`}
+														htmlFor={`store-${store.name}`}
 														className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
 													>
-														{store}
+														{store.name}
 													</label>
 												</div>
 											))}
@@ -743,14 +743,29 @@ export function GiftCardDialog({
 											_id: 'other',
 											name: formData.supplier as string,
 											stores: formData.supportedStores.map(
-												(store) => ({
-													name: store,
-												})
+												(storeName) => {
+													const fullStore =
+														stores.find(
+															(s) =>
+																s.name
+																	.trim()
+																	.toLowerCase() ===
+																storeName
+																	.trim()
+																	.toLowerCase()
+														);
+													return (
+														fullStore || {
+															name: storeName,
+														}
+													);
+												}
 											),
 											fromColor: formData.fromColor,
 											toColor: getDarkerColor(
 												formData.fromColor
 											),
+											cardTypes: ['physical', 'digital'],
 										} satisfies Supplier),
 									_id: '',
 									user: user?._id || '',
