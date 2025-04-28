@@ -4,6 +4,7 @@ import { Supplier as ISupplier, SupplierDocument } from '../types/supplier';
 import { UserDocument } from '../types/user';
 import Supplier from '../models/supplierModel';
 import { v4 as uuid } from 'uuid';
+import { deleteCardsBySupplierId } from './cardService';
 
 const newUserSupplier = async (
 	files: Express.Request['files'] | undefined,
@@ -152,6 +153,7 @@ const deleteUserSupplierById = async (user: UserDocument, id: string) => {
 			promises.push(deleteFromCloudinary(store.image));
 		}
 	}
+	promises.push(deleteCardsBySupplierId(user, id));
 
 	await Promise.allSettled(promises);
 

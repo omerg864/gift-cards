@@ -43,6 +43,7 @@ import { useAuth } from '../hooks/useAuth';
 import EncryptionDialog from '../components/EncryptionDialog';
 import { useEncryption } from '../context/EncryptionContext';
 import { getDarkerColor } from '../lib/colors';
+import ConfirmationDialog from '../components/ConfirmationDialog';
 
 export default function CardDetailsPage() {
 	const navigate = useNavigate();
@@ -54,6 +55,7 @@ export default function CardDetailsPage() {
 	const [storeFilter, setStoreFilter] = useState('');
 	const [filteredStores, setFilteredStores] = useState<IStore[]>([]);
 	const [showEncryptionDialog, setShowEncryptionDialog] = useState(false);
+	const [showConfirmationDialog, setShowConfirmationDialog] = useState(false);
 	const [cvv, setCvv] = useState<string>('');
 	const [cardNumber, setCardNumber] = useState<string>('');
 	const {
@@ -142,16 +144,17 @@ export default function CardDetailsPage() {
 	};
 
 	const handleDelete = async () => {
-		if (confirm('Are you sure you want to delete this gift card?')) {
-			try {
-				await deleteCard(params.id as string);
-				refetchCards();
-				navigate('/');
-				toast.success('Card deleted successfully');
-			} catch (error) {
-				toastError(error);
-			}
+		setLoading(true);
+		try {
+			await deleteCard(params.id as string);
+			refetchCards();
+			navigate('/');
+			setShowConfirmationDialog(false);
+			toast.success('Card deleted successfully');
+		} catch (error) {
+			toastError(error);
 		}
+		setLoading(false);
 	};
 
 	const handleBack = () => {
@@ -308,7 +311,10 @@ export default function CardDetailsPage() {
 					<Button variant="outline" onClick={handleEdit}>
 						<Edit className="mr-2 h-4 w-4" /> Edit
 					</Button>
-					<Button variant="destructive" onClick={handleDelete}>
+					<Button
+						variant="destructive"
+						onClick={() => setShowConfirmationDialog(true)}
+					>
 						<Trash className="mr-2 h-4 w-4" /> Delete
 					</Button>
 				</div>
@@ -526,6 +532,15 @@ export default function CardDetailsPage() {
 					giftCard={giftCard}
 					onClose={() => setShowEditDialog(false)}
 					onSubmit={handleUpdateCard}
+				/>
+			)}
+			{showConfirmationDialog && (
+				<ConfirmationDialog
+					title="Delete Card"
+					body="Are you sure you want to delete this card?"
+					onClose={() => setShowConfirmationDialog(false)}
+					onAccept={handleDelete}
+					buttonText="Delete"
 				/>
 			)}
 		</div>

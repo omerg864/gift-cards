@@ -61,13 +61,15 @@ export function GiftCardList() {
 				<h2 className="text-2xl font-semibold mb-6">Your Gift Cards</h2>
 				{filteredCards.length > 0 ? (
 					<div className="flex gap-6 flex-wrap w-full justify-center lg:justify-start">
-						{filteredCards.map((card) => (
-							<GiftCardItem
-								handleCardClick={handleGiftCardClick}
-								key={card._id}
-								giftCard={card}
-							/>
-						))}
+						{filteredCards
+							.filter((card) => card.supplier)
+							.map((card) => (
+								<GiftCardItem
+									handleCardClick={handleGiftCardClick}
+									key={card._id}
+									giftCard={card}
+								/>
+							))}
 					</div>
 				) : (
 					<div className="bg-white/5 p-6 rounded-lg text-center">

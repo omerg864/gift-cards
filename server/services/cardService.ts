@@ -85,10 +85,23 @@ const updateAllCards = async (
 	return promises;
 };
 
+const deleteCardsBySupplierId = async (
+	user: UserDocument,
+	supplierId: string
+): Promise<CardDocument[]> => {
+	const cards = await Card.find({ user: user._id, supplier: supplierId });
+	const deletePromises = cards.map((card) => {
+		return Card.findOneAndDelete({ _id: card._id, user: user._id });
+	});
+	await Promise.all(deletePromises);
+	return cards;
+};
+
 export {
 	getUserCards,
 	newCard,
 	updateCardById,
 	deleteCardById,
 	updateAllCards,
+	deleteCardsBySupplierId,
 };

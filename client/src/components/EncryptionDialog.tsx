@@ -47,51 +47,45 @@ const EncryptionDialog = ({ onClose, onSave }: EncryptionDialogProps) => {
 	};
 
 	return (
-		<>
-			<Dialog open={true} onOpenChange={onClose}>
-				<DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto">
-					<DialogHeader>
-						<DialogTitle>Enter Encryption Key</DialogTitle>
-					</DialogHeader>
-					<form onSubmit={handleSubmit} className="space-y-6">
-						<p>
-							To view encrypted data, please enter the encryption
-							key below.
-						</p>
-						<div className="space-y-2">
-							<Label htmlFor="expirationDate">
-								Encryption Key
-							</Label>
-							<Input
-								required
-								type="password"
-								id="encryptionKey"
-								name="encryptionKey"
-								value={encryptionKey}
-								onChange={(e) =>
-									setEncryptionKey(e.target.value)
-								}
-							/>
-						</div>
-						<DialogFooter>
-							<Button
-								type="button"
-								variant="outline"
-								onClick={onClose}
-							>
-								Cancel
-							</Button>
-							<Button
-								type="submit"
-								className="w-full bg-teal-600 hover:bg-teal-700"
-							>
-								Decrypt
-							</Button>
-						</DialogFooter>
-					</form>
-				</DialogContent>
-			</Dialog>
-		</>
+		<Dialog open={true} onOpenChange={onClose}>
+			<DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto">
+				<DialogHeader>
+					<DialogTitle>Enter Encryption Key</DialogTitle>
+				</DialogHeader>
+				<form onSubmit={handleSubmit} className="space-y-6">
+					<p>
+						To view encrypted data, please enter the encryption key
+						below.
+					</p>
+					<div className="space-y-2">
+						<Label htmlFor="expirationDate">Encryption Key</Label>
+						<Input
+							required
+							type="password"
+							id="encryptionKey"
+							name="encryptionKey"
+							value={encryptionKey}
+							onChange={(e) => setEncryptionKey(e.target.value)}
+						/>
+					</div>
+					<DialogFooter>
+						<Button
+							type="button"
+							variant="outline"
+							onClick={onClose}
+						>
+							Cancel
+						</Button>
+						<Button
+							type="submit"
+							className="w-full bg-teal-600 hover:bg-teal-700"
+						>
+							Decrypt
+						</Button>
+					</DialogFooter>
+				</form>
+			</DialogContent>
+		</Dialog>
 	);
 };
 

@@ -32,10 +32,12 @@ import { useEncryption } from '../context/EncryptionContext';
 import { toastError } from '../lib/utils';
 import { useGiftCards } from '../hooks/useGiftCards';
 import { deleteUserSupplier } from '../services/supplierService';
+import ConfirmationDialog from '../components/ConfirmationDialog';
 
 export default function SupplierDetailsPage() {
 	const navigate = useNavigate();
 	const [showAddDialog, setShowAddDialog] = useState(false);
+	const [showConfirmationDialog, setShowConfirmationDialog] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
 	const { suppliers, loading, refetchSuppliers } = useSupplier();
 	const { refetchCards } = useGiftCards();
@@ -200,7 +202,9 @@ export default function SupplierDetailsPage() {
 			await deleteUserSupplier(supplier._id);
 			toast.success('Supplier deleted successfully');
 			navigate('/supplier/list');
+			setShowConfirmationDialog(false);
 			refetchSuppliers();
+			refetchCards();
 		} catch (error) {
 			toastError(error);
 		}
@@ -226,7 +230,10 @@ export default function SupplierDetailsPage() {
 						<Button variant="outline" onClick={handleEdit}>
 							<Edit className="mr-2 h-4 w-4" /> Edit
 						</Button>
-						<Button variant="destructive" onClick={handleDelete}>
+						<Button
+							variant="destructive"
+							onClick={() => setShowConfirmationDialog(true)}
+						>
 							<Trash className="mr-2 h-4 w-4" /> Delete
 						</Button>
 					</div>
@@ -358,6 +365,25 @@ export default function SupplierDetailsPage() {
 					supplier={supplier}
 					onSubmit={handleNewCardSubmit}
 					onClose={() => setShowAddDialog(false)}
+				/>
+			)}
+			{showConfirmationDialog && (
+				<ConfirmationDialog
+					title="Delete supplier"
+					body={
+						<>
+							<p>
+								Are you sure you want to delete this supplier?
+							</p>
+							<p>This action cannot be undone.</p>
+							<p>
+								All gift cards associated with this supplier
+								will be deleted.
+							</p>
+						</>
+					}
+					onClose={() => setShowConfirmationDialog(false)}
+					onAccept={handleDelete}
 				/>
 			)}
 		</div>
