@@ -3,21 +3,44 @@
 import { useState, useEffect } from 'react';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
-import { ArrowLeft, Store, CreditCard, Smartphone, Plus } from 'lucide-react';
-import { Supplier } from '../types/supplier';
+import {
+	ArrowLeft,
+	Store,
+	CreditCard,
+	Smartphone,
+	Plus,
+	ShoppingBag,
+	Search,
+	X,
+} from 'lucide-react';
+import { Supplier, Store as IStore } from '../types/supplier';
 import { GiftCardDialog } from '../components/GiftCardDialog';
 import { useNavigate, useParams } from 'react-router-dom';
 import { CreateGiftCardDetails } from '../types/gift-card';
 import { useSupplier } from '../hooks/useSupplier';
 import Loading from '../components/loading';
 import { toast } from 'react-toastify';
+import { SupplierCard } from '../components/SupplierCard';
+import { Input } from '../components/ui/input';
+import { createCard, createCardAndSupplier } from '../services/cardService';
+import { getDarkerColor } from '../lib/colors';
+import { encryptCard, validateGlobalKey } from '../lib/cryptoHelpers';
+import { useAuth } from '../hooks/useAuth';
+import { useEncryption } from '../context/EncryptionContext';
+import { toastError } from '../lib/utils';
+import { useGiftCards } from '../hooks/useGiftCards';
 
 export default function SupplierDetailsPage() {
 	const navigate = useNavigate();
 	const [showAddDialog, setShowAddDialog] = useState(false);
-	const { suppliers, loading } = useSupplier();
+	const { suppliers, loading, refetchSuppliers } = useSupplier();
+	const { refetchCards } = useGiftCards();
 	const [supplier, setSupplier] = useState<Supplier | null>(null);
+	const [filteredStores, setFilteredStores] = useState<IStore[]>([]);
+	const [storeFilter, setStoreFilter] = useState('');
 	const params = useParams();
+	const { user } = useAuth();
+	const { setGlobalKey } = useEncryption();
 
 	useEffect(() => {
 		// Simulate loading
@@ -35,6 +58,19 @@ export default function SupplierDetailsPage() {
 		}
 	}, [suppliers]);
 
+	useEffect(() => {
+		if (supplier) {
+			if (storeFilter.trim() === '') {
+				setFilteredStores(supplier.stores);
+			} else {
+				const filtered = supplier.stores.filter((store) =>
+					store.name.toLowerCase().includes(storeFilter.toLowerCase())
+				);
+				setFilteredStores(filtered);
+			}
+		}
+	}, [storeFilter, supplier]);
+
 	const handleBack = () => {
 		navigate(-1);
 	};
@@ -44,7 +80,112 @@ export default function SupplierDetailsPage() {
 	};
 
 	const handleNewCardSubmit = async (data: CreateGiftCardDetails) => {
-		console.log('Card data:', data);
+		if (!data) {
+			toast.error('No data provided');
+			return;
+		}
+		if (isNaN(data.amount) || data.amount <= 0) {
+			toast.error('Amount must be greater than 0');
+			return;
+		}
+		if (!data.name || !data.supplierId) {
+			toast.error('Name and Supplier are required');
+			return;
+		}
+		if (!user) {
+			toast.error('unable to perform encryption');
+			return;
+		}
+
+		if (!user.salt || !user.verifyToken) {
+			toast.error('unable to perform encryption');
+			return;
+		}
+		if (data.cvv || data.cardNumber) {
+			if (!data.encryptionKey) {
+				toast.error('Please provide encryption key');
+				return;
+			}
+			if (
+				!validateGlobalKey(
+					user.verifyToken,
+					data.encryptionKey,
+					user.salt
+				)
+			) {
+				toast.error('invalid encryption key');
+				return;
+			}
+			setGlobalKey(data.encryptionKey);
+		}
+		let last4, cvv, cardNumber;
+		if (data.cardNumber) {
+			last4 = data.cardNumber.slice(-4);
+		}
+		if (data.cardNumber || data.cvv) {
+			const encryptedData = encryptCard(
+				{ cardNumber: data.cardNumber, cvv: data.cvv },
+				data.encryptionKey,
+				user.salt
+			);
+			cardNumber = encryptedData.cardNumber;
+			cvv = encryptedData.cvv;
+		}
+		try {
+			if (data.supplierId === 'other') {
+				if (!data.supplier) {
+					toast.error('Supplier name is required');
+					return;
+				}
+				if (!data.fromColor) {
+					toast.error('color is required');
+					return;
+				}
+				await createCardAndSupplier(
+					data.name,
+					data.supplier as string,
+					data.description || '',
+					data.isPhysical,
+					data.amount,
+					data.currency,
+					data.supportedStores.map((store) => ({
+						name: store,
+					})),
+					null,
+					[],
+					data.fromColor,
+					getDarkerColor(data.fromColor),
+					cardNumber,
+					last4,
+					data.expiry,
+					cvv
+				);
+				refetchSuppliers();
+			} else {
+				await createCard(
+					data.name,
+					data.supplierId,
+					data.description || '',
+					data.isPhysical,
+					data.amount,
+					data.currency,
+					cardNumber,
+					last4,
+					data.expiry,
+					cvv
+				);
+			}
+			refetchCards();
+			setShowAddDialog(false);
+			toast.success('Card added successfully');
+		} catch (error) {
+			console.error('Error adding card:', error);
+			toastError(error);
+		}
+	};
+
+	const clearStoreFilter = () => {
+		setStoreFilter('');
 	};
 
 	if (loading || !supplier) {
@@ -60,28 +201,7 @@ export default function SupplierDetailsPage() {
 			<div className="grid md:grid-cols-2 gap-8">
 				<div>
 					{/* Supplier Card */}
-					<div
-						className={`w-full h-64 rounded-xl p-6 flex flex-col justify-between text-white mb-6`}
-						style={{
-							background: `linear-gradient(135deg, ${supplier.fromColor}, ${supplier.toColor})`,
-						}}
-					>
-						<div className="text-2xl font-bold tracking-wider">
-							{supplier.name.toUpperCase()}
-						</div>
-						<div className="mt-auto">
-							<div className="text-lg opacity-90">
-								Gift Card Provider
-							</div>
-							<Button
-								onClick={handleAddCard}
-								className="mt-4 bg-white/20 hover:bg-white/30 text-white border-white/30"
-							>
-								<Plus className="mr-2 h-4 w-4" /> Add to My
-								Cards
-							</Button>
-						</div>
-					</div>
+					<SupplierCard supplier={supplier} />
 
 					{/* Supplier Information */}
 					<div className="bg-muted/30 p-6 rounded-lg">
@@ -89,26 +209,28 @@ export default function SupplierDetailsPage() {
 							About {supplier.name}
 						</h2>
 						<p className="text-muted-foreground mb-4">
-							{supplier.name} gift cards can be used at various
-							stores and locations. They make perfect gifts for
-							any occasion.
+							{supplier.description}
 						</p>
 
 						<div className="flex flex-wrap gap-2 mt-4">
-							<Badge
-								variant="outline"
-								className="flex items-center gap-1"
-							>
-								<CreditCard className="h-3 w-3" /> Physical
-								Cards Available
-							</Badge>
-							<Badge
-								variant="outline"
-								className="flex items-center gap-1"
-							>
-								<Smartphone className="h-3 w-3" /> Digital Cards
-								Available
-							</Badge>
+							{supplier.cardTypes.includes('physical') && (
+								<Badge
+									variant="outline"
+									className="flex items-center gap-1"
+								>
+									<CreditCard className="h-3 w-3" /> Physical
+									Cards Available
+								</Badge>
+							)}
+							{supplier.cardTypes.includes('digital') && (
+								<Badge
+									variant="outline"
+									className="flex items-center gap-1"
+								>
+									<Smartphone className="h-3 w-3" /> Digital
+									Cards Available
+								</Badge>
+							)}
 						</div>
 					</div>
 				</div>
@@ -116,20 +238,46 @@ export default function SupplierDetailsPage() {
 				<div>
 					{/* Supported Stores */}
 					<div className="bg-muted/30 p-6 rounded-lg">
-						<h2 className="text-xl font-semibold flex items-center mb-4">
-							<Store className="mr-2 h-5 w-5" /> Supported Stores
-						</h2>
+						<div className="flex justify-between items-center mb-4">
+							<h2 className="text-xl font-semibold flex items-center">
+								<Store className="mr-2 h-5 w-5" /> Supported
+								Stores
+							</h2>
+							<div className="text-sm text-muted-foreground">
+								{filteredStores.length} of{' '}
+								{supplier.stores.length} stores
+							</div>
+						</div>
 
-						<div className="space-y-4 max-h-[500px] overflow-y-auto pr-2">
-							{supplier.stores.length > 0 ? (
-								supplier.stores.map((store, index) => (
+						{/* Search input for stores */}
+						<div className="relative mb-4">
+							<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+							<Input
+								placeholder="Search stores..."
+								value={storeFilter}
+								onChange={(e) => setStoreFilter(e.target.value)}
+								className="pl-9 pr-8"
+							/>
+							{storeFilter && (
+								<button
+									onClick={clearStoreFilter}
+									className="absolute right-3 top-1/2 transform -translate-y-1/2"
+								>
+									<X className="h-4 w-4 text-muted-foreground" />
+								</button>
+							)}
+						</div>
+
+						<div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
+							{filteredStores.length > 0 ? (
+								filteredStores.map((store, index) => (
 									<div
 										key={index}
 										className="flex items-center gap-4 p-3 bg-background rounded-lg border"
 									>
 										<img
 											src={store.image || '/store.png'}
-											alt={store.image}
+											alt={store.name}
 											width={40}
 											height={40}
 											className="rounded-md"
@@ -138,16 +286,21 @@ export default function SupplierDetailsPage() {
 											<div className="font-medium">
 												{store.name}
 											</div>
-											<div className="text-sm text-muted-foreground">
+											<div className="text-sm text-muted-foreground flex items-center">
+												<ShoppingBag className="h-3 w-3 mr-1" />
 												Accepts {supplier.name} gift
 												cards
 											</div>
 										</div>
 									</div>
 								))
+							) : storeFilter ? (
+								<div className="text-center py-8 text-muted-foreground">
+									No stores match your search "{storeFilter}"
+								</div>
 							) : (
 								<div className="text-center py-8 text-muted-foreground">
-									No stores specified for this supplier
+									No stores specified for this gift card
 								</div>
 							)}
 						</div>
@@ -167,6 +320,7 @@ export default function SupplierDetailsPage() {
 
 			{showAddDialog && (
 				<GiftCardDialog
+					supplier={supplier}
 					onSubmit={handleNewCardSubmit}
 					onClose={() => setShowAddDialog(false)}
 				/>

@@ -17,7 +17,6 @@ export interface GiftCard {
 
 export interface CreateGiftCardDetails extends Omit<GiftCard, '_id' | 'user'> {
 	supplierName: string;
-	supplierImage: File | null;
 	supportedStores: string[];
 	stores_images: File[];
 	supplierId: string;

@@ -35,7 +35,6 @@ const ProfileTab = () => {
 		setIsLoading(true);
 		try {
 			const data = await updateUser(name, deleteImage, file);
-			console.log('deleteImage', deleteImage);
 			updateUserState({ ...data.user });
 			toast.success('Profile updated successfully');
 		} catch (error) {
@@ -75,8 +74,6 @@ const ProfileTab = () => {
 			setImagePreview(user.image || '');
 		}
 	}, [user]);
-
-    console.log('imagePreview', imagePreview);
 
 	if (isLoading) {
 		return <Loading />;

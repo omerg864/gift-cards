@@ -38,6 +38,7 @@ import { toast } from 'react-toastify';
 
 interface GiftCardDialogProps {
 	giftCard?: GiftCard;
+	supplier?: Supplier;
 	onSubmit: (data: CreateGiftCardDetails) => Promise<void>;
 	onClose: () => void;
 }
@@ -46,21 +47,21 @@ export function GiftCardDialog({
 	onClose,
 	onSubmit,
 	giftCard,
+	supplier,
 }: GiftCardDialogProps) {
 	const { globalKey, setGlobalKey } = useEncryption();
 	const { user } = useAuth();
 	const [formData, setFormData] = useState<CreateGiftCardDetails>({
-		supplier: '',
 		name: '',
 		amount: 0,
 		currency: 'ILS', // Default to ILS
 		description: '',
 		supportedStores: [],
 		isPhysical: true,
-		supplierImage: null,
-		supplierName: '',
+		supplierName: supplier ? supplier.name : '',
 		stores_images: [],
 		supplierId: 'other',
+		supplier: '',
 		encryptionKey: '',
 		fromColor: '#6B7280',
 		...giftCard,
@@ -281,6 +282,12 @@ export function GiftCardDialog({
 	}, [giftCard]);
 
 	useEffect(() => {
+		if (supplier) {
+			handleSupplierChange(supplier._id);
+		}
+	}, [supplier]);
+
+	useEffect(() => {
 		if (
 			globalKey &&
 			user &&
@@ -327,7 +334,10 @@ export function GiftCardDialog({
 						</Label>
 						<Select
 							defaultValue={
-								(giftCard?.supplier as Supplier)?._id || ''
+								supplier
+									? supplier._id
+									: (giftCard?.supplier as Supplier)?._id ||
+									  ''
 							}
 							onValueChange={handleSupplierChange}
 						>
@@ -729,7 +739,13 @@ export function GiftCardDialog({
 											id="expiry"
 											name="expiry"
 											type="date"
-											value={formData.expiry?.toString()}
+											value={
+												formData.expiry
+													? formData.expiry
+															.toISOString()
+															.split('T')[0]
+													: ''
+											}
 											onChange={handleChange}
 										/>
 									</div>

@@ -239,7 +239,6 @@ const updateUser = asyncHandler(
 		}
 		let image: string | undefined | null = user.image;
 		let deletePictureBool = deleteImage === 'true';
-		console.log('deletePictureBool', deletePictureBool);
 		if (req.file) {
 			if (user.image) {
 				await deleteFromCloudinary(user.image);

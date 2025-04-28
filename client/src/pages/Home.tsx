@@ -18,6 +18,7 @@ import {
 	validateGlobalKey,
 } from '../lib/cryptoHelpers';
 import { getDarkerColor } from '../lib/colors';
+import { useSupplier } from '../hooks/useSupplier';
 
 export default function Home() {
 	const [showDialog, setShowDialog] = useState<boolean>(false);
@@ -26,6 +27,7 @@ export default function Home() {
 		useState<string>('');
 	const { refetchCards } = useGiftCards();
 	const { setGlobalKey } = useEncryption();
+	const { refetchSuppliers } = useSupplier();
 	const { user, updateUser, isAuthenticated } = useAuth();
 
 	const handleAddCard = async (data: CreateGiftCardDetails) => {
@@ -109,6 +111,7 @@ export default function Home() {
 					data.expiry,
 					cvv
 				);
+				refetchSuppliers();
 			} else {
 				await createCard(
 					data.name,
