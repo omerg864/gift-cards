@@ -12,6 +12,8 @@ import {
 	ShoppingBag,
 	Search,
 	X,
+	Edit,
+	Trash,
 } from 'lucide-react';
 import { Supplier, Store as IStore } from '../types/supplier';
 import { GiftCardDialog } from '../components/GiftCardDialog';
@@ -29,10 +31,12 @@ import { useAuth } from '../hooks/useAuth';
 import { useEncryption } from '../context/EncryptionContext';
 import { toastError } from '../lib/utils';
 import { useGiftCards } from '../hooks/useGiftCards';
+import { deleteUserSupplier } from '../services/supplierService';
 
 export default function SupplierDetailsPage() {
 	const navigate = useNavigate();
 	const [showAddDialog, setShowAddDialog] = useState(false);
+	const [isLoading, setIsLoading] = useState(false);
 	const { suppliers, loading, refetchSuppliers } = useSupplier();
 	const { refetchCards } = useGiftCards();
 	const [supplier, setSupplier] = useState<Supplier | null>(null);
@@ -184,19 +188,50 @@ export default function SupplierDetailsPage() {
 		}
 	};
 
+	const handleEdit = () => {};
+
+	const handleDelete = async () => {
+		if (!supplier) {
+			toast.error('Supplier not found');
+			return;
+		}
+		setIsLoading(true);
+		try {
+			await deleteUserSupplier(supplier._id);
+			toast.success('Supplier deleted successfully');
+			navigate('/supplier/list');
+			refetchSuppliers();
+		} catch (error) {
+			toastError(error);
+		}
+		setIsLoading(false);
+	};
+
 	const clearStoreFilter = () => {
 		setStoreFilter('');
 	};
 
-	if (loading || !supplier) {
+	if (loading || !supplier || isLoading) {
 		return <Loading />;
 	}
 
 	return (
 		<div className="container mx-auto px-4 py-8">
-			<Button variant="outline" onClick={handleBack} className="mb-6">
-				<ArrowLeft className="mr-2 h-4 w-4" /> Back
-			</Button>
+			<div className="flex justify-between items-center mb-6">
+				<Button variant="outline" onClick={handleBack}>
+					<ArrowLeft className="mr-2 h-4 w-4" /> Back to Suppliers
+				</Button>
+				{supplier.user && (
+					<div className="flex gap-2">
+						<Button variant="outline" onClick={handleEdit}>
+							<Edit className="mr-2 h-4 w-4" /> Edit
+						</Button>
+						<Button variant="destructive" onClick={handleDelete}>
+							<Trash className="mr-2 h-4 w-4" /> Delete
+						</Button>
+					</div>
+				)}
+			</div>
 
 			<div className="grid md:grid-cols-2 gap-8">
 				<div>

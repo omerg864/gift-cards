@@ -1,3 +1,5 @@
+import { User } from "./user";
+
 export interface Supplier {
 	_id: string;
 	name: string;
@@ -7,6 +9,7 @@ export interface Supplier {
 	description?: string;
 	cardTypes: string[];
 	stores: Store[];
+	user?: User;
 }
 
 export interface Store {

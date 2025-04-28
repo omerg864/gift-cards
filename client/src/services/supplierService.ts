@@ -1,5 +1,6 @@
 import { CreateSupplierDetails, Supplier } from '../types/supplier';
 import { client, checkToken, axiosErrorHandler } from './client';
+import { MessageResponse } from './userService';
 
 export interface SuppliersResponse {
 	suppliers: Supplier[];
@@ -60,4 +61,24 @@ const createUserSupplier = async (
 	}
 };
 
-export { getSuppliers, createUserSupplier };
+const deleteUserSupplier = async (supplierId: string): Promise<MessageResponse> => {
+	try {
+		const accessToken = await checkToken();
+		if (!accessToken) {
+			throw new Error('Please login');
+		}
+		const response = await client.delete<MessageResponse>(
+			`/supplier/${supplierId}`,
+			{
+				headers: {
+					Authorization: `Bearer ${accessToken}`,
+				},
+			}
+		);
+		return response.data;
+	} catch (error) {
+		return axiosErrorHandler(error);
+	}
+}
+
+export { getSuppliers, createUserSupplier, deleteUserSupplier };
