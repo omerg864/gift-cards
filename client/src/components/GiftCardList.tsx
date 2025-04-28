@@ -30,15 +30,17 @@ export function GiftCardList() {
 	useEffect(() => {
 		if (searchQuery) {
 			const regex = new RegExp(searchQuery, 'i');
-			const filtered = giftCards.filter(
-				(card) =>
-					card.name.match(regex) ||
-					(card.supplier as Supplier).name.match(regex) ||
-					card.description?.match(regex) ||
-					(card.supplier as Supplier).stores.some((store) =>
-						store.name.match(regex)
-					)
-			);
+			const filtered = giftCards
+				.filter((card) => card.supplier)
+				.filter(
+					(card) =>
+						card.name.match(regex) ||
+						(card.supplier as Supplier).name.match(regex) ||
+						card.description?.match(regex) ||
+						(card.supplier as Supplier).stores.some((store) =>
+							store.name.match(regex)
+						)
+				);
 			const suppliersFiltered = suppliers.filter(
 				(supplier) =>
 					supplier.name.match(regex) ||
