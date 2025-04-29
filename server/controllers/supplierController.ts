@@ -24,6 +24,16 @@ const createUserSupplier = AsyncHandler(async (req, res) => {
 	stores = JSON.parse(stores);
 	cardTypes = JSON.parse(cardTypes);
 
+	if (!Array.isArray(cardTypes) || cardTypes.length === 0) {
+		res.status(400);
+		throw new Error('Card types are required');
+	}
+
+	if (!Array.isArray(stores)) {
+		res.status(400);
+		throw new Error('Stores are required');
+	}
+
 	if (!name || !fromColor || !toColor) {
 		res.status(400);
 		throw new Error('Please add all required fields');
@@ -70,12 +80,21 @@ const getSupplierById = AsyncHandler(async (req, res) => {
 const updateUserSupplier = AsyncHandler(async (req, res) => {
 	const user = req.user!;
 	const supplierId = req.params.id;
-	const { name, deleteImageBool, description, cardTypes } = req.body;
-	let { stores = [] } = req.body;
+	const { name, deleteImageBool, description } = req.body;
+	let { stores = '[]', cardTypes = '["digital"]' } = req.body;
 
 	const deleteImage = deleteImageBool === 'true' ? true : false;
 
 	stores = JSON.parse(stores);
+	cardTypes = JSON.parse(cardTypes);
+	if (!Array.isArray(cardTypes) || !cardTypes || cardTypes.length === 0) {
+		res.status(400);
+		throw new Error('Card types are required');
+	}
+	if (!Array.isArray(stores)) {
+		res.status(400);
+		throw new Error('Stores are required');
+	}
 
 	if (!name) {
 		res.status(400);

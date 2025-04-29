@@ -104,12 +104,12 @@ const updateSupplier = async (
 	file: Express.Request['file'] | undefined,
 	deleteImage: boolean
 ) => {
-	let logo: string | undefined = undefined;
+	let logo: string | null = supplier.logo || null;
 	if (deleteImage) {
 		if (supplier.logo) {
 			await deleteFromCloudinary(supplier.logo);
 		}
-		logo = undefined;
+		logo = null;
 	} else if (file) {
 		if (supplier.logo) {
 			await deleteFromCloudinary(supplier.logo);

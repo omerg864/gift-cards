@@ -19,6 +19,7 @@ export interface Store {
 }
 
 export interface CreateSupplierDetails {
+	_id?: string;
 	name: string;
 	fromColor: string;
 	toColor: string;
@@ -26,4 +27,5 @@ export interface CreateSupplierDetails {
 	description?: string;
 	cardTypes: string[];
 	stores: Store[];
+	deleteImage?: boolean;
 }

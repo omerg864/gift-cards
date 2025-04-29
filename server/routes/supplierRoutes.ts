@@ -13,13 +13,13 @@ const router = express.Router();
 
 const uploadFields = upload.fields([
 	{ name: 'supplier', maxCount: 1 },
-	{ name: 'stores', maxCount: 100 },
+	{ name: 'stores', maxCount: 20 },
 ]);
 
 router.get('/', authUser, getSuppliers);
 router.post('/', authUser, uploadFields, createUserSupplier);
 router.get('/:id', authUser, getSupplierById);
-router.put('/:id', authUser, uploadFields, updateUserSupplier);
+router.put('/:id', authUser, upload.single('supplier'), updateUserSupplier);
 router.delete('/:id', authUser, deleteUserSupplier);
 
 export default router;

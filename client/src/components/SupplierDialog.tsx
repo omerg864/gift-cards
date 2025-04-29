@@ -10,7 +10,7 @@ import { useSupplier } from '../hooks/useSupplier';
 import { Label } from './ui/label';
 import { Input } from './ui/input';
 import { Button } from './ui/button';
-import { CreateSupplierDetails } from '../types/supplier';
+import { CreateSupplierDetails, Supplier } from '../types/supplier';
 import { ChangeEvent, useCallback, useMemo, useRef, useState } from 'react';
 import { debounce } from 'lodash';
 import { getDarkerColor } from '../lib/colors';
@@ -24,10 +24,15 @@ import { Textarea } from './ui/textarea';
 import { Switch } from './ui/switch';
 
 interface SupplierDialogProps {
+	supplier?: Supplier;
 	onClose: () => void;
 	onSubmit: (data: CreateSupplierDetails) => Promise<boolean>;
 }
-const SupplierDialog = ({ onClose, onSubmit }: SupplierDialogProps) => {
+const SupplierDialog = ({
+	onClose,
+	onSubmit,
+	supplier,
+}: SupplierDialogProps) => {
 	const { loading, stores } = useSupplier();
 	const [data, setData] = useState<CreateSupplierDetails>({
 		name: '',
@@ -35,12 +40,14 @@ const SupplierDialog = ({ onClose, onSubmit }: SupplierDialogProps) => {
 		toColor: '#374151',
 		description: '',
 		cardTypes: ['physical', 'digital'],
-		logo: null,
 		stores: [],
+		...supplier,
+		logo: null,
 	});
 	const [file, setFile] = useState<File | null>(null);
 	const [storeInput, setStoreInput] = useState('');
 	const [storeSearch, setStoreSearch] = useState('');
+	const [deleteImage, setDeleteImage] = useState(false);
 	const filteredStores = stores.filter((store) =>
 		store.name.toLowerCase().includes(storeSearch.toLowerCase())
 	);
@@ -119,6 +126,7 @@ const SupplierDialog = ({ onClose, onSubmit }: SupplierDialogProps) => {
 			...data,
 			logo: file,
 			stores: finalStores,
+			deleteImage,
 		});
 		if (success) {
 			onClose();
@@ -241,7 +249,11 @@ const SupplierDialog = ({ onClose, onSubmit }: SupplierDialogProps) => {
 						/>
 					</div>
 					<div className="space-y-2">
-						<SupplierImageInput setFile={setFile} />
+						<SupplierImageInput
+							setDeleteImage={setDeleteImage}
+							setFile={setFile}
+							defaultImage={supplier?.logo}
+						/>
 					</div>
 					<div className="space-y-3 border rounded-md p-3">
 						<div className="flex gap-2">
@@ -340,8 +352,12 @@ const SupplierDialog = ({ onClose, onSubmit }: SupplierDialogProps) => {
 							<SupplierCard
 								supplier={{
 									...data,
-									logo: file ? URL.createObjectURL(file) : '',
-									_id: '',
+									logo: file
+										? URL.createObjectURL(file)
+										: deleteImage
+										? ''
+										: supplier?.logo,
+									_id: supplier?._id || '',
 								}}
 							/>
 						</details>

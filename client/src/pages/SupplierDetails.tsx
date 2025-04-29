@@ -15,7 +15,11 @@ import {
 	Edit,
 	Trash,
 } from 'lucide-react';
-import { Supplier, Store as IStore } from '../types/supplier';
+import {
+	Supplier,
+	Store as IStore,
+	CreateSupplierDetails,
+} from '../types/supplier';
 import { GiftCardDialog } from '../components/GiftCardDialog';
 import { useNavigate, useParams } from 'react-router-dom';
 import { CreateGiftCardDetails } from '../types/gift-card';
@@ -31,12 +35,17 @@ import { useAuth } from '../hooks/useAuth';
 import { useEncryption } from '../context/EncryptionContext';
 import { toastError } from '../lib/utils';
 import { useGiftCards } from '../hooks/useGiftCards';
-import { deleteUserSupplier } from '../services/supplierService';
+import {
+	deleteUserSupplier,
+	updateUserSupplier,
+} from '../services/supplierService';
 import ConfirmationDialog from '../components/ConfirmationDialog';
+import SupplierDialog from '../components/SupplierDialog';
 
 export default function SupplierDetailsPage() {
 	const navigate = useNavigate();
 	const [showAddDialog, setShowAddDialog] = useState(false);
+	const [showEditDialog, setShowEditDialog] = useState(false);
 	const [showConfirmationDialog, setShowConfirmationDialog] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
 	const { suppliers, loading, refetchSuppliers } = useSupplier();
@@ -190,7 +199,32 @@ export default function SupplierDetailsPage() {
 		}
 	};
 
-	const handleEdit = () => {};
+	const handleEdit = async (data: CreateSupplierDetails) => {
+		if (!data) {
+			toast.error('No data provided');
+			return false;
+		}
+		if (!data.name || !data.fromColor || !data.toColor) {
+			toast.error('Please provide all required fields');
+			return false;
+		}
+		if (!data.cardTypes || data.cardTypes.length === 0) {
+			toast.error('At least one Card type is required');
+			return false;
+		}
+		setIsLoading(true);
+		try {
+			await updateUserSupplier(data);
+			await refetchSuppliers();
+			toast.success('Supplier created successfully');
+		} catch (error) {
+			toastError(error);
+			setIsLoading(false);
+			return false;
+		}
+		setIsLoading(false);
+		return true;
+	};
 
 	const handleDelete = async () => {
 		if (!supplier) {
@@ -227,7 +261,10 @@ export default function SupplierDetailsPage() {
 				</Button>
 				{supplier.user && (
 					<div className="flex gap-2">
-						<Button variant="outline" onClick={handleEdit}>
+						<Button
+							variant="outline"
+							onClick={() => setShowEditDialog(true)}
+						>
 							<Edit className="mr-2 h-4 w-4" /> Edit
 						</Button>
 						<Button
@@ -365,6 +402,13 @@ export default function SupplierDetailsPage() {
 					supplier={supplier}
 					onSubmit={handleNewCardSubmit}
 					onClose={() => setShowAddDialog(false)}
+				/>
+			)}
+			{showEditDialog && (
+				<SupplierDialog
+					onSubmit={handleEdit}
+					onClose={() => setShowEditDialog(false)}
+					supplier={supplier}
 				/>
 			)}
 			{showConfirmationDialog && (
