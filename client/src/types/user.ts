@@ -4,6 +4,13 @@ export interface DeviceDetails {
 	type: string;
 }
 
+export interface Device {
+	createdAt: string;
+	device_id: string;
+	name: string;
+	type: string;
+}
+
 export interface User {
 	_id: string;
 	name: string;

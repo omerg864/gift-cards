@@ -15,7 +15,8 @@ import {
 	resetPassword,
 	createEncryptionKey,
 	changeEncryptionKey,
-	resetEncryptionKey
+	resetEncryptionKey,
+	getConnectedDevices
 } from '../controllers/userController';
 import { upload } from '../config/cloud';
 import { authUser } from '../middleware/authMiddleware';
@@ -40,5 +41,6 @@ router.get('/disconnect', authUser, disconnectAllDevices);
 router.post('/encryption', authUser, createEncryptionKey);
 router.put('/encryption', authUser, changeEncryptionKey);
 router.put('/encryption/reset', authUser, resetEncryptionKey);
+router.get('/devices', authUser, getConnectedDevices);
 
 export default router;

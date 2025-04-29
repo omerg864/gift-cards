@@ -543,6 +543,22 @@ const disconnectAllDevices = asyncHandler(
 	}
 );
 
+const getConnectedDevices = asyncHandler(
+	async (req: Request, res: Response): Promise<void> => {
+		const user = req.user!;
+		const devices = user.tokens.map((t) => ({
+			device_id: t.device_id,
+			type: t.type,
+			name: t.name,
+			createdAt: t.createdAt,
+		}));
+		res.json({
+			success: true,
+			devices,
+		});
+	}
+);
+
 const sendEmailPasswordReset = asyncHandler(
 	async (req: Request, res: Response): Promise<void> => {
 		const { email } = req.body;
@@ -724,4 +740,5 @@ export {
 	createEncryptionKey,
 	resetEncryptionKey,
 	changeEncryptionKey,
+	getConnectedDevices,
 };

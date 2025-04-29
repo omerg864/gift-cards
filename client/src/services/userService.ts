@@ -1,5 +1,5 @@
 import { GiftCard } from '../types/gift-card';
-import { DeviceDetails, User } from '../types/user';
+import { Device, DeviceDetails, User } from '../types/user';
 import { CardsResponse } from './cardService';
 import { axiosErrorHandler, checkToken, client } from './client';
 
@@ -23,6 +23,11 @@ export interface EmailRequestResponse {
 
 export interface MessageResponse {
 	message: string;
+	success: boolean;
+}
+
+export interface DevicesResponse {
+	devices: Device[];
 	success: boolean;
 }
 
@@ -278,6 +283,60 @@ const resetEncryptionKey = async (
 	}
 };
 
+const getConnectedDevices = async () => {
+	try {
+		const accessToken = await checkToken();
+		if (!accessToken) {
+			throw new Error('Please login');
+		}
+		const response = await client.get<DevicesResponse>('user/devices', {
+			headers: {
+				Authorization: `Bearer ${accessToken}`,
+			},
+		});
+		return response.data.devices;
+	} catch (error) {
+		return axiosErrorHandler(error);
+	}
+};
+
+const disconnectDevice = async (id: string) => {
+	try {
+		const accessToken = await checkToken();
+		if (!accessToken) {
+			throw new Error('Please login');
+		}
+		const response = await client.get<MessageResponse>(
+			`user/disconnect/${id}`,
+			{
+				headers: {
+					Authorization: `Bearer ${accessToken}`,
+				},
+			}
+		);
+		return response.data;
+	} catch (error) {
+		return axiosErrorHandler(error);
+	}
+};
+
+const disconnectAllDevices = async () => {
+	try {
+		const accessToken = await checkToken();
+		if (!accessToken) {
+			throw new Error('Please login');
+		}
+		const response = await client.get<MessageResponse>('user/disconnect', {
+			headers: {
+				Authorization: `Bearer ${accessToken}`,
+			},
+		});
+		return response.data;
+	} catch (error) {
+		return axiosErrorHandler(error);
+	}
+};
+
 export {
 	login,
 	googleLogin,
@@ -291,4 +350,7 @@ export {
 	updateUserPassword,
 	updateEncryptionKey,
 	resetEncryptionKey,
+	getConnectedDevices,
+	disconnectDevice,
+	disconnectAllDevices,
 };

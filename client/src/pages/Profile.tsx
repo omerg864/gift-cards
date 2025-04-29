@@ -8,12 +8,13 @@ import {
 	TabsTrigger,
 } from '../components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
-import { User, Lock, GlobeLock } from 'lucide-react';
+import { User, Lock, GlobeLock, Laptop } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import ProfileTab from '../components/ProfileTab';
 import PasswordTab from '../components/PasswordTab';
 import EncryptionTab from '../components/EncryptionTab';
 import { useSearchParams } from 'react-router-dom';
+import { ConnectedDevicesTab } from '../components/ConnectedDevicesTab';
 
 export default function ProfilePage() {
 	const { user } = useAuth();
@@ -99,6 +100,21 @@ export default function ProfilePage() {
 								<GlobeLock className="mr-2 h-4 w-4" />
 								Encryption Key
 							</Button>
+							<Button
+								variant={
+									activeTab === 'devices'
+										? 'default'
+										: 'ghost'
+								}
+								className="w-full justify-start"
+								onClick={() => {
+									setActiveTab('devices');
+									setSearchParams({ tab: 'devices' });
+								}}
+							>
+								<Laptop className="mr-2 h-4 w-4" />
+								Connected Devices
+							</Button>
 						</div>
 					</div>
 				</div>
@@ -127,6 +143,10 @@ export default function ProfilePage() {
 
 						<TabsContent value="encryption">
 							<EncryptionTab />
+						</TabsContent>
+
+						<TabsContent value="devices">
+							<ConnectedDevicesTab />
 						</TabsContent>
 					</Tabs>
 				</div>
