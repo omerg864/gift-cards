@@ -5,6 +5,10 @@ export interface Store {
 	name: string;
 	address?: string;
 	image?: string;
+	description?: string;
+	store_id?: string;
+	website?: string;
+	phone?: string;
 }
 
 export interface Supplier {

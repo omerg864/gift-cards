@@ -12,7 +12,9 @@
 	"description": "",
 	"dependencies": {
 		"async": "^3.2.6",
+		"axios": "^1.9.0",
 		"bcrypt": "^5.1.1",
+		"cheerio": "^1.0.0",
 		"cloudinary": "^2.6.0",
 		"colors": "^1.4.0",
 		"cookie-parser": "^1.4.7",
@@ -27,6 +29,7 @@
 		"mongoose": "^8.13.2",
 		"multer": "^1.4.5-lts.2",
 		"nodemailer": "^6.10.0",
+		"random-useragent": "^0.5.0",
 		"streamifier": "^0.1.1"
 	},
 	"devDependencies": {
@@ -38,6 +41,7 @@
 		"@types/multer": "^1.4.12",
 		"@types/node": "^22.14.1",
 		"@types/nodemailer": "^6.4.17",
+		"@types/random-useragent": "^0.3.3",
 		"@types/streamifier": "^0.1.2",
 		"@types/uuid": "^10.0.0",
 		"nodemon": "^3.1.9",

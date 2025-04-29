@@ -162,6 +162,27 @@ const deleteUserSupplierById = async (user: UserDocument, id: string) => {
 	return supplier;
 };
 
+const upsertSuppliers = async (suppliers: ISupplier[]) => {
+	const bulkOps = suppliers.map((supplier) => ({
+		updateOne: {
+			filter: { name: supplier.name },
+			update: {
+				$set: {
+					name: supplier.name,
+					stores: supplier.stores,
+					description: supplier.description,
+					logo: supplier.logo,
+					fromColor: supplier.fromColor,
+					toColor: supplier.toColor,
+					cardTypes: supplier.cardTypes,
+				},
+			},
+			upsert: true,
+		},
+	}));
+	await Supplier.bulkWrite(bulkOps, { ordered: false });
+};
+
 export {
 	newUserSupplier,
 	getUserSuppliers,
@@ -169,4 +190,5 @@ export {
 	getUserSupplier,
 	updateSupplier,
 	deleteUserSupplierById,
+	upsertSuppliers,
 };

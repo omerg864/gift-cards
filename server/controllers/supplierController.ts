@@ -6,7 +6,12 @@ import {
 	getUserSuppliers,
 	newUserSupplier,
 	updateSupplier,
+	upsertSuppliers,
 } from '../services/supplierService';
+import { GiftCardScraper, ScraperOptions } from '../utils/Scraper';
+import { buyMeGiftCardsList } from '../utils/constants';
+import { Supplier } from '../types/supplier';
+import { getDarkerColor } from '../utils/colors';
 
 const getSuppliers = AsyncHandler(async (req, res) => {
 	const user = req.user!;
@@ -146,10 +151,44 @@ const deleteUserSupplier = AsyncHandler(async (req, res) => {
 	});
 });
 
+const scrapeBuyMeGiftCards = AsyncHandler(async (req, res) => {
+	const options: ScraperOptions = {
+		retryCount: 3,
+		cacheTtl: 1000 * 60 * 10,
+	};
+	const buyMeSuppliers: Supplier[] = [];
+	for (let i = 0; i < buyMeGiftCardsList.length; i++) {
+		const giftCardData = buyMeGiftCardsList[i];
+		const stores = await GiftCardScraper.scrapeBuyMe(
+			giftCardData.url,
+			options
+		);
+		buyMeSuppliers.push({
+			name: giftCardData.name,
+			stores: stores,
+			description: 'Buy Me',
+			logo: 'https://buyme.co.il/files/siteNewLogo17573670.jpg?v=1743667959',
+			fromColor: '#ffc400',
+			toColor: getDarkerColor('#ffc400'),
+			cardTypes: ['digital'],
+		});
+	}
+	if (buyMeSuppliers.length === 0) {
+		res.status(404);
+		throw new Error('No suppliers found');
+	}
+	upsertSuppliers(buyMeSuppliers);
+	res.status(200).json({
+		success: true,
+		buyMeSuppliers,
+	});
+});
+
 export {
 	getSuppliers,
 	createUserSupplier,
 	getSupplierById,
 	updateUserSupplier,
 	deleteUserSupplier,
+	scrapeBuyMeGiftCards,
 };

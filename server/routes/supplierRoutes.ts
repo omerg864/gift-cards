@@ -6,6 +6,7 @@ import {
 	getSupplierById,
 	updateUserSupplier,
 	deleteUserSupplier,
+	scrapeBuyMeGiftCards,
 } from '../controllers/supplierController';
 import { authUser } from '../middleware/authMiddleware';
 
@@ -15,6 +16,9 @@ const uploadFields = upload.fields([
 	{ name: 'supplier', maxCount: 1 },
 	{ name: 'stores', maxCount: 20 },
 ]);
+
+// Route to scrape gift cards
+router.get('/scrape/buyme', scrapeBuyMeGiftCards);
 
 router.get('/', authUser, getSuppliers);
 router.post('/', authUser, uploadFields, createUserSupplier);

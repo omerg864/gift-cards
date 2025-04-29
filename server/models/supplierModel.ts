@@ -24,6 +24,19 @@ const supplierScheme = new mongoose.Schema<SupplierDocument>(
 				image: {
 					type: String,
 				},
+				description: {
+					type: String,
+				},
+				store_id: {
+					type: String,
+				},
+				website: {
+					type: String,
+				},
+				phone: {
+					type: String,
+				},
+				
 			},
 		],
 		logo: {
