@@ -120,13 +120,43 @@ export class GiftCardScraper {
 		return businesses;
 	}
 
-	// --- LOVECARD SCRAPER (Placeholder) ---
+	// --- LOVE CARD SCRAPER ---
 	public static async scrapeLoveCard(
 		url: string,
 		options: ScraperOptions = {}
 	): Promise<Store[]> {
-		// Placeholder for LoveCard scraping logic
-		// You'll need a sample page from LoveCard to properly implement
-		return [];
+		const cached = this.getCached(url);
+		if (cached) return cached;
+
+		const html = await this.fetchHtml(url, options.retryCount ?? 3);
+		const $ = load(html);
+		let stores: string[] = [];
+
+		$('li').each((_, el) => {
+			const text = $(el).text();
+			if (text.includes('קרי, המותגים:')) {
+				const match = text.match(/קרי, המותגים:\s*([^)]*)/);
+				if (match && match[1]) {
+					stores = match[1]
+						.split(',')
+						.map((s) => {
+							// Remove anything in parentheses or after them
+							const clean = s.split('(')[0].trim();
+							return clean;
+						})
+						.filter(Boolean);
+				}
+			}
+		});
+
+		stores = [...new Set(stores)]; // Remove duplicates
+		const businesses: Store[] = stores.map((store) => ({
+			store_id: uuidv4(),
+			name: store,
+			image: undefined,
+		}));
+		this.setCache(url, businesses, options.cacheTtl ?? 1000 * 60 * 10);
+		console.log('Scraped Love Card stores:', businesses);
+		return businesses;
 	}
 }

@@ -48,3 +48,10 @@ export const buyMeGiftCardsList = [
 		url: 'https://buyme.co.il/brands/15925581/options',
 	},
 ];
+
+export const loveCardGiftCardsList = [
+	{
+		name: 'Love Card',
+		url: 'https://www.hoodies.co.il/tqnvn-love-card',
+	},
+];

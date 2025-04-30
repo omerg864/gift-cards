@@ -9,7 +9,7 @@ import {
 	upsertSuppliers,
 } from '../services/supplierService';
 import { GiftCardScraper, ScraperOptions } from '../utils/Scraper';
-import { buyMeGiftCardsList } from '../utils/constants';
+import { buyMeGiftCardsList, loveCardGiftCardsList } from '../utils/constants';
 import { Supplier } from '../types/supplier';
 import { getDarkerColor } from '../utils/colors';
 
@@ -85,7 +85,7 @@ const getSupplierById = AsyncHandler(async (req, res) => {
 const updateUserSupplier = AsyncHandler(async (req, res) => {
 	const user = req.user!;
 	const supplierId = req.params.id;
-	const { name, deleteImageBool, description } = req.body;
+	const { name, deleteImageBool, description, fromColor, toColor } = req.body;
 	let { stores = '[]', cardTypes = '["digital"]' } = req.body;
 
 	const deleteImage = deleteImageBool === 'true' ? true : false;
@@ -125,6 +125,8 @@ const updateUserSupplier = AsyncHandler(async (req, res) => {
 			stores,
 			description,
 			cardTypes,
+			fromColor,
+			toColor,
 		},
 		user,
 		req.file,
@@ -184,6 +186,39 @@ const scrapeBuyMeGiftCards = AsyncHandler(async (req, res) => {
 	});
 });
 
+const scrapeLoveCardSupplier = AsyncHandler(async (req, res) => {
+	const options: ScraperOptions = {
+		retryCount: 3,
+		cacheTtl: 1000 * 60 * 10,
+	};
+	const loveCardSuppliers: Supplier[] = [];
+	for (let i = 0; i < loveCardGiftCardsList.length; i++) {
+		const giftCardData = loveCardGiftCardsList[i];
+		const stores = await GiftCardScraper.scrapeLoveCard(
+			giftCardData.url,
+			options
+		);
+		loveCardSuppliers.push({
+			name: giftCardData.name,
+			stores: stores,
+			description: 'Love Card',
+			logo: 'https://img.ice.co.il/giflib/news/rsPhoto/sz_193/rsz_615_346_lovegiftcard870_190818.jpg',
+			fromColor: '#383838',
+			toColor: getDarkerColor('#383838'),
+			cardTypes: ['digital', 'physical'],
+		});
+	}
+	if (loveCardSuppliers.length === 0) {
+		res.status(404);
+		throw new Error('No suppliers found');
+	}
+	upsertSuppliers(loveCardSuppliers);
+	res.status(200).json({
+		success: true,
+		loveCardSuppliers,
+	});
+});
+
 export {
 	getSuppliers,
 	createUserSupplier,
@@ -191,4 +226,5 @@ export {
 	updateUserSupplier,
 	deleteUserSupplier,
 	scrapeBuyMeGiftCards,
+	scrapeLoveCardSupplier,
 };
