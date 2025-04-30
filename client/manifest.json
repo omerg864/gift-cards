@@ -1,0 +1,30 @@
+{
+	"manifest": {
+		"name": "Gift Cards",
+		"short_name": "Gift Cards",
+		"description": "Gift Cards - for better shopping experience",
+		"icons": [
+			{
+				"src": "icon192.png",
+				"sizes": "192x192",
+				"type": "image/png",
+				"purpose": "any maskable"
+			},
+			{
+				"src": "icon512.png",
+				"sizes": "512x512",
+				"type": "image/png",
+				"purpose": "any maskable"
+			}
+		],
+		"theme_color": "#213547",
+		"background_color": "#213547",
+		"scope": "/",
+		"start_url": "/"
+	},
+	"url_handlers": [
+		{
+			"origin": "https://gift-cards.vercel.app"
+		}
+	]
+}
