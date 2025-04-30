@@ -3,7 +3,7 @@
 	"buildCommand": "npm run build",
 	"builds": [
 		{
-			"src": "dist/index.js",
+			"src": "dist/server.js",
 			"use": "@vercel/node",
 			"config": { "includeFiles": ["dist/**"] }
 		}
@@ -11,7 +11,7 @@
 	"rewrites": [
 		{
 			"source": "/(.*)",
-			"destination": "dist/index.js"
+			"destination": "dist/server.js"
 		}
 	]
 }
