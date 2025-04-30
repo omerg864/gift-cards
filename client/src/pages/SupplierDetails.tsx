@@ -1,6 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import {
+	useState,
+	useEffect,
+	useCallback,
+	useMemo,
+	ChangeEvent,
+	useRef,
+} from 'react';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import {
@@ -41,6 +48,7 @@ import {
 } from '../services/supplierService';
 import ConfirmationDialog from '../components/ConfirmationDialog';
 import SupplierDialog from '../components/SupplierDialog';
+import { debounce } from 'lodash';
 
 export default function SupplierDetailsPage() {
 	const navigate = useNavigate();
@@ -56,6 +64,8 @@ export default function SupplierDetailsPage() {
 	const params = useParams();
 	const { user } = useAuth();
 	const { setGlobalKey } = useEncryption();
+	const storeFilterRef = useRef<string>('');
+	const storeFilterInputRef = useRef<HTMLInputElement | null>(null);
 
 	useEffect(() => {
 		// Simulate loading
@@ -63,6 +73,7 @@ export default function SupplierDetailsPage() {
 			const supplier = suppliers.find((s) => s._id === params.id);
 			if (supplier) {
 				setSupplier(supplier);
+				setFilteredStores(supplier.stores);
 			} else {
 				toast.error('Supplier not found');
 			}
@@ -85,6 +96,24 @@ export default function SupplierDetailsPage() {
 			}
 		}
 	}, [storeFilter, supplier]);
+
+	const updateStoreFilter = useCallback(
+		(text: string) => {
+			setStoreFilter(text);
+		},
+		[setStoreFilter]
+	);
+
+	const debouncedUpdateStoreFilter = useMemo(
+		() => debounce(updateStoreFilter, 300),
+		[updateStoreFilter]
+	);
+
+	const handleStoreFilterChange = (e: ChangeEvent<HTMLInputElement>) => {
+		const value = e.target.value;
+		storeFilterRef.current = value;
+		debouncedUpdateStoreFilter(value);
+	};
 
 	const handleBack = () => {
 		navigate(-1);
@@ -247,6 +276,10 @@ export default function SupplierDetailsPage() {
 
 	const clearStoreFilter = () => {
 		setStoreFilter('');
+		storeFilterRef.current = '';
+		if (storeFilterInputRef.current) {
+			storeFilterInputRef.current.value = '';
+		}
 	};
 
 	if (loading || !supplier || isLoading) {
@@ -333,8 +366,8 @@ export default function SupplierDetailsPage() {
 							<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
 							<Input
 								placeholder="Search stores..."
-								value={storeFilter}
-								onChange={(e) => setStoreFilter(e.target.value)}
+								onChange={handleStoreFilterChange}
+								ref={storeFilterInputRef}
 								className="pl-9 pr-8"
 							/>
 							{storeFilter && (

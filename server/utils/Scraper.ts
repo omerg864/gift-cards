@@ -156,7 +156,6 @@ export class GiftCardScraper {
 			image: undefined,
 		}));
 		this.setCache(url, businesses, options.cacheTtl ?? 1000 * 60 * 10);
-		console.log('Scraped Love Card stores:', businesses);
 		return businesses;
 	}
 }
