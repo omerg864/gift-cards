@@ -2,7 +2,6 @@ import Card from '../models/cardModel';
 import { CardDocument, Card as ICard } from '../types/card';
 import { Supplier } from '../types/supplier';
 import { UserDocument } from '../types/user';
-import async from 'async';
 
 const getUserCards = async (
 	user: UserDocument,

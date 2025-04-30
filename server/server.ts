@@ -8,6 +8,7 @@ import cookieParser from 'cookie-parser';
 import userRoutes from './routes/userRoutes';
 import cardRoutes from './routes/cardRoutes';
 import supplierRoutes from './routes/supplierRoutes';
+import settingsRoutes from './routes/settingsRoutes';
 import cors from 'cors';
 import './types/global';
 
@@ -42,5 +43,6 @@ app.listen(port, () => {
 app.use('/api/user', userRoutes);
 app.use('/api/card', cardRoutes);
 app.use('/api/supplier', supplierRoutes);
+app.use('/api/settings', settingsRoutes);
 
 app.use(errorHandler);
