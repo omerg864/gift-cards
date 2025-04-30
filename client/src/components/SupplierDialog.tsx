@@ -48,9 +48,11 @@ const SupplierDialog = ({
 	const [storeInput, setStoreInput] = useState('');
 	const [storeSearch, setStoreSearch] = useState('');
 	const [deleteImage, setDeleteImage] = useState(false);
-	const filteredStores = stores.filter((store) =>
-		store.name.toLowerCase().includes(storeSearch.toLowerCase())
-	);
+	const filteredStores = useMemo(() => {
+		return stores.filter((store) =>
+			store.name.toLowerCase().includes(storeSearch.toLowerCase())
+		);
+	}, [stores, storeSearch]);
 
 	const colorRef = useRef(data.fromColor);
 
@@ -59,7 +61,6 @@ const SupplierDialog = ({
 			setData((prev) => ({
 				...prev,
 				fromColor: color,
-				toColor: getDarkerColor(color),
 			}));
 		},
 		[setData]
@@ -124,6 +125,7 @@ const SupplierDialog = ({
 		});
 		const success = await onSubmit({
 			...data,
+			toColor: getDarkerColor(data.fromColor),
 			logo: file,
 			stores: finalStores,
 			deleteImage,

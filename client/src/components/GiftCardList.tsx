@@ -14,7 +14,9 @@ export function GiftCardList() {
 	const navigate = useNavigate();
 	const { giftCards, loading } = useGiftCards();
 	const { suppliers, loading: loadingSuppliers } = useSupplier();
-	const [filteredCards, setFilteredCards] = useState<GiftCard[]>(giftCards);
+	const [filteredCards, setFilteredCards] = useState<GiftCard[]>(
+		giftCards.filter((card) => card.supplier)
+	);
 	const [supplierCards, setSupplierCards] = useState<Supplier[]>([]);
 	const [searchParams] = useSearchParams();
 	const searchQuery = searchParams.get('q') || '';
@@ -49,7 +51,7 @@ export function GiftCardList() {
 			setSupplierCards(suppliersFiltered);
 			setFilteredCards(filtered);
 		} else {
-			setFilteredCards(giftCards);
+			setFilteredCards(giftCards.filter((card) => card.supplier));
 		}
 	}, [searchQuery, giftCards, suppliers]);
 
