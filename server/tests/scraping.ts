@@ -4,6 +4,7 @@ import randomUseragent from 'random-useragent';
 import { v4 as uuidv4 } from 'uuid';
 import { Store } from '../types/supplier';
 import PDFParser from 'pdf-parse';
+import { GoldJson } from '../types/scrape';
 
 export interface ScraperOptions {
 	retryCount?: number;
@@ -334,19 +335,58 @@ export class GiftCardScraper {
 		this.setCache(url, businesses, options.cacheTtl ?? 1000 * 60 * 10);
 		return businesses;
 	}
+
+	// --- SCRAPE The Gold Card ---
+	public static async scrapeTheGoldCard(
+		url: string,
+		options: ScraperOptions = {}
+	): Promise<Store[]> {
+		const cached = this.getCached(url);
+		if (cached) return cached;
+
+		const json: GoldJson = await this.fetchJson(
+			url,
+			options.retryCount ?? 3
+		);
+		const businesses: Store[] = [];
+		if (
+			!json.content ||
+			!json.isSucceeded ||
+			!json.content.data ||
+			!json.content.data.networkingCubes ||
+			!Array.isArray(json.content.data.networkingCubes)
+		) {
+			return businesses;
+		}
+		for (const item of json.content.data.networkingCubes) {
+			businesses.push({
+				store_id: `${item.id}` || uuidv4(),
+				name: `${item.name} - ${item.nameInAnotherLanguage}` || 'Unknown',
+				image: item.icon
+					? `https://www.shufersal.co.il${item.icon.url}`
+					: undefined,
+				address: item.address,
+				website: item.websilteLink[0]?.url,
+				phone: item.phone,
+			});
+		}
+
+		this.setCache(url, businesses, options.cacheTtl ?? 1000 * 60 * 10);
+		return businesses;
+	}
 }
 
 // --- TESTING THE SCRAPER ---
 (async () => {
 	const url =
-		'https://www.max.co.il/SharedMedia/11013/max-alon-gc_online_02-2025.pdf';
+		'https://tavhazahav.shufersal.co.il/tavhazahavapi/api/resource/tavzahav';
 	const options: ScraperOptions = {
 		retryCount: 3,
 		cacheTtl: 1000 * 60 * 10,
 	};
 
 	try {
-		const businesses = await GiftCardScraper.scrapeMaxGiftCard(
+		const businesses = await GiftCardScraper.scrapeTheGoldCard(
 			url,
 			options
 		);

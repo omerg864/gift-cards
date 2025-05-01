@@ -17,6 +17,7 @@ const axios_1 = __importDefault(require("axios"));
 const cheerio_1 = require("cheerio");
 const random_useragent_1 = __importDefault(require("random-useragent"));
 const uuid_1 = require("uuid");
+const pdf_parse_1 = __importDefault(require("pdf-parse"));
 class GiftCardScraper {
     static fetchHtml(url, retryCount) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -35,6 +36,26 @@ class GiftCardScraper {
                 }
             }
             throw new Error(`Failed to fetch content from ${url}`);
+        });
+    }
+    static fetchPdf(url, retryCount) {
+        return __awaiter(this, void 0, void 0, function* () {
+            for (let i = 0; i < retryCount; i++) {
+                try {
+                    const userAgent = random_useragent_1.default.getRandom() || this.defaultUserAgent;
+                    const response = yield axios_1.default.get(url, {
+                        headers: {
+                            'User-Agent': userAgent,
+                        },
+                        responseType: 'arraybuffer',
+                    });
+                    return Buffer.from(response.data);
+                }
+                catch (err) {
+                    console.warn(`Retry ${i + 1} failed for ${url}: ${err.message}`);
+                }
+            }
+            throw new Error(`Failed to fetch PDF from ${url}`);
         });
     }
     static fetchJson(url, retryCount) {
@@ -132,6 +153,105 @@ class GiftCardScraper {
                 name: store,
                 image: undefined,
             }));
+            this.setCache(url, businesses, (_b = options.cacheTtl) !== null && _b !== void 0 ? _b : 1000 * 60 * 10);
+            return businesses;
+        });
+    }
+    // --- SCRAPE Max Gift Card ---
+    static scrapeMaxGiftCard(url_1) {
+        return __awaiter(this, arguments, void 0, function* (url, options = {}) {
+            var _a, _b;
+            const cached = this.getCached(url);
+            if (cached)
+                return cached;
+            const pdf = yield this.fetchPdf(url, (_a = options.retryCount) !== null && _a !== void 0 ? _a : 3);
+            const data = yield (0, pdf_parse_1.default)(pdf);
+            const businesses = [
+                { name: 'INTIMA' },
+                { name: 'POLGAT' },
+                { name: 'FOOT LOCKER' },
+                { name: 'TERMINAL X' },
+                { name: 'GOLF Kids&Baby' },
+                { name: 'GOLF&Co' },
+                { name: 'GOLF' },
+                { name: 'Aerie' },
+                { name: 'FOX' },
+                { name: 'FOX Home' },
+                { name: 'AMERICAN EAGLE' },
+                { name: 'QUIKSILVER' },
+                { name: 'BOARDRIDERS' },
+                { name: 'ROXY' },
+                { name: 'THE CHILDRENS PLACE' },
+                { name: 'BILLABONG' },
+                { name: 'YANGA' },
+                { name: 'LALINE' },
+                { name: 'שילב' },
+                { name: 'מיננה' },
+                { name: 'עמנואל' },
+                { name: 'Converse' },
+                { name: 'sunglass hut' },
+                { name: 'עדיקה' },
+                { name: 'LAVAN' },
+                { name: 'Asics' },
+                { name: 'BIRKENSTOCK' },
+                { name: 'המשביר לצרכן' },
+                { name: "Original's" },
+                { name: 'FACTORY 54' },
+                { name: 'Michael Kors' },
+                { name: 'HUGO' },
+                { name: 'ICE CUBE' },
+                { name: 'H&O' },
+                { name: 'Kitan' },
+                { name: 'Armani Exchange' },
+                { name: 'FRED PERRY' },
+                { name: 'LEVIS' },
+                { name: 'PAUL&SHARK' },
+                { name: 'TOMMY HILFIGER' },
+                { name: 'PUMA' },
+                { name: 'PETIT BATEAU' },
+                { name: 'LACOSTE' },
+                { name: 'Calvin Klein' },
+                { name: 'DIESEL' },
+                { name: 'סטימצקי' },
+                { name: 'American Comfort' },
+                { name: 'עמינח' },
+                { name: 'Good Night' },
+                { name: 'Desigual' },
+                { name: 'LONGCHAMP' },
+                { name: 'Superdry' },
+                { name: 'TOUS' },
+                { name: 'SABON' },
+                { name: 'ACE' },
+                { name: 'AUTODEPOT' },
+                { name: 'מגה ספורט' },
+                { name: 'מגה קידס' },
+                { name: 'סינמה סיטי' },
+                { name: 'DAPHNA LEVINSON' },
+                { name: 'NAUTICA' },
+                { name: 'REPLAY' },
+                { name: 'INTER JEANS' },
+                { name: 'STEVE MADDEN' },
+                { name: 'לונה פארק' },
+                { name: 'הום סנטר' },
+                { name: 'LADY COMFORT' },
+                { name: 'קפה נטו' },
+                { name: 'PERSONAL TRAINERS' },
+                { name: 'מלונות אסטרל' },
+                { name: 'מלכת שבא' },
+                { name: 'BLIK' },
+                { name: 'HOME STYLE' },
+                { name: 'א.ל.מ' },
+                { name: 'ARTIKIM TLV' },
+                { name: 'IJUMP' },
+                { name: 'HAVAIANAS' },
+                { name: 'IL MAKIAGE' },
+                { name: 'SKECHERS' },
+                { name: "מלונות ג'יקוב" },
+                { name: 'עצמלה' },
+                { name: 'שקם אלקטריק' },
+                { name: 'הבורסה לתכשיטים' },
+                { name: 'מוצצים' },
+            ];
             this.setCache(url, businesses, (_b = options.cacheTtl) !== null && _b !== void 0 ? _b : 1000 * 60 * 10);
             return businesses;
         });

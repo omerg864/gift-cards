@@ -9,7 +9,12 @@ import {
 	upsertSuppliers,
 } from '../services/supplierService';
 import { GiftCardScraper, ScraperOptions } from '../utils/Scraper';
-import { buyMeGiftCardsList, loveCardGiftCardsList, maxGiftCardList } from '../utils/constants';
+import {
+	buyMeGiftCardsList,
+	loveCardGiftCardsList,
+	maxGiftCardList,
+	theGoldCardList,
+} from '../utils/constants';
 import { Supplier } from '../types/supplier';
 import { getDarkerColor } from '../utils/colors';
 
@@ -252,6 +257,39 @@ const scrapeMaxGiftCardSupplier = AsyncHandler(async (req, res) => {
 	});
 });
 
+const scrapeTheGoldCardSupplier = AsyncHandler(async (req, res) => {
+	const options: ScraperOptions = {
+		retryCount: 3,
+		cacheTtl: 1000 * 60 * 10,
+	};
+	const goldCardSuppliers: Supplier[] = [];
+	for (let i = 0; i < theGoldCardList.length; i++) {
+		const giftCardData = theGoldCardList[i];
+		const stores = await GiftCardScraper.scrapeTheGoldCard(
+			giftCardData.url,
+			options
+		);
+		goldCardSuppliers.push({
+			name: giftCardData.name,
+			stores: stores,
+			description: 'by Shufersal',
+			logo: 'https://tavhazahav.shufersal.co.il/tavhazahav/assets/images/logo-zahavt.png',
+			fromColor: '#F00000',
+			toColor: '#C84664',
+			cardTypes: ['digital', 'physical'],
+		});
+	}
+	if (goldCardSuppliers.length === 0) {
+		res.status(404);
+		throw new Error('No suppliers found');
+	}
+	upsertSuppliers(goldCardSuppliers);
+	res.status(200).json({
+		success: true,
+		goldCardSuppliers,
+	});
+});
+
 export {
 	getSuppliers,
 	createUserSupplier,
@@ -260,5 +298,6 @@ export {
 	deleteUserSupplier,
 	scrapeBuyMeGiftCards,
 	scrapeLoveCardSupplier,
-	scrapeMaxGiftCardSupplier
+	scrapeMaxGiftCardSupplier,
+	scrapeTheGoldCardSupplier,
 };

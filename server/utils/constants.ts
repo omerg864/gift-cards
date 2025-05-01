@@ -62,3 +62,10 @@ export const maxGiftCardList = [
 		url: 'https://www.max.co.il/SharedMedia/11013/max-alon-gc_online_02-2025.pdf',
 	},
 ];
+
+export const theGoldCardList = [
+	{
+		name: 'תו הזהב',
+		url: 'https://tavhazahav.shufersal.co.il/tavhazahavapi/api/resource/tavzahav',
+	},
+];

@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.scrapeLoveCardSupplier = exports.scrapeBuyMeGiftCards = exports.deleteUserSupplier = exports.updateUserSupplier = exports.getSupplierById = exports.createUserSupplier = exports.getSuppliers = void 0;
+exports.scrapeMaxGiftCardSupplier = exports.scrapeLoveCardSupplier = exports.scrapeBuyMeGiftCards = exports.deleteUserSupplier = exports.updateUserSupplier = exports.getSupplierById = exports.createUserSupplier = exports.getSuppliers = void 0;
 const express_async_handler_1 = __importDefault(require("express-async-handler"));
 const supplierService_1 = require("../services/supplierService");
 const Scraper_1 = require("../utils/Scraper");
@@ -187,3 +187,33 @@ const scrapeLoveCardSupplier = (0, express_async_handler_1.default)((req, res) =
     });
 }));
 exports.scrapeLoveCardSupplier = scrapeLoveCardSupplier;
+const scrapeMaxGiftCardSupplier = (0, express_async_handler_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const options = {
+        retryCount: 3,
+        cacheTtl: 1000 * 60 * 10,
+    };
+    const maxGiftCardSuppliers = [];
+    for (let i = 0; i < constants_1.maxGiftCardList.length; i++) {
+        const giftCardData = constants_1.maxGiftCardList[i];
+        const stores = yield Scraper_1.GiftCardScraper.scrapeLoveCard(giftCardData.url, options);
+        maxGiftCardSuppliers.push({
+            name: giftCardData.name,
+            stores: stores,
+            description: 'Max Gift Card',
+            logo: 'https://res.cloudinary.com/omerg/image/upload/v1746091807/GiftCard/suppliers/gv7q3hycpoaagzzhnydh.png',
+            fromColor: '#0DF4F8',
+            toColor: (0, colors_1.getDarkerColor)('#0DF4F8'),
+            cardTypes: ['digital', 'physical'],
+        });
+    }
+    if (maxGiftCardSuppliers.length === 0) {
+        res.status(404);
+        throw new Error('No suppliers found');
+    }
+    (0, supplierService_1.upsertSuppliers)(maxGiftCardSuppliers);
+    res.status(200).json({
+        success: true,
+        maxGiftCardSuppliers,
+    });
+}));
+exports.scrapeMaxGiftCardSupplier = scrapeMaxGiftCardSupplier;
