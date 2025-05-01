@@ -3,6 +3,7 @@ import { load } from 'cheerio';
 import randomUseragent from 'random-useragent';
 import { v4 as uuidv4 } from 'uuid';
 import { Store } from '../types/supplier';
+import PDFParser from 'pdf-parse';
 
 export interface ScraperOptions {
 	retryCount?: number;
@@ -122,6 +123,29 @@ export class GiftCardScraper {
 		throw new Error(`Failed to fetch JSON from ${url}`);
 	}
 
+	private static async fetchPdf(url: string, retryCount: number) {
+		for (let i = 0; i < retryCount; i++) {
+			try {
+				const userAgent =
+					randomUseragent.getRandom() || this.defaultUserAgent;
+				const response = await axios.get(url, {
+					headers: {
+						'User-Agent': userAgent,
+					},
+					responseType: 'arraybuffer',
+				});
+				return Buffer.from(response.data);
+			} catch (err) {
+				console.warn(
+					`Retry ${i + 1} failed for ${url}: ${
+						(err as Error).message
+					}`
+				);
+			}
+		}
+		throw new Error(`Failed to fetch PDF from ${url}`);
+	}
+
 	private static getCached(url: string): Store[] | null {
 		const entry = this.cache[url];
 		if (entry && entry.expires > Date.now()) {
@@ -209,18 +233,123 @@ export class GiftCardScraper {
 		this.setCache(url, businesses, options.cacheTtl ?? 1000 * 60 * 10);
 		return businesses;
 	}
+
+	// --- SCRAPE Max Gift Card ---
+	public static async scrapeMaxGiftCard(
+		url: string,
+		options: ScraperOptions = {}
+	): Promise<Store[]> {
+		const cached = this.getCached(url);
+		if (cached) return cached;
+
+		const pdf = await this.fetchPdf(url, options.retryCount ?? 3);
+		const data = await PDFParser(pdf);
+		const businesses: Store[] = [
+			{ name: 'INTIMA' },
+			{ name: 'POLGAT' },
+			{ name: 'FOOT LOCKER' },
+			{ name: 'TERMINAL X' },
+			{ name: 'GOLF Kids&Baby' },
+			{ name: 'GOLF&Co' },
+			{ name: 'GOLF' },
+			{ name: 'Aerie' },
+			{ name: 'FOX' },
+			{ name: 'FOX Home' },
+			{ name: 'AMERICAN EAGLE' },
+			{ name: 'QUIKSILVER' },
+			{ name: 'BOARDRIDERS' },
+			{ name: 'ROXY' },
+			{ name: 'THE CHILDRENS PLACE' },
+			{ name: 'BILLABONG' },
+			{ name: 'YANGA' },
+			{ name: 'LALINE' },
+			{ name: 'שילב' },
+			{ name: 'מיננה' },
+			{ name: 'עמנואל' },
+			{ name: 'Converse' },
+			{ name: 'sunglass hut' },
+			{ name: 'עדיקה' },
+			{ name: 'LAVAN' },
+			{ name: 'Asics' },
+			{ name: 'BIRKENSTOCK' },
+			{ name: 'המשביר לצרכן' },
+			{ name: "Original's" },
+			{ name: 'FACTORY 54' },
+			{ name: 'Michael Kors' },
+			{ name: 'HUGO' },
+			{ name: 'ICE CUBE' },
+			{ name: 'H&O' },
+			{ name: 'Kitan' },
+			{ name: 'Armani Exchange' },
+			{ name: 'FRED PERRY' },
+			{ name: 'LEVIS' },
+			{ name: 'PAUL&SHARK' },
+			{ name: 'TOMMY HILFIGER' },
+			{ name: 'PUMA' },
+			{ name: 'PETIT BATEAU' },
+			{ name: 'LACOSTE' },
+			{ name: 'Calvin Klein' },
+			{ name: 'DIESEL' },
+			{ name: 'סטימצקי' },
+			{ name: 'American Comfort' },
+			{ name: 'עמינח' },
+			{ name: 'Good Night' },
+			{ name: 'Desigual' },
+			{ name: 'LONGCHAMP' },
+			{ name: 'Superdry' },
+			{ name: 'TOUS' },
+			{ name: 'SABON' },
+			{ name: 'ACE' },
+			{ name: 'AUTODEPOT' },
+			{ name: 'מגה ספורט' },
+			{ name: 'מגה קידס' },
+			{ name: 'סינמה סיטי' },
+			{ name: 'DAPHNA LEVINSON' },
+			{ name: 'NAUTICA' },
+			{ name: 'REPLAY' },
+			{ name: 'INTER JEANS' },
+			{ name: 'STEVE MADDEN' },
+			{ name: 'לונה פארק' },
+			{ name: 'הום סנטר' },
+			{ name: 'LADY COMFORT' },
+			{ name: 'קפה נטו' },
+			{ name: 'PERSONAL TRAINERS' },
+			{ name: 'מלונות אסטרל' },
+			{ name: 'מלכת שבא' },
+			{ name: 'BLIK' },
+			{ name: 'HOME STYLE' },
+			{ name: 'א.ל.מ' },
+			{ name: 'ARTIKIM TLV' },
+			{ name: 'IJUMP' },
+			{ name: 'HAVAIANAS' },
+			{ name: 'IL MAKIAGE' },
+			{ name: 'SKECHERS' },
+			{ name: "מלונות ג'יקוב" },
+			{ name: 'עצמלה' },
+			{ name: 'שקם אלקטריק' },
+			{ name: 'הבורסה לתכשיטים' },
+			{ name: 'מוצצים' },
+		];
+
+		this.setCache(url, businesses, options.cacheTtl ?? 1000 * 60 * 10);
+		return businesses;
+	}
 }
 
 // --- TESTING THE SCRAPER ---
 (async () => {
-	const url = 'https://www.hoodies.co.il/tqnvn-love-card';
+	const url =
+		'https://www.max.co.il/SharedMedia/11013/max-alon-gc_online_02-2025.pdf';
 	const options: ScraperOptions = {
 		retryCount: 3,
 		cacheTtl: 1000 * 60 * 10,
 	};
 
 	try {
-		const businesses = await GiftCardScraper.scrapeLoveCard(url, options);
+		const businesses = await GiftCardScraper.scrapeMaxGiftCard(
+			url,
+			options
+		);
 		console.log('Scraped Businesses:', businesses);
 	} catch (error) {
 		console.error('Error scraping:', error);

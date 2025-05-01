@@ -55,3 +55,10 @@ export const loveCardGiftCardsList = [
 		url: 'https://www.hoodies.co.il/tqnvn-love-card',
 	},
 ];
+
+export const maxGiftCardList = [
+	{
+		name: 'Max',
+		url: 'https://www.max.co.il/SharedMedia/11013/max-alon-gc_online_02-2025.pdf',
+	},
+];

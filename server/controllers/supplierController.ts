@@ -9,7 +9,7 @@ import {
 	upsertSuppliers,
 } from '../services/supplierService';
 import { GiftCardScraper, ScraperOptions } from '../utils/Scraper';
-import { buyMeGiftCardsList, loveCardGiftCardsList } from '../utils/constants';
+import { buyMeGiftCardsList, loveCardGiftCardsList, maxGiftCardList } from '../utils/constants';
 import { Supplier } from '../types/supplier';
 import { getDarkerColor } from '../utils/colors';
 
@@ -219,6 +219,39 @@ const scrapeLoveCardSupplier = AsyncHandler(async (req, res) => {
 	});
 });
 
+const scrapeMaxGiftCardSupplier = AsyncHandler(async (req, res) => {
+	const options: ScraperOptions = {
+		retryCount: 3,
+		cacheTtl: 1000 * 60 * 10,
+	};
+	const maxGiftCardSuppliers: Supplier[] = [];
+	for (let i = 0; i < maxGiftCardList.length; i++) {
+		const giftCardData = maxGiftCardList[i];
+		const stores = await GiftCardScraper.scrapeLoveCard(
+			giftCardData.url,
+			options
+		);
+		maxGiftCardSuppliers.push({
+			name: giftCardData.name,
+			stores: stores,
+			description: 'Max Gift Card',
+			logo: 'https://res.cloudinary.com/omerg/image/upload/v1746091807/GiftCard/suppliers/gv7q3hycpoaagzzhnydh.png',
+			fromColor: '#0DF4F8',
+			toColor: getDarkerColor('#0DF4F8'),
+			cardTypes: ['digital', 'physical'],
+		});
+	}
+	if (maxGiftCardSuppliers.length === 0) {
+		res.status(404);
+		throw new Error('No suppliers found');
+	}
+	upsertSuppliers(maxGiftCardSuppliers);
+	res.status(200).json({
+		success: true,
+		maxGiftCardSuppliers,
+	});
+});
+
 export {
 	getSuppliers,
 	createUserSupplier,
@@ -227,4 +260,5 @@ export {
 	deleteUserSupplier,
 	scrapeBuyMeGiftCards,
 	scrapeLoveCardSupplier,
+	scrapeMaxGiftCardSupplier
 };
