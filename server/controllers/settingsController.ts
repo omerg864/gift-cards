@@ -19,11 +19,13 @@ const updateSettings = asyncHandler(async (req, res) => {
 	const {
 		email1MonthNotification,
 		email2MonthNotification,
+		emailOnNewDevice
 	}: Partial<Settings> = req.body;
 
 	const settingsData: Partial<Settings> = {
 		email1MonthNotification,
 		email2MonthNotification,
+		emailOnNewDevice
 	};
 	const settings = await updateUserSettings(user.id, settingsData);
 	res.status(200).json({

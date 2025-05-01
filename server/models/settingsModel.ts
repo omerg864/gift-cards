@@ -16,6 +16,10 @@ const settingsScheme = new mongoose.Schema<SettingsDocument>(
 			type: Boolean,
 			default: true,
 		},
+		emailOnNewDevice: {
+			type: Boolean,
+			default: true,
+		},
 	},
 	{ timestamps: true }
 );

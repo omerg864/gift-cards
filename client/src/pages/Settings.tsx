@@ -23,6 +23,7 @@ export default function SettingsPage() {
 	const [data, setData] = useState<Partial<Settings>>({
 		email1MonthNotification: true,
 		email2MonthNotification: true,
+		emailOnNewDevice: true,
 	});
 
 	const handleCheckboxChange = (name: keyof Settings, checked: boolean) => {
@@ -120,6 +121,35 @@ export default function SettingsPage() {
 								onCheckedChange={(checked) =>
 									handleCheckboxChange(
 										'email2MonthNotification',
+										checked
+									)
+								}
+							/>
+						</div>
+					</CardContent>
+				</Card>
+
+				<Card>
+					<CardHeader>
+						<CardTitle>New Device Email Notification</CardTitle>
+						<CardDescription>
+							Notify me when a new device is used to log in
+						</CardDescription>
+					</CardHeader>
+					<CardContent className="space-y-4">
+						<div className="flex items-center justify-between">
+							<div className="flex items-center space-x-2">
+								<Bell className="h-4 w-4 text-muted-foreground" />
+								<Label htmlFor="device-notifications">
+									Notifications
+								</Label>
+							</div>
+							<Switch
+								id="device-notifications"
+								checked={data.email2MonthNotification}
+								onCheckedChange={(checked) =>
+									handleCheckboxChange(
+										'emailOnNewDevice',
 										checked
 									)
 								}

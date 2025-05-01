@@ -15,8 +15,7 @@ import {
 	updateUserById,
 } from '../services/userService';
 import { updateAllCards } from '../services/cardService';
-import async from 'async';
-import { CardDocument } from '../types/card';
+import { getUserSettings } from '../services/settingsService';
 
 const createUserLogin = async (
 	res: Response,
@@ -54,6 +53,28 @@ const createUserLogin = async (
 			type: device.type,
 			unique,
 		});
+		const settings = await getUserSettings(user.id);
+		if (settings.emailOnNewDevice) {
+			const html = `
+				<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
+					<h2 style="text-align: center; color: #1a73e8;">New Device Connected</h2>
+					<p style="color: #333;">Hi ${user.name},</p>
+					<p style="color: #333;">We noticed a new device has been connected to your account:</p>
+					<ul style="color: #333; list-style-type: none; padding: 0;">
+						<li><strong>Device Name:</strong> ${device.name}</li>
+						<li><strong>Device Type:</strong> ${device.type}</li>
+					</ul>
+					<p style="color: #333;">If this was you, no further action is required. If you did not connect this device, please secure your account immediately by changing your password.</p>
+					<p style="color: #333;">Thanks,<br>The Gift Cards Team</p>
+				</div>
+			`;
+			await sendEmail(
+				user.email,
+				'New device connected',
+				`New device connected: ${device.name} (${device.type})`,
+				html
+			);
+		}
 	}
 	await user.save();
 	res.json({

@@ -119,14 +119,14 @@ export function ConnectedDevicesTab() {
 							devices.map((device) => (
 								<div
 									key={device.device_id}
-									className={`flex items-start gap-4 p-4 bg-background rounded-lg border relative overflow-hidden`}
+									className={`flex items-center gap-4 p-4 bg-background rounded-lg border relative overflow-hidden`}
 								>
 									<div className="flex-shrink-0">
 										{getDeviceIcon(device.type)}
 									</div>
 
 									<div className="flex-grow">
-										<div className="flex justify-between items-start">
+										<div className="flex justify-between items-center">
 											<div>
 												<h4 className="font-medium">
 													{device.name}
