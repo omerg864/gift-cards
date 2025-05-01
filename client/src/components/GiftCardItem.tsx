@@ -57,10 +57,17 @@ export function GiftCardItem({ giftCard, handleCardClick }: GiftCardItemProps) {
 				</div>
 
 				{/* Card details */}
-				<div className="space-y-2">
-					{giftCard.last4 && (
-						<div className="text-lg font-mono tracking-widest text-white">
-							•••• •••• •••• {giftCard.last4}
+				<div className="">
+					{giftCard.expiry && (
+						<div className="tracking-widest text-white">
+							{new Date(giftCard.expiry).toLocaleDateString(
+								'en-GB',
+								{
+									day: '2-digit',
+									month: '2-digit',
+									year: '2-digit',
+								}
+							)}
 						</div>
 					)}
 					{handleCardClick && (

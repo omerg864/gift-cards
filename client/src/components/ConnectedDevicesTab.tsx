@@ -99,7 +99,7 @@ export function ConnectedDevicesTab() {
 			</CardHeader>
 			<CardContent>
 				<div className="space-y-6">
-					<div className="flex justify-between items-center">
+					<div className="flex flex-col gap-2 md:flex-row justify-between items-center">
 						<h3 className="text-lg font-medium">Your devices</h3>
 						{devices.length > 1 && (
 							<Button

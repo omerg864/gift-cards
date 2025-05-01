@@ -125,11 +125,14 @@ export default function ProfilePage() {
 						onValueChange={setActiveTab}
 						className="w-full"
 					>
-						<TabsList className="md:hidden grid w-full grid-cols-3">
+						<TabsList className="md:hidden grid w-full grid-cols-4">
 							<TabsTrigger value="profile">Profile</TabsTrigger>
 							<TabsTrigger value="password">Password</TabsTrigger>
 							<TabsTrigger value="encryption">
-								Encryption Key
+								Encryption
+							</TabsTrigger>
+							<TabsTrigger value="devices">
+								Devices
 							</TabsTrigger>
 						</TabsList>
 

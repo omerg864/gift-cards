@@ -288,19 +288,25 @@ export default function SupplierDetailsPage() {
 
 	return (
 		<div className="container mx-auto px-4 py-8">
-			<div className="flex justify-between items-center mb-6">
-				<Button variant="outline" onClick={handleBack}>
+			<div className="flex flex-col gap-4 md:flex-row justify-between items-center mb-6">
+				<Button
+					variant="outline"
+					className="w-full md:w-auto"
+					onClick={handleBack}
+				>
 					<ArrowLeft className="mr-2 h-4 w-4" /> Back to Suppliers
 				</Button>
 				{supplier.user && (
-					<div className="flex gap-2">
+					<div className="flex gap-2 w-full md:w-auto">
 						<Button
+							className="flex-1"
 							variant="outline"
 							onClick={() => setShowEditDialog(true)}
 						>
 							<Edit className="mr-2 h-4 w-4" /> Edit
 						</Button>
 						<Button
+							className="flex-1"
 							variant="destructive"
 							onClick={() => setShowConfirmationDialog(true)}
 						>
@@ -316,7 +322,7 @@ export default function SupplierDetailsPage() {
 					<SupplierCard supplier={supplier} />
 
 					{/* Supplier Information */}
-					<div className="bg-muted/30 p-6 rounded-lg">
+					<div className="bg-muted/30 p-6 rounded-lg mt-2">
 						<h2 className="text-xl font-semibold mb-4">
 							About {supplier.name}
 						</h2>
@@ -439,6 +445,7 @@ export default function SupplierDetailsPage() {
 			)}
 			{showEditDialog && (
 				<SupplierDialog
+					confirmButtontext="Update Supplier"
 					onSubmit={handleEdit}
 					onClose={() => setShowEditDialog(false)}
 					supplier={supplier}

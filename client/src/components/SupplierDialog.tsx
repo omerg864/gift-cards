@@ -27,11 +27,13 @@ interface SupplierDialogProps {
 	supplier?: Supplier;
 	onClose: () => void;
 	onSubmit: (data: CreateSupplierDetails) => Promise<boolean>;
+	confirmButtontext?: string;
 }
 const SupplierDialog = ({
 	onClose,
 	onSubmit,
 	supplier,
+	confirmButtontext = 'Add Supplier',
 }: SupplierDialogProps) => {
 	const { loading, stores } = useSupplier();
 	const [data, setData] = useState<CreateSupplierDetails>({
@@ -376,7 +378,7 @@ const SupplierDialog = ({
 							type="submit"
 							className="w-full bg-teal-600 hover:bg-teal-700"
 						>
-							Add Supplier
+							{confirmButtontext}
 						</Button>
 					</DialogFooter>
 				</form>

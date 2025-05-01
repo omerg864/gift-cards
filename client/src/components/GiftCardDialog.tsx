@@ -719,7 +719,7 @@ export function GiftCardDialog({
 							<div className="space-y-4 mt-4">
 								<div className="space-y-2">
 									<Label htmlFor="cardNumber">
-										Card Number (Optional)
+										Card Number
 									</Label>
 									<Input
 										id="cardNumber"
@@ -733,7 +733,7 @@ export function GiftCardDialog({
 								<div className="grid grid-cols-2 gap-4">
 									<div className="space-y-2">
 										<Label htmlFor="expiry">
-											Expiration Date (Optional)
+											Expiration Date
 										</Label>
 										<Input
 											id="expiry"
@@ -741,7 +741,7 @@ export function GiftCardDialog({
 											type="date"
 											value={
 												formData.expiry
-													? formData.expiry
+													? new Date(formData.expiry)
 															.toISOString()
 															.split('T')[0]
 													: ''
@@ -750,9 +750,7 @@ export function GiftCardDialog({
 										/>
 									</div>
 									<div className="space-y-2">
-										<Label htmlFor="cvv">
-											CVV (Optional)
-										</Label>
+										<Label htmlFor="cvv">CVV</Label>
 										<Input
 											id="cvv"
 											name="cvv"

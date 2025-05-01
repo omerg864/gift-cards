@@ -48,7 +48,7 @@ const createCardAndSupplier = async (
 	toColor: string,
 	cardNumber?: string,
 	last4?: string,
-	expiry?: Date,
+	expiry?: string,
 	cvv?: string
 ): Promise<CardSupplierResponse> => {
 	try {
@@ -79,7 +79,7 @@ const createCardAndSupplier = async (
 			formData.append('last4', last4);
 		}
 		if (expiry) {
-			formData.append('expiry', expiry.toISOString());
+			formData.append('expiry', new Date(expiry).toISOString());
 		}
 		if (cvv) {
 			formData.append('cvv', cvv);
@@ -109,7 +109,7 @@ const createCard = async (
 	currency: string,
 	cardNumber?: string,
 	last4?: string,
-	expiry?: Date,
+	expiry?: string,
 	cvv?: string
 ): Promise<CardSupplierResponse> => {
 	try {
@@ -131,7 +131,7 @@ const createCard = async (
 			formData.append('last4', last4);
 		}
 		if (expiry) {
-			formData.append('expiry', expiry.toISOString());
+			formData.append('expiry', new Date(expiry).toISOString());
 		}
 		if (cvv) {
 			formData.append('cvv', cvv);
@@ -168,7 +168,7 @@ const updateCardWithNewSupplier = async (
 	toColor: string,
 	cardNumber?: string,
 	last4?: string,
-	expiry?: Date,
+	expiry?: string,
 	cvv?: string
 ): Promise<CardSupplierResponse> => {
 	try {
@@ -200,7 +200,7 @@ const updateCardWithNewSupplier = async (
 			formData.append('last4', last4);
 		}
 		if (expiry) {
-			formData.append('expiry', expiry.toISOString());
+			formData.append('expiry', new Date(expiry).toISOString());
 		}
 		if (cvv) {
 			formData.append('cvv', cvv);
@@ -231,7 +231,7 @@ const updateCard = async (
 	currency: string,
 	cardNumber?: string,
 	last4?: string,
-	expiry?: Date,
+	expiry?: string,
 	cvv?: string
 ): Promise<CardSupplierResponse> => {
 	try {
@@ -254,7 +254,7 @@ const updateCard = async (
 			formData.append('last4', last4);
 		}
 		if (expiry) {
-			formData.append('expiry', expiry.toISOString());
+			formData.append('expiry', new Date(expiry).toISOString());
 		}
 		if (cvv) {
 			formData.append('cvv', cvv);
@@ -271,6 +271,7 @@ const updateCard = async (
 		);
 		return response.data;
 	} catch (error) {
+		console.error('Error updating card:', error);
 		return axiosErrorHandler(error);
 	}
 };

@@ -266,6 +266,7 @@ export default function CardDetailsPage() {
 			setShowEditDialog(false);
 			toast.success('Card added successfully');
 		} catch (error) {
+			console.error('Error updating card:', error);
 			toastError(error);
 		}
 		setLoading(false);
@@ -303,16 +304,25 @@ export default function CardDetailsPage() {
 
 	return (
 		<div className="container mx-auto px-4 py-8">
-			<div className="flex justify-between items-center mb-6">
-				<Button variant="outline" onClick={handleBack}>
+			<div className="flex flex-col gap-4 md:flex-row justify-between items-center mb-6">
+				<Button
+					className="w-full md:w-auto"
+					variant="outline"
+					onClick={handleBack}
+				>
 					<ArrowLeft className="mr-2 h-4 w-4" /> Back to Cards
 				</Button>
-				<div className="flex gap-2">
-					<Button variant="outline" onClick={handleEdit}>
+				<div className="flex gap-2 w-full md:w-auto">
+					<Button
+						variant="outline"
+						className="flex-1"
+						onClick={handleEdit}
+					>
 						<Edit className="mr-2 h-4 w-4" /> Edit
 					</Button>
 					<Button
 						variant="destructive"
+						className="flex-1"
 						onClick={() => setShowConfirmationDialog(true)}
 					>
 						<Trash className="mr-2 h-4 w-4" /> Delete

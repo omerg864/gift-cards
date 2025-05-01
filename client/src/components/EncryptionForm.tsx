@@ -86,7 +86,9 @@ const EncryptionForm = ({
 							required
 						/>
 					</div>
-					<div className="flex justify-between">{children}</div>
+					<div className="flex flex-col gap-4 md:flex-row md:justify-between">
+						{children}
+					</div>
 				</form>
 			</CardContent>
 		</Card>
