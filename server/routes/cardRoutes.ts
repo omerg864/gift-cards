@@ -6,6 +6,7 @@ import {
 	updateCard,
 	updateCardWithNewSupplier,
 	deleteCard,
+	emailMonthNotification,
 } from '../controllers/cardController';
 import { authUser } from '../middleware/authMiddleware';
 import { upload } from '../config/cloud';
@@ -16,6 +17,8 @@ const uploadFields = upload.fields([
 	{ name: 'supplier', maxCount: 1 },
 	{ name: 'stores_images', maxCount: 100 },
 ]);
+
+router.get('/email/month', emailMonthNotification);
 
 router.get('/', authUser, getCards);
 router.post('/', authUser, createCard);

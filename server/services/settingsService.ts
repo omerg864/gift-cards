@@ -29,4 +29,12 @@ const updateUserSettings = async (
 	return settings;
 };
 
-export { getUserSettings, updateUserSettings };
+const getAllUsersSettings = async () => {
+	const settings = await Settings.find();
+	if (!settings) {
+		return [];
+	}
+	return settings;
+}
+
+export { getUserSettings, updateUserSettings, getAllUsersSettings };

@@ -44,6 +44,14 @@ const cardScheme = new mongoose.Schema<CardDocument>(
 		cvv: {
 			type: String,
 		},
+		notified1Month: {
+			type: Boolean,
+			default: false,
+		},
+		notified2Month: {
+			type: Boolean,
+			default: false,
+		},
 	},
 	{ timestamps: true }
 );

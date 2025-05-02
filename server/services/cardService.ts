@@ -96,6 +96,24 @@ const deleteCardsBySupplierId = async (
 	return cards;
 };
 
+const getCardsBetweenDates = async (
+	endDate: Date,
+	startDate: Date = new Date(),
+	query: Object = {}
+): Promise<CardDocument[]> => {
+	const cards = await Card.find({
+		expiry: {
+			$gte: startDate,
+			$lte: endDate,
+		},
+		...query,
+	}).populate('user');
+	if (!cards) {
+		return [];
+	}
+	return cards;
+};
+
 export {
 	getUserCards,
 	newCard,
@@ -103,4 +121,5 @@ export {
 	deleteCardById,
 	updateAllCards,
 	deleteCardsBySupplierId,
+	getCardsBetweenDates,
 };

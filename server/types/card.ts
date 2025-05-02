@@ -3,17 +3,19 @@ import { UserDocument } from './user';
 import { SupplierDocument } from './supplier';
 
 export interface Card {
-    user: ObjectId | UserDocument;
-    name: string;
-    supplier: ObjectId | SupplierDocument;
-    description?: string;
-    isPhysical: boolean;
-    amount: number;
-    currency: string;
-    last4?: string;
-    expiry?: Date;
-    cvv?: string;
-    cardNumber?: string;
+	user: ObjectId | UserDocument;
+	name: string;
+	supplier: ObjectId | SupplierDocument;
+	description?: string;
+	isPhysical: boolean;
+	amount: number;
+	currency: string;
+	last4?: string;
+	expiry?: Date;
+	cvv?: string;
+	cardNumber?: string;
+	notified1Month?: boolean;
+	notified2Month?: boolean;
 }
 
 export interface CardDocument extends Card, Document {}
