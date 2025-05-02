@@ -16,7 +16,6 @@ import {
 	CreditCard,
 	Smartphone,
 	Plus,
-	ShoppingBag,
 	Search,
 	X,
 	Edit,
@@ -404,11 +403,6 @@ export default function SupplierDetailsPage() {
 											<div className="font-medium">
 												{store.name}
 											</div>
-											<div className="text-sm text-muted-foreground flex items-center">
-												<ShoppingBag className="h-3 w-3 mr-1" />
-												Accepts {supplier.name} gift
-												cards
-											</div>
 										</div>
 									</div>
 								))
@@ -427,7 +421,7 @@ export default function SupplierDetailsPage() {
 					<div className="mt-6">
 						<Button
 							onClick={handleAddCard}
-							className="w-full bg-teal-600 hover:bg-teal-700"
+							className="w-full bg-teal-600 hover:bg-teal-700 text-wrap"
 						>
 							<Plus className="mr-2 h-4 w-4" /> Add{' '}
 							{supplier.name} Gift Card to My Collection

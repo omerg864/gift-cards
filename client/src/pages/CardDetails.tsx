@@ -13,7 +13,6 @@ import {
 	ArrowLeft,
 	Edit,
 	Trash,
-	ShoppingBag,
 	Search,
 	X,
 	Smartphone,
@@ -551,16 +550,6 @@ export default function CardDetailsPage() {
 										<div>
 											<div className="font-medium">
 												{store.name}
-											</div>
-											<div className="text-sm text-muted-foreground flex items-center">
-												<ShoppingBag className="h-3 w-3 mr-1" />
-												Accepts{' '}
-												{
-													(
-														giftCard.supplier as Supplier
-													).name
-												}{' '}
-												gift cards
 											</div>
 										</div>
 									</div>
