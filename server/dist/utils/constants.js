@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.maxGiftCardList = exports.loveCardGiftCardsList = exports.buyMeGiftCardsList = void 0;
+exports.theGoldCardList = exports.maxGiftCardList = exports.loveCardGiftCardsList = exports.buyMeGiftCardsList = void 0;
 exports.buyMeGiftCardsList = [
     {
         name: 'BuyMe - Local',
@@ -61,5 +61,11 @@ exports.maxGiftCardList = [
     {
         name: 'Max',
         url: 'https://www.max.co.il/SharedMedia/11013/max-alon-gc_online_02-2025.pdf',
+    },
+];
+exports.theGoldCardList = [
+    {
+        name: 'תו הזהב',
+        url: 'https://tavhazahav.shufersal.co.il/tavhazahavapi/api/resource/tavzahav',
     },
 ];

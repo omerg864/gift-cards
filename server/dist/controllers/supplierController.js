@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.scrapeMaxGiftCardSupplier = exports.scrapeLoveCardSupplier = exports.scrapeBuyMeGiftCards = exports.deleteUserSupplier = exports.updateUserSupplier = exports.getSupplierById = exports.createUserSupplier = exports.getSuppliers = void 0;
+exports.scrapeTheGoldCardSupplier = exports.scrapeMaxGiftCardSupplier = exports.scrapeLoveCardSupplier = exports.scrapeBuyMeGiftCards = exports.deleteUserSupplier = exports.updateUserSupplier = exports.getSupplierById = exports.createUserSupplier = exports.getSuppliers = void 0;
 const express_async_handler_1 = __importDefault(require("express-async-handler"));
 const supplierService_1 = require("../services/supplierService");
 const Scraper_1 = require("../utils/Scraper");
@@ -217,3 +217,33 @@ const scrapeMaxGiftCardSupplier = (0, express_async_handler_1.default)((req, res
     });
 }));
 exports.scrapeMaxGiftCardSupplier = scrapeMaxGiftCardSupplier;
+const scrapeTheGoldCardSupplier = (0, express_async_handler_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const options = {
+        retryCount: 3,
+        cacheTtl: 1000 * 60 * 10,
+    };
+    const goldCardSuppliers = [];
+    for (let i = 0; i < constants_1.theGoldCardList.length; i++) {
+        const giftCardData = constants_1.theGoldCardList[i];
+        const stores = yield Scraper_1.GiftCardScraper.scrapeTheGoldCard(giftCardData.url, options);
+        goldCardSuppliers.push({
+            name: giftCardData.name,
+            stores: stores,
+            description: 'by Shufersal',
+            logo: 'https://tavhazahav.shufersal.co.il/tavhazahav/assets/images/logo-zahavt.png',
+            fromColor: '#F00000',
+            toColor: '#C84664',
+            cardTypes: ['digital', 'physical'],
+        });
+    }
+    if (goldCardSuppliers.length === 0) {
+        res.status(404);
+        throw new Error('No suppliers found');
+    }
+    (0, supplierService_1.upsertSuppliers)(goldCardSuppliers);
+    res.status(200).json({
+        success: true,
+        goldCardSuppliers,
+    });
+}));
+exports.scrapeTheGoldCardSupplier = scrapeTheGoldCardSupplier;

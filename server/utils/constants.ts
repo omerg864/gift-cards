@@ -69,3 +69,37 @@ export const theGoldCardList = [
 		url: 'https://tavhazahav.shufersal.co.il/tavhazahavapi/api/resource/tavzahav',
 	},
 ];
+
+export const nofshonitCardsList = [
+	{
+		name: 'נופשונית PLUS',
+		url: 'https://api.nofshonit.co.il/api/category/getBranchesList?categoryId=105380',
+	},
+	{
+		name: 'נופשונית Baby',
+		url: 'https://api.nofshonit.co.il/api/category/getBranchesList?categoryId=95963',
+	},
+	{
+		name: 'נופשונית Army',
+		url: 'https://api.nofshonit.co.il/api/category/getBranchesList?categoryId=96031',
+	},
+	{
+		name: 'נופשונית Home',
+		url: 'https://api.nofshonit.co.il/api/category/getBranchesList?categoryId=65310',
+	},
+	{
+		name: 'נופשונית OMG',
+		url: 'https://api.nofshonit.co.il/api/category/getBranchesList?categoryId=144451',
+	},
+	{
+		name: 'נופשונית בצפון',
+		url: 'https://api.nofshonit.co.il/api/category/getBranchesList?categoryId=160039',
+	},
+];
+
+export const dreamCardList = [
+	{
+		name: 'Dream Card',
+		url: 'https://www.dreamcard.co.il/about',
+	},
+];

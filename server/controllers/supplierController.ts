@@ -11,8 +11,10 @@ import {
 import { GiftCardScraper, ScraperOptions } from '../utils/Scraper';
 import {
 	buyMeGiftCardsList,
+	dreamCardList,
 	loveCardGiftCardsList,
 	maxGiftCardList,
+	nofshonitCardsList,
 	theGoldCardList,
 } from '../utils/constants';
 import { Supplier } from '../types/supplier';
@@ -290,6 +292,70 @@ const scrapeTheGoldCardSupplier = AsyncHandler(async (req, res) => {
 	});
 });
 
+const scrapeNofshonitSupplier = AsyncHandler(async (req, res) => {
+	const options: ScraperOptions = {
+		retryCount: 3,
+		cacheTtl: 1000 * 60 * 10,
+	};
+	const nofshonitSuppliers: Supplier[] = [];
+	for (let i = 0; i < nofshonitCardsList.length; i++) {
+		const giftCardData = nofshonitCardsList[i];
+		const stores = await GiftCardScraper.scrapeNofshonit(
+			giftCardData.url,
+			options
+		);
+		nofshonitSuppliers.push({
+			name: giftCardData.name,
+			stores: stores,
+			logo: 'https://styleproductionpublic.blob.core.windows.net/files/560/FILE-20200720-0828HF7BKZCTMFC7.png',
+			fromColor: '#C8F0F2', // 200 240 242
+			toColor: '#50BEBE', // 80 190 190
+			cardTypes: ['digital', 'physical'],
+		});
+	}
+	if (nofshonitSuppliers.length === 0) {
+		res.status(404);
+		throw new Error('No suppliers found');
+	}
+	upsertSuppliers(nofshonitSuppliers);
+	res.status(200).json({
+		success: true,
+		nofshonitSuppliers,
+	});
+});
+
+const scrapeDreamCardSupplier = AsyncHandler(async (req, res) => {
+	const options: ScraperOptions = {
+		retryCount: 3,
+		cacheTtl: 1000 * 60 * 10,
+	};
+	const dreamCardSuppliers: Supplier[] = [];
+	for (let i = 0; i < dreamCardList.length; i++) {
+		const giftCardData = dreamCardList[i];
+		const stores = await GiftCardScraper.scrapeDreamCard(
+			giftCardData.url,
+			options
+		);
+		dreamCardSuppliers.push({
+			name: giftCardData.name,
+			stores: stores,
+			logo: 'https://www.dreamcard.co.il/filestock/images/dream%20card.png',
+			fromColor: '#D8039F',
+			toColor: '#C841BE',
+			cardTypes: ['digital', 'physical'],
+		});
+	}
+	if (dreamCardSuppliers.length === 0) {
+		res.status(404);
+		throw new Error('No suppliers found');
+	}
+	upsertSuppliers(dreamCardSuppliers);
+	res.status(200).json({
+		success: true,
+		dreamCardSuppliers,
+	});
+});
+
 export {
 	getSuppliers,
 	createUserSupplier,
@@ -300,4 +366,6 @@ export {
 	scrapeLoveCardSupplier,
 	scrapeMaxGiftCardSupplier,
 	scrapeTheGoldCardSupplier,
+	scrapeNofshonitSupplier,
+	scrapeDreamCardSupplier,
 };

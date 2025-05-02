@@ -256,6 +256,38 @@ class GiftCardScraper {
             return businesses;
         });
     }
+    // --- SCRAPE The Gold Card ---
+    static scrapeTheGoldCard(url_1) {
+        return __awaiter(this, arguments, void 0, function* (url, options = {}) {
+            var _a, _b, _c;
+            const cached = this.getCached(url);
+            if (cached)
+                return cached;
+            const json = yield this.fetchJson(url, (_a = options.retryCount) !== null && _a !== void 0 ? _a : 3);
+            const businesses = [];
+            if (!json.content ||
+                !json.isSucceeded ||
+                !json.content.data ||
+                !json.content.data.networkingCubes ||
+                !Array.isArray(json.content.data.networkingCubes)) {
+                return businesses;
+            }
+            for (const item of json.content.data.networkingCubes) {
+                businesses.push({
+                    store_id: `${item.id}` || (0, uuid_1.v4)(),
+                    name: `${item.name} - ${item.nameInAnotherLanguage}` || 'Unknown',
+                    image: item.icon
+                        ? `https://www.shufersal.co.il${item.icon.url}`
+                        : undefined,
+                    address: item.address,
+                    website: (_b = item.websilteLink[0]) === null || _b === void 0 ? void 0 : _b.url,
+                    phone: item.phone,
+                });
+            }
+            this.setCache(url, businesses, (_c = options.cacheTtl) !== null && _c !== void 0 ? _c : 1000 * 60 * 10);
+            return businesses;
+        });
+    }
 }
 exports.GiftCardScraper = GiftCardScraper;
 GiftCardScraper.cache = {};
@@ -312,13 +344,13 @@ GiftCardScraper.giftCardsList = [
 ];
 // --- TESTING THE SCRAPER ---
 (() => __awaiter(void 0, void 0, void 0, function* () {
-    const url = 'https://www.max.co.il/SharedMedia/11013/max-alon-gc_online_02-2025.pdf';
+    const url = 'https://tavhazahav.shufersal.co.il/tavhazahavapi/api/resource/tavzahav';
     const options = {
         retryCount: 3,
         cacheTtl: 1000 * 60 * 10,
     };
     try {
-        const businesses = yield GiftCardScraper.scrapeMaxGiftCard(url, options);
+        const businesses = yield GiftCardScraper.scrapeTheGoldCard(url, options);
         console.log('Scraped Businesses:', businesses);
     }
     catch (error) {

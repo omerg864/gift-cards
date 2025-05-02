@@ -26,10 +26,11 @@ const getSettings = (0, express_async_handler_1.default)((req, res) => __awaiter
 exports.getSettings = getSettings;
 const updateSettings = (0, express_async_handler_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const user = req.user;
-    const { email1MonthNotification, email2MonthNotification, } = req.body;
+    const { email1MonthNotification, email2MonthNotification, emailOnNewDevice } = req.body;
     const settingsData = {
         email1MonthNotification,
         email2MonthNotification,
+        emailOnNewDevice
     };
     const settings = yield (0, settingsService_1.updateUserSettings)(user.id, settingsData);
     res.status(200).json({

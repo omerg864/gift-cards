@@ -56,6 +56,7 @@ const uuid_1 = require("uuid");
 const cloud_1 = require("../config/cloud");
 const userService_1 = require("../services/userService");
 const cardService_1 = require("../services/cardService");
+const settingsService_1 = require("../services/settingsService");
 const createUserLogin = (res, user, device) => __awaiter(void 0, void 0, void 0, function* () {
     const accessToken = jsonwebtoken_1.default.sign({ id: user.id }, process.env.JWT_SECRET, {
         expiresIn: '1h',
@@ -84,6 +85,23 @@ const createUserLogin = (res, user, device) => __awaiter(void 0, void 0, void 0,
             type: device.type,
             unique,
         });
+        const settings = yield (0, settingsService_1.getUserSettings)(user.id);
+        if (settings.emailOnNewDevice) {
+            const html = `
+				<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
+					<h2 style="text-align: center; color: #1a73e8;">New Device Connected</h2>
+					<p style="color: #333;">Hi ${user.name},</p>
+					<p style="color: #333;">We noticed a new device has been connected to your account:</p>
+					<ul style="color: #333; list-style-type: none; padding: 0;">
+						<li><strong>Device Name:</strong> ${device.name}</li>
+						<li><strong>Device Type:</strong> ${device.type}</li>
+					</ul>
+					<p style="color: #333;">If this was you, no further action is required. If you did not connect this device, please secure your account immediately by changing your password.</p>
+					<p style="color: #333;">Thanks,<br>The Gift Cards Team</p>
+				</div>
+			`;
+            yield (0, functions_1.sendEmail)(user.email, 'New device connected', `New device connected: ${device.name} (${device.type})`, html);
+        }
     }
     yield user.save();
     res.json({

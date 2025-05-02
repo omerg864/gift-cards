@@ -4,7 +4,8 @@ import randomUseragent from 'random-useragent';
 import { v4 as uuidv4 } from 'uuid';
 import { Store } from '../types/supplier';
 import PDFParser from 'pdf-parse';
-import { GoldJson } from '../types/scrape';
+import { GoldJson } from '../types/goldCard';
+import { NofshonitJson } from '../types/nofshonit';
 
 export interface ScraperOptions {
 	retryCount?: number;
@@ -72,7 +73,8 @@ export class GiftCardScraper {
 
 	private static async fetchJson(
 		url: string,
-		retryCount: number
+		retryCount: number,
+		headers: Record<string, string> = {}
 	): Promise<any> {
 		for (let i = 0; i < retryCount; i++) {
 			try {
@@ -82,6 +84,7 @@ export class GiftCardScraper {
 					headers: {
 						'User-Agent': userAgent,
 						Accept: 'application/json',
+						...headers,
 					},
 				});
 				return response.data;
@@ -285,6 +288,7 @@ export class GiftCardScraper {
 		return businesses;
 	}
 
+	// --- SCRAPE The Gold Card ---
 	public static async scrapeTheGoldCard(
 		url: string,
 		options: ScraperOptions = {}
@@ -319,6 +323,70 @@ export class GiftCardScraper {
 				phone: item.phone,
 			});
 		}
+
+		this.setCache(url, businesses, options.cacheTtl ?? 1000 * 60 * 10);
+		return businesses;
+	}
+
+	public static async scrapeNofshonit(
+		url: string,
+		options: ScraperOptions = {}
+	): Promise<Store[]> {
+		const cached = this.getCached(url);
+		if (cached) return cached;
+
+		const json: NofshonitJson = await this.fetchJson(
+			url,
+			options.retryCount ?? 3,
+			{
+				organizationid: '38',
+			}
+		);
+		const businesses: Store[] = [];
+		if (
+			!json.status ||
+			!json.data ||
+			!json.data.branches ||
+			!Array.isArray(json.data.branches)
+		) {
+			return businesses;
+		}
+		const businessFetched: Record<string, boolean> = {};
+		for (const item of json.data.branches) {
+			if (businessFetched[item.storeName]) continue;
+			businesses.push({
+				store_id: `${item.businessId}` || uuidv4(),
+				name: item.storeName || 'Unknown',
+				image: item.businessLogoFile,
+				phone: item.phone,
+			});
+			businessFetched[item.storeName] = true;
+		}
+
+		this.setCache(url, businesses, options.cacheTtl ?? 1000 * 60 * 10);
+		return businesses;
+	}
+
+	public static async scrapeDreamCard(
+		url: string,
+		options: ScraperOptions = {}
+	): Promise<Store[]> {
+		const cached = this.getCached(url);
+		if (cached) return cached;
+
+		const html = await this.fetchHtml(url, options.retryCount ?? 3);
+		const businesses: Store[] = [];
+
+		const $ = load(html);
+
+		$('li').each((_, element) => {
+			const name = $(element).find('h2.s_title').text().trim();
+			const image = $(element).find('img').attr('src')?.trim() ?? '';
+
+			if (name) {
+				businesses.push({ name, image, store_id: uuidv4() });
+			}
+		});
 
 		this.setCache(url, businesses, options.cacheTtl ?? 1000 * 60 * 10);
 		return businesses;

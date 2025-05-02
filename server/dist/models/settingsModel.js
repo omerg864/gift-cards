@@ -48,5 +48,9 @@ const settingsScheme = new mongoose.Schema({
         type: Boolean,
         default: true,
     },
+    emailOnNewDevice: {
+        type: Boolean,
+        default: true,
+    },
 }, { timestamps: true });
 exports.default = mongoose.model('Settings', settingsScheme);

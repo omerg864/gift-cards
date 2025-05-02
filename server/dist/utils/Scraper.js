@@ -256,6 +256,37 @@ class GiftCardScraper {
             return businesses;
         });
     }
+    static scrapeTheGoldCard(url_1) {
+        return __awaiter(this, arguments, void 0, function* (url, options = {}) {
+            var _a, _b, _c;
+            const cached = this.getCached(url);
+            if (cached)
+                return cached;
+            const json = yield this.fetchJson(url, (_a = options.retryCount) !== null && _a !== void 0 ? _a : 3);
+            const businesses = [];
+            if (!json.content ||
+                !json.isSucceeded ||
+                !json.content.data ||
+                !json.content.data.networkingCubes ||
+                !Array.isArray(json.content.data.networkingCubes)) {
+                return businesses;
+            }
+            for (const item of json.content.data.networkingCubes) {
+                businesses.push({
+                    store_id: `${item.id}` || (0, uuid_1.v4)(),
+                    name: `${item.name} - ${item.nameInAnotherLanguage}` || 'Unknown',
+                    image: item.icon
+                        ? `https://www.shufersal.co.il${item.icon.url}`
+                        : undefined,
+                    address: item.address,
+                    website: (_b = item.websilteLink[0]) === null || _b === void 0 ? void 0 : _b.url,
+                    phone: item.phone,
+                });
+            }
+            this.setCache(url, businesses, (_c = options.cacheTtl) !== null && _c !== void 0 ? _c : 1000 * 60 * 10);
+            return businesses;
+        });
+    }
 }
 exports.GiftCardScraper = GiftCardScraper;
 GiftCardScraper.cache = {};

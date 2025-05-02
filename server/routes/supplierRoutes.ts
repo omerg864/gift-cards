@@ -9,7 +9,9 @@ import {
 	scrapeBuyMeGiftCards,
 	scrapeLoveCardSupplier,
 	scrapeMaxGiftCardSupplier,
-	scrapeTheGoldCardSupplier
+	scrapeTheGoldCardSupplier,
+	scrapeNofshonitSupplier,
+	scrapeDreamCardSupplier
 } from '../controllers/supplierController';
 import { authUser } from '../middleware/authMiddleware';
 
@@ -25,6 +27,8 @@ router.get('/scrape/buyme', scrapeBuyMeGiftCards);
 router.get('/scrape/lovecard', scrapeLoveCardSupplier);
 router.get('/scrape/maxgiftcard', scrapeMaxGiftCardSupplier);
 router.get('/scrape/goldcard', scrapeTheGoldCardSupplier);
+router.get('/scrape/nofshonit', scrapeNofshonitSupplier);
+router.get('/scrape/dreamcard', scrapeDreamCardSupplier);
 
 router.get('/', authUser, getSuppliers);
 router.post('/', authUser, uploadFields, createUserSupplier);
