@@ -18,6 +18,7 @@ import {
 	X,
 	Smartphone,
 	FileText,
+	Copy,
 } from 'lucide-react';
 import type { CreateGiftCardDetails, GiftCard } from '../types/gift-card';
 import { Store as IStore, Supplier } from '../types/supplier';
@@ -411,42 +412,89 @@ export default function CardDetailsPage() {
 						)}
 
 						{giftCard.cardNumber && (
-							<div className="flex items-center gap-2">
-								<button
-									onClick={toggleEncryptedData}
-									className="h-5 w-5 text-muted-foreground"
-								>
-									{showEncryptedData ? <EyeOff /> : <Eye />}
-								</button>
-								<div>
-									<div className="text-sm text-muted-foreground">
-										Card Number
-									</div>
-									<div className="font-medium">
-										{showEncryptedData
-											? cardNumber
-											: '••• ••• •••• ' + giftCard.last4}
+							<div className="flex justify-between items-center gap-2">
+								<div className="flex items-center gap-2">
+									<button
+										onClick={toggleEncryptedData}
+										className="h-5 w-5 text-muted-foreground"
+									>
+										{showEncryptedData ? (
+											<EyeOff />
+										) : (
+											<Eye />
+										)}
+									</button>
+									<div>
+										<div className="text-sm text-muted-foreground">
+											Card Number
+										</div>
+										<div className="font-medium">
+											{showEncryptedData
+												? cardNumber
+												: '••• ••• •••• ' +
+												  giftCard.last4}
+										</div>
 									</div>
 								</div>
+								{showEncryptedData && (
+									<button
+										onClick={() => {
+											if (cardNumber) {
+												navigator.clipboard.writeText(
+													cardNumber
+												);
+												toast.success(
+													'Card number copied to clipboard'
+												);
+											}
+										}}
+										className="h-5 w-5 text-muted-foreground"
+									>
+										<Copy />
+									</button>
+								)}
 							</div>
 						)}
 
 						{giftCard.cvv && (
-							<div className="flex items-center gap-2">
-								<button
-									onClick={toggleEncryptedData}
-									className="h-5 w-5 text-muted-foreground"
-								>
-									{showEncryptedData ? <EyeOff /> : <Eye />}
-								</button>
-								<div>
-									<div className="text-sm text-muted-foreground">
-										CVV
-									</div>
-									<div className="font-medium">
-										{showEncryptedData ? cvv : '•••'}
+							<div className="flex justify-between items-center gap-2">
+								<div className="flex items-center gap-2">
+									<button
+										onClick={toggleEncryptedData}
+										className="h-5 w-5 text-muted-foreground"
+									>
+										{showEncryptedData ? (
+											<EyeOff />
+										) : (
+											<Eye />
+										)}
+									</button>
+									<div>
+										<div className="text-sm text-muted-foreground">
+											CVV
+										</div>
+										<div className="font-medium">
+											{showEncryptedData ? cvv : '•••'}
+										</div>
 									</div>
 								</div>
+								{showEncryptedData && (
+									<button
+										onClick={() => {
+											if (cardNumber) {
+												navigator.clipboard.writeText(
+													cvv
+												);
+												toast.success(
+													'Card number copied to clipboard'
+												);
+											}
+										}}
+										className="h-5 w-5 text-muted-foreground"
+									>
+										<Copy />
+									</button>
+								)}
 							</div>
 						)}
 					</div>
