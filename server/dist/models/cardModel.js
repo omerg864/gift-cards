@@ -76,5 +76,13 @@ const cardScheme = new mongoose.Schema({
     cvv: {
         type: String,
     },
+    notified1Month: {
+        type: Boolean,
+        default: false,
+    },
+    notified2Month: {
+        type: Boolean,
+        default: false,
+    },
 }, { timestamps: true });
 exports.default = mongoose.model('Card', cardScheme);

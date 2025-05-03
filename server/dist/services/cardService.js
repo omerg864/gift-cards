@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteCardsBySupplierId = exports.updateAllCards = exports.deleteCardById = exports.updateCardById = exports.newCard = exports.getUserCards = void 0;
+exports.getCardsBetweenDates = exports.deleteCardsBySupplierId = exports.updateAllCards = exports.deleteCardById = exports.updateCardById = exports.newCard = exports.getUserCards = void 0;
 const cardModel_1 = __importDefault(require("../models/cardModel"));
 const getUserCards = (user, query) => __awaiter(void 0, void 0, void 0, function* () {
     const cards = yield cardModel_1.default.find({ user: user._id }).populate('supplier');
@@ -73,3 +73,14 @@ const deleteCardsBySupplierId = (user, supplierId) => __awaiter(void 0, void 0, 
     return cards;
 });
 exports.deleteCardsBySupplierId = deleteCardsBySupplierId;
+const getCardsBetweenDates = (endDate_1, ...args_1) => __awaiter(void 0, [endDate_1, ...args_1], void 0, function* (endDate, startDate = new Date(), query = {}) {
+    const cards = yield cardModel_1.default.find(Object.assign({ expiry: {
+            $gte: startDate,
+            $lte: endDate,
+        } }, query)).populate('user');
+    if (!cards) {
+        return [];
+    }
+    return cards;
+});
+exports.getCardsBetweenDates = getCardsBetweenDates;

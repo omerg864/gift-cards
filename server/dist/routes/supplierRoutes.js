@@ -17,6 +17,8 @@ router.get('/scrape/buyme', supplierController_1.scrapeBuyMeGiftCards);
 router.get('/scrape/lovecard', supplierController_1.scrapeLoveCardSupplier);
 router.get('/scrape/maxgiftcard', supplierController_1.scrapeMaxGiftCardSupplier);
 router.get('/scrape/goldcard', supplierController_1.scrapeTheGoldCardSupplier);
+router.get('/scrape/nofshonit', supplierController_1.scrapeNofshonitSupplier);
+router.get('/scrape/dreamcard', supplierController_1.scrapeDreamCardSupplier);
 router.get('/', authMiddleware_1.authUser, supplierController_1.getSuppliers);
 router.post('/', authMiddleware_1.authUser, uploadFields, supplierController_1.createUserSupplier);
 router.get('/:id', authMiddleware_1.authUser, supplierController_1.getSupplierById);

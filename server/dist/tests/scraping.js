@@ -38,16 +38,13 @@ class GiftCardScraper {
             throw new Error(`Failed to fetch content from ${url}`);
         });
     }
-    static fetchJson(url, retryCount) {
-        return __awaiter(this, void 0, void 0, function* () {
+    static fetchJson(url_1, retryCount_1) {
+        return __awaiter(this, arguments, void 0, function* (url, retryCount, headers = {}) {
             for (let i = 0; i < retryCount; i++) {
                 try {
                     const userAgent = random_useragent_1.default.getRandom() || this.defaultUserAgent;
                     const response = yield axios_1.default.get(url, {
-                        headers: {
-                            'User-Agent': userAgent,
-                            Accept: 'application/json',
-                        },
+                        headers: Object.assign({ 'User-Agent': userAgent, Accept: 'application/json' }, headers),
                     });
                     return response.data;
                 }
@@ -288,6 +285,59 @@ class GiftCardScraper {
             return businesses;
         });
     }
+    static scrapeNofshonit(url_1) {
+        return __awaiter(this, arguments, void 0, function* (url, options = {}) {
+            var _a, _b;
+            const cached = this.getCached(url);
+            if (cached)
+                return cached;
+            const json = yield this.fetchJson(url, (_a = options.retryCount) !== null && _a !== void 0 ? _a : 3, {
+                organizationid: '38',
+            });
+            const businesses = [];
+            if (!json.status ||
+                !json.data ||
+                !json.data.branches ||
+                !Array.isArray(json.data.branches)) {
+                return businesses;
+            }
+            const businessFetched = {};
+            for (const item of json.data.branches) {
+                if (businessFetched[item.storeName])
+                    continue;
+                businesses.push({
+                    store_id: `${item.businessId}` || (0, uuid_1.v4)(),
+                    name: item.storeName || 'Unknown',
+                    image: item.businessLogoFile,
+                    phone: item.phone,
+                });
+                businessFetched[item.storeName] = true;
+            }
+            this.setCache(url, businesses, (_b = options.cacheTtl) !== null && _b !== void 0 ? _b : 1000 * 60 * 10);
+            return businesses;
+        });
+    }
+    static scrapeDreamCard(url_1) {
+        return __awaiter(this, arguments, void 0, function* (url, options = {}) {
+            var _a, _b;
+            const cached = this.getCached(url);
+            if (cached)
+                return cached;
+            const html = yield this.fetchHtml(url, (_a = options.retryCount) !== null && _a !== void 0 ? _a : 3);
+            const businesses = [];
+            const $ = (0, cheerio_1.load)(html);
+            $('li').each((_, element) => {
+                var _a, _b;
+                const name = $(element).find('h2.s_title').text().trim();
+                const image = (_b = (_a = $(element).find('img').attr('src')) === null || _a === void 0 ? void 0 : _a.trim()) !== null && _b !== void 0 ? _b : '';
+                if (name) {
+                    businesses.push({ name, image, store_id: (0, uuid_1.v4)() });
+                }
+            });
+            this.setCache(url, businesses, (_b = options.cacheTtl) !== null && _b !== void 0 ? _b : 1000 * 60 * 10);
+            return businesses;
+        });
+    }
 }
 exports.GiftCardScraper = GiftCardScraper;
 GiftCardScraper.cache = {};
@@ -344,13 +394,13 @@ GiftCardScraper.giftCardsList = [
 ];
 // --- TESTING THE SCRAPER ---
 (() => __awaiter(void 0, void 0, void 0, function* () {
-    const url = 'https://tavhazahav.shufersal.co.il/tavhazahavapi/api/resource/tavzahav';
+    const url = 'https://www.dreamcard.co.il/about';
     const options = {
         retryCount: 3,
         cacheTtl: 1000 * 60 * 10,
     };
     try {
-        const businesses = yield GiftCardScraper.scrapeTheGoldCard(url, options);
+        const businesses = yield GiftCardScraper.scrapeDreamCard(url, options);
         console.log('Scraped Businesses:', businesses);
     }
     catch (error) {

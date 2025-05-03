@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateUserSettings = exports.getUserSettings = void 0;
+exports.getAllUsersSettings = exports.updateUserSettings = exports.getUserSettings = void 0;
 const settingsModel_1 = __importDefault(require("../models/settingsModel"));
 const getUserSettings = (userId) => __awaiter(void 0, void 0, void 0, function* () {
     const settings = yield settingsModel_1.default.findOne({
@@ -35,3 +35,11 @@ const updateUserSettings = (userId, settingsData) => __awaiter(void 0, void 0, v
     return settings;
 });
 exports.updateUserSettings = updateUserSettings;
+const getAllUsersSettings = () => __awaiter(void 0, void 0, void 0, function* () {
+    const settings = yield settingsModel_1.default.find();
+    if (!settings) {
+        return [];
+    }
+    return settings;
+});
+exports.getAllUsersSettings = getAllUsersSettings;

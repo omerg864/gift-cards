@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.theGoldCardList = exports.maxGiftCardList = exports.loveCardGiftCardsList = exports.buyMeGiftCardsList = void 0;
+exports.dreamCardList = exports.nofshonitCardsList = exports.theGoldCardList = exports.maxGiftCardList = exports.loveCardGiftCardsList = exports.buyMeGiftCardsList = void 0;
 exports.buyMeGiftCardsList = [
     {
         name: 'BuyMe - Local',
@@ -67,5 +67,37 @@ exports.theGoldCardList = [
     {
         name: 'תו הזהב',
         url: 'https://tavhazahav.shufersal.co.il/tavhazahavapi/api/resource/tavzahav',
+    },
+];
+exports.nofshonitCardsList = [
+    {
+        name: 'נופשונית PLUS',
+        url: 'https://api.nofshonit.co.il/api/category/getBranchesList?categoryId=105380',
+    },
+    {
+        name: 'נופשונית Baby',
+        url: 'https://api.nofshonit.co.il/api/category/getBranchesList?categoryId=95963',
+    },
+    {
+        name: 'נופשונית Army',
+        url: 'https://api.nofshonit.co.il/api/category/getBranchesList?categoryId=96031',
+    },
+    {
+        name: 'נופשונית Home',
+        url: 'https://api.nofshonit.co.il/api/category/getBranchesList?categoryId=65310',
+    },
+    {
+        name: 'נופשונית OMG',
+        url: 'https://api.nofshonit.co.il/api/category/getBranchesList?categoryId=144451',
+    },
+    {
+        name: 'נופשונית בצפון',
+        url: 'https://api.nofshonit.co.il/api/category/getBranchesList?categoryId=160039',
+    },
+];
+exports.dreamCardList = [
+    {
+        name: 'Dream Card',
+        url: 'https://www.dreamcard.co.il/about',
     },
 ];

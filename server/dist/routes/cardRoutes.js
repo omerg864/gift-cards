@@ -12,6 +12,7 @@ const uploadFields = cloud_1.upload.fields([
     { name: 'supplier', maxCount: 1 },
     { name: 'stores_images', maxCount: 100 },
 ]);
+router.get('/email/month', cardController_1.emailMonthNotification);
 router.get('/', authMiddleware_1.authUser, cardController_1.getCards);
 router.post('/', authMiddleware_1.authUser, cardController_1.createCard);
 router.post('/supplier', authMiddleware_1.authUser, uploadFields, cardController_1.createCardAndSupplier);
