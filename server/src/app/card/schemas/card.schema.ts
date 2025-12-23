@@ -1,7 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Schema as MongooseSchema } from 'mongoose';
-
-import { Card } from '@shared/types/card.types';
+import { Card } from '../../../../../shared/types/card.types';
 
 export type CardDocument = HydratedDocument<CardModel>;
 

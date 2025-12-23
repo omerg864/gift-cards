@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Card } from '@shared/types/card.types';
 import { Model } from 'mongoose';
 import { v4 as uuid } from 'uuid';
+import { Card } from '../../../../shared/types/card.types';
 import { User } from '../../../../shared/types/user.types';
 import { CloudinaryService } from '../../lib/cloudinary/cloudinary.service';
 import { CardDocument, CardModel } from '../card/schemas/card.schema';

@@ -1,10 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { createZodDto } from 'nestjs-zod';
+import { z } from 'zod';
 import {
   CreateCardSchema,
   UpdateCardSchema,
-} from '@shared/schemas/card.schema';
-import { createZodDto } from 'nestjs-zod';
-import { z } from 'zod';
+} from '../../../../../shared/schemas/card.schema';
 
 export class CreateCardDto extends createZodDto(CreateCardSchema) {
   @ApiProperty({

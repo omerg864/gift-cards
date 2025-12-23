@@ -1,6 +1,6 @@
-import { createZodDto } from 'nestjs-zod';
-import { CreateUserSchema } from '@shared/schemas/user.schema';
 import { ApiProperty } from '@nestjs/swagger';
+import { createZodDto } from 'nestjs-zod';
+import { CreateUserSchema } from '../../../../../shared/schemas/user.schema';
 
 export class CreateUserDto extends createZodDto(CreateUserSchema) {
   @ApiProperty({ example: 'John Doe', description: 'User full name' })

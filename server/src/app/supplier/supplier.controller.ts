@@ -13,8 +13,8 @@ import {
 import { ParseObjectIdPipe } from '@nestjs/mongoose';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { ROUTES } from '@shared/constants/routes';
-import { User as UserType } from '@shared/types/user.types';
+import { ROUTES } from '../../../../shared/constants/routes';
+import { User as UserType } from '../../../../shared/types/user.types';
 import { CheckOwnership } from '../../lib/common/decorators/check-ownership.decorator';
 import { User } from '../../lib/common/decorators/user.decorator';
 import { JwtAuthGuard } from '../../lib/common/guards/jwt-auth.guard';

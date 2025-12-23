@@ -1,10 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { createZodDto } from 'nestjs-zod';
 import {
   ResetEncryptionKeySchema,
   UpdateEncryptionKeySchema,
-} from '@shared/schemas/user.schema';
-import { Card } from '@shared/types/card.types';
-import { createZodDto } from 'nestjs-zod';
+} from '../../../../../shared/schemas/user.schema';
+import { Card } from '../../../../../shared/types/card.types';
 
 export class UpdateEncryptionKeyDto extends createZodDto(
   UpdateEncryptionKeySchema,

@@ -1,6 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { UpdateUserSchema } from '@shared/schemas/user.schema';
 import { createZodDto } from 'nestjs-zod';
+import { UpdateUserSchema } from '../../../../../shared/schemas/user.schema';
 
 export class UpdateUserDto extends createZodDto(UpdateUserSchema) {
   @ApiPropertyOptional({ example: 'John Doe' })

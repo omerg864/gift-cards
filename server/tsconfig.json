@@ -22,8 +22,7 @@
     "strictBindCallApply": true,
     "noFallthroughCasesInSwitch": true,
     "paths": {
-      "zod": ["./node_modules/zod"],
-      "@shared/*": ["../shared/*"]
+      "zod": ["./node_modules/zod"]
     }
   },
   "include": ["src", "../shared"]

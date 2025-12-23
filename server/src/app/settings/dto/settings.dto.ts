@@ -1,9 +1,9 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
+import { createZodDto } from 'nestjs-zod';
 import {
   CreateSettingsSchema,
   UpdateSettingsSchema,
-} from '@shared/schemas/settings.schema';
-import { createZodDto } from 'nestjs-zod';
+} from '../../../../../shared/schemas/settings.schema';
 
 export class CreateSettingsDto extends createZodDto(CreateSettingsSchema) {
   @ApiPropertyOptional({

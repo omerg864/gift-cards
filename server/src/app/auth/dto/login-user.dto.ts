@@ -1,7 +1,7 @@
-import { createZodDto } from 'nestjs-zod';
-import { LoginUserSchema } from '@shared/schemas/user.schema';
 import { ApiProperty } from '@nestjs/swagger';
-import type { Device } from '@shared/types/device.types';
+import { createZodDto } from 'nestjs-zod';
+import { LoginUserSchema } from '../../../../../shared/schemas/user.schema';
+import type { Device } from '../../../../../shared/types/device.types';
 
 export class LoginUserDto extends createZodDto(LoginUserSchema) {
   @ApiProperty({

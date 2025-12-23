@@ -12,8 +12,8 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { ROUTES } from '@shared/constants/routes';
-import { User as UserType } from '@shared/types/user.types';
+import { ROUTES } from '../../../../shared/constants/routes';
+import { User as UserType } from '../../../../shared/types/user.types';
 import { User } from '../../lib/common/decorators/user.decorator';
 import { JwtAuthGuard } from '../../lib/common/guards/jwt-auth.guard';
 import { CreateUserDto } from './dto/create-user.dto';

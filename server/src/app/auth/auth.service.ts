@@ -6,11 +6,14 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import type { Device } from '@shared/types/device.types';
-import type { CreateUserDto, LoginUserDto } from '@shared/types/user.types';
 import * as bcrypt from 'bcrypt';
 import { OAuth2Client } from 'google-auth-library';
 import { v4 as uuid } from 'uuid';
+import type { Device } from '../../../../shared/types/device.types';
+import type {
+  CreateUserDto,
+  LoginUserDto,
+} from '../../../../shared/types/user.types';
 import { EMAIL_SUBJECTS } from '../email/constants';
 import { EmailService } from '../email/email.service';
 import { SettingsService } from '../settings/settings.service';

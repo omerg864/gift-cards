@@ -1,9 +1,9 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { createZodDto } from 'nestjs-zod';
 import {
   CreateSupplierSchema,
   UpdateSupplierSchema,
-} from '@shared/schemas/supplier.schema';
-import { createZodDto } from 'nestjs-zod';
+} from '../../../../../shared/schemas/supplier.schema';
 
 export class CreateSupplierDto extends createZodDto(CreateSupplierSchema) {
   @ApiProperty({ example: 'Amazon', description: 'Supplier name' })

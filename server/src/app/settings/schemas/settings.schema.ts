@@ -1,7 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Schema as MongooseSchema } from 'mongoose';
-
-import { Settings } from '@shared/types/settings.types';
+import { Settings } from '../../../../../shared/types/settings.types';
 
 export type SettingsDocument = HydratedDocument<SettingsModel>;
 

@@ -13,11 +13,11 @@ import {
 import { ParseObjectIdPipe } from '@nestjs/mongoose';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { ROUTES } from '@shared/constants/routes';
-import { User as UserType } from '@shared/types/user.types';
 import { z } from 'zod';
+import { ROUTES } from '../../../../shared/constants/routes';
 import { CreateCardSchema } from '../../../../shared/schemas/card.schema';
 import { Card } from '../../../../shared/types/card.types';
+import { User as UserType } from '../../../../shared/types/user.types';
 import { CheckOwnership } from '../../lib/common/decorators/check-ownership.decorator';
 import { User } from '../../lib/common/decorators/user.decorator';
 import { JwtAuthGuard } from '../../lib/common/guards/jwt-auth.guard';

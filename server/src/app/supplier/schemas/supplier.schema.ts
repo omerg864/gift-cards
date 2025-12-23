@@ -1,7 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Schema as MongooseSchema } from 'mongoose';
-
-import { Supplier } from '@shared/types/supplier.types';
+import { Supplier } from '../../../../../shared/types/supplier.types';
 
 export type SupplierDocument = HydratedDocument<SupplierModel>;
 
