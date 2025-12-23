@@ -2,7 +2,6 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 import { load } from 'cheerio';
-import PDFParser from 'pdf-parse';
 import * as randomUseragent from 'random-useragent';
 import { v4 as uuidv4 } from 'uuid';
 import { getDarkerColor } from '../../lib/colors';
@@ -428,10 +427,10 @@ export class ScrapingService {
         if (cached) {
           stores = cached;
         } else {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const pdf = await this.fetchPdf(giftCard.url, options.retryCount!);
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unused-vars
-          const data = await (PDFParser as any)(pdf);
-          // Hardcoded logic from old server strictly
+          // const data = await (PDFParser as any)(pdf);
+
           stores = [
             { name: 'INTIMA' },
             { name: 'POLGAT' },
