@@ -1,6 +1,7 @@
 import { ROUTES } from '@shared/constants/routes';
 import { CreateUserDto, LoginUserDto } from '@shared/types/user.types';
 import { useMutation } from '@tanstack/react-query';
+import { Device } from '../../../shared/types/device.types';
 import { EMAIL, USER } from '../lib/constants';
 import { generatePath } from '../lib/utils';
 import { axiosErrorHandler, client } from '../services/client';
@@ -65,7 +66,7 @@ export const useLogout = () => {
 
 export const useGoogleLogin = () => {
   return useMutation({
-    mutationFn: async (data: { code: string; device: any }) => {
+    mutationFn: async (data: { code: string; device: Device }) => {
       try {
         const response = await client.post(
           generatePath({ route: [ROUTES.AUTH.BASE, ROUTES.AUTH.GOOGLE] }),

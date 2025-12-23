@@ -62,7 +62,7 @@ const EncryptionTab = () => {
 			?.filter((card) => card.cardNumber || card.cvv)
 			.map((card) => {
 				const decryptedCard = {
-					id: card.id,
+					...card,
 					...encryptCard(
 						decryptCardFields(card, currentKey, user.salt!),
 						newKey,
@@ -119,26 +119,12 @@ const EncryptionTab = () => {
 
 		const { salt, verifyToken } = generateSaltAndVerifyToken(newKey);
 
-		const updatedCards = giftCards
-			?.filter((card) => card.cardNumber || card.cvv)
-			.map((card) => {
-				const decryptedCard = {
-					id: card.id,
-					cvv: '',
-					cardNumber: '',
-					last4: '',
-				};
-				return decryptedCard;
-			});
-
 		setIsLoading(true);
 		try {
 			await resetEncryptionKeyMutation.mutateAsync({
 				salt,
-				verifyToken,
-				cards: updatedCards ?? [],
+				verifyToken
 			});
-			// updateCards(updatedCards);
 			setGlobalKey(newKey);
 			updateUser({
 				salt,
