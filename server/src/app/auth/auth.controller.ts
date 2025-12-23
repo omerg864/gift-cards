@@ -25,6 +25,7 @@ import {
 import { ROUTES } from '../../../../shared/constants/routes';
 import type { Device } from '../../../../shared/types/device.types';
 import { User as UserType } from '../../../../shared/types/user.types';
+import { NODE_ENV } from '../../config/configuration';
 import { User } from '../../lib/common/decorators/user.decorator';
 import { JwtAuthGuard } from '../../lib/common/guards/jwt-auth.guard';
 import { COOKIE_NAMES } from '../../lib/constants';
@@ -119,19 +120,21 @@ export class AuthController {
     deviceId?: string,
   ) {
     const isProduction =
-      this.configService.get<string>('NODE_ENV') === 'production';
+      this.configService.get<NODE_ENV>('NODE_ENV') === NODE_ENV.PRODUCTION;
+
+    const sameSite = isProduction ? 'none' : 'strict';
 
     res.cookie(COOKIE_NAMES.ACCESS_TOKEN, accessToken, {
       httpOnly: true,
       secure: isProduction,
-      sameSite: 'strict',
+      sameSite,
       maxAge: 60 * 60 * 1000, // 1 hour
     });
 
     res.cookie(COOKIE_NAMES.REFRESH_TOKEN, refreshToken, {
       httpOnly: true,
       secure: isProduction,
-      sameSite: 'strict',
+      sameSite,
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
@@ -139,7 +142,7 @@ export class AuthController {
       res.cookie(COOKIE_NAMES.DEVICE_ID, deviceId, {
         httpOnly: true,
         secure: isProduction,
-        sameSite: 'strict',
+        sameSite,
         maxAge: 365 * 24 * 60 * 60 * 1000, // 1 year
       });
     }
