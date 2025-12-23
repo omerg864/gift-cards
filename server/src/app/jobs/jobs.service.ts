@@ -22,6 +22,42 @@ export class JobsService {
     return { success: true, message: 'Scraping job completed' };
   }
 
+  async triggerBuyMeScraping() {
+    this.logger.log('Manually triggering BuyMe scraping job...');
+    await this.scrapingService.scrapeBuyMe();
+    return { success: true, message: 'BuyMe scraping job completed' };
+  }
+
+  async triggerLoveCardScraping() {
+    this.logger.log('Manually triggering LoveCard scraping job...');
+    await this.scrapingService.scrapeLoveCard();
+    return { success: true, message: 'LoveCard scraping job completed' };
+  }
+
+  async triggerGoldCardScraping() {
+    this.logger.log('Manually triggering TheGoldCard scraping job...');
+    await this.scrapingService.scrapeTheGoldCard();
+    return { success: true, message: 'TheGoldCard scraping job completed' };
+  }
+
+  async triggerNofshonitScraping() {
+    this.logger.log('Manually triggering Nofshonit scraping job...');
+    await this.scrapingService.scrapeNofshonit();
+    return { success: true, message: 'Nofshonit scraping job completed' };
+  }
+
+  async triggerDreamCardScraping() {
+    this.logger.log('Manually triggering DreamCard scraping job...');
+    await this.scrapingService.scrapeDreamCard();
+    return { success: true, message: 'DreamCard scraping job completed' };
+  }
+
+  async triggerMaxScraping() {
+    this.logger.log('Manually triggering MaxGiftCard scraping job...');
+    await this.scrapingService.scrapeMaxGiftCard();
+    return { success: true, message: 'MaxGiftCard scraping job completed' };
+  }
+
   async sendMonthlyNotifications() {
     this.logger.log('Starting monthly notifications job...');
     const usersSettings = await this.settingsService.findAll();
