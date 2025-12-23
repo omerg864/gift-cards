@@ -1,17 +1,18 @@
 {
 	"version": 2,
-	"buildCommand": "npm run build",
 	"builds": [
 		{
-			"src": "dist/src/main.js",
+			"src": "server/src/main.ts",
 			"use": "@vercel/node",
-			"config": { "includeFiles": ["dist/**"] }
+			"config": {
+				"includeFiles": ["shared/**"]
+			}
 		}
 	],
-	"rewrites": [
+	"routes": [
 		{
-			"source": "/(.*)",
-			"destination": "dist/src/main.js"
+			"src": "/(.*)",
+			"dest": "server/src/main.ts"
 		}
 	]
 }
