@@ -4,7 +4,7 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
+  "private": true,
   "dependencies": {
     "zod": "^4.2.1"
   }
