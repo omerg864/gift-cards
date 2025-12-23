@@ -1,26 +1,32 @@
 import { useState } from 'react';
-import { Button } from './ui/button';
 import { toast } from 'react-toastify';
-import { useAuth } from '../hooks/useAuth';
 import { useEncryption } from '../context/EncryptionContext';
-import { useGiftCards } from '../hooks/useGiftCards';
+import { useAuth } from '../hooks/useAuth';
+import { useGetCards } from '../hooks/useCardQuery';
+import {
+	useResetEncryptionKey,
+	useUpdateEncryptionKey,
+} from '../hooks/useUserQuery';
 import {
 	decryptCardFields,
 	encryptCard,
 	generateSaltAndVerifyToken,
 	validateGlobalKey,
 } from '../lib/cryptoHelpers';
-import { updateEncryptionKey } from '../services/userService';
 import { toastError } from '../lib/utils';
-import Loading from './loading';
 import EncryptionForm from './EncryptionForm';
+import Loading from './loading';
+import { Button } from './ui/button';
 
 const EncryptionTab = () => {
 	const [isLoading, setIsLoading] = useState(false);
 	const { user, updateUser } = useAuth();
 	const { setGlobalKey } = useEncryption();
-	const { giftCards, updateCards } = useGiftCards();
+	const { data: giftCards } = useGetCards();
 	const [resetKeyForm, setResetKeyForm] = useState(false);
+
+	const updateEncryptionKeyMutation = useUpdateEncryptionKey();
+	const resetEncryptionKeyMutation = useResetEncryptionKey();
 
 	const handleEncryptionUpdate = async (
 		newKey: string,
@@ -53,10 +59,10 @@ const EncryptionTab = () => {
 		const { salt, verifyToken } = generateSaltAndVerifyToken(newKey);
 
 		const updatedCards = giftCards
-			.filter((card) => card.cardNumber || card.cvv)
+			?.filter((card) => card.cardNumber || card.cvv)
 			.map((card) => {
 				const decryptedCard = {
-					_id: card._id,
+					id: card.id,
 					...encryptCard(
 						decryptCardFields(card, currentKey, user.salt!),
 						newKey,
@@ -68,8 +74,12 @@ const EncryptionTab = () => {
 
 		setIsLoading(true);
 		try {
-			await updateEncryptionKey(salt, verifyToken, updatedCards);
-			updateCards(updatedCards);
+			await updateEncryptionKeyMutation.mutateAsync({
+				salt,
+				verifyToken,
+				cards: updatedCards ?? [],
+			});
+			// updateCards(updatedCards ?? []);
 			setGlobalKey(newKey);
 			updateUser({
 				salt,
@@ -110,10 +120,10 @@ const EncryptionTab = () => {
 		const { salt, verifyToken } = generateSaltAndVerifyToken(newKey);
 
 		const updatedCards = giftCards
-			.filter((card) => card.cardNumber || card.cvv)
+			?.filter((card) => card.cardNumber || card.cvv)
 			.map((card) => {
 				const decryptedCard = {
-					_id: card._id,
+					id: card.id,
 					cvv: '',
 					cardNumber: '',
 					last4: '',
@@ -123,8 +133,12 @@ const EncryptionTab = () => {
 
 		setIsLoading(true);
 		try {
-			await updateEncryptionKey(salt, verifyToken, updatedCards);
-			updateCards(updatedCards);
+			await resetEncryptionKeyMutation.mutateAsync({
+				salt,
+				verifyToken,
+				cards: updatedCards ?? [],
+			});
+			// updateCards(updatedCards);
 			setGlobalKey(newKey);
 			updateUser({
 				salt,

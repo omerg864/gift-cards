@@ -1,93 +1,81 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useGetSupplier } from '@/hooks/useSupplierQuery';
+import { Supplier, SupplierStore } from '@shared/types/supplier.types';
+import {
+    ArrowLeft,
+    Calendar,
+    Copy,
+    CreditCard,
+    DollarSign,
+    Edit,
+    Eye,
+    EyeOff,
+    FileText,
+    Search,
+    Smartphone,
+    Store,
+    Trash,
+    X,
+} from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router';
+import { toast } from 'react-toastify';
+import { Card } from '../../../shared/types/card.types';
+import ConfirmationDialog from '../components/ConfirmationDialog';
+import EncryptionDialog from '../components/EncryptionDialog';
+import { GiftCardDialog } from '../components/GiftCardDialog';
+import { GiftCardItem } from '../components/GiftCardItem';
+import Loading from '../components/loading';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
-import {
-	Eye,
-	EyeOff,
-	Store,
-	Calendar,
-	CreditCard,
-	DollarSign,
-	ArrowLeft,
-	Edit,
-	Trash,
-	Search,
-	X,
-	Smartphone,
-	FileText,
-	Copy,
-} from 'lucide-react';
-import type { CreateGiftCardDetails, GiftCard } from '../types/gift-card';
-import { Store as IStore, Supplier } from '../types/supplier';
-import { getCurrencySymbol } from '../types/gift-card';
-import { useNavigate, useParams } from 'react-router';
-import { GiftCardItem } from '../components/GiftCardItem';
-import { useGiftCards } from '../hooks/useGiftCards';
-import Loading from '../components/loading';
-import { GiftCardDialog } from '../components/GiftCardDialog';
-import { toast } from 'react-toastify';
-import {
-	deleteCard,
-	updateCard,
-	updateCardWithNewSupplier,
-} from '../services/cardService';
-import { toastError } from '../lib/utils';
-import {
-	decryptCardFields,
-	encryptCard,
-	validateGlobalKey,
-} from '../lib/cryptoHelpers';
-import { useAuth } from '../hooks/useAuth';
-import EncryptionDialog from '../components/EncryptionDialog';
 import { useEncryption } from '../context/EncryptionContext';
-import { getDarkerColor } from '../lib/colors';
-import ConfirmationDialog from '../components/ConfirmationDialog';
+import { useAuth } from '../hooks/useAuth';
+import {
+    useDeleteCard,
+    useGetCard,
+    useUpdateCardWithNewSupplier,
+} from '../hooks/useCardQuery';
+import {
+    decryptCardFields,
+    encryptCard,
+    validateGlobalKey,
+} from '../lib/cryptoHelpers';
+import { getCloudinaryUrl, toastError } from '../lib/utils';
+import { getCurrencySymbol } from '../types/gift-card';
 
 export default function CardDetailsPage() {
 	const navigate = useNavigate();
 	const params = useParams();
-	const [giftCard, setGiftCard] = useState<GiftCard | null>(null);
 	const [loading, setLoading] = useState(false);
 	const [showEncryptedData, setShowEncryptedData] = useState(false);
 	const [showEditDialog, setShowEditDialog] = useState(false);
 	const [storeFilter, setStoreFilter] = useState('');
-	const [filteredStores, setFilteredStores] = useState<IStore[]>([]);
+	const [filteredStores, setFilteredStores] = useState<SupplierStore[]>([]);
 	const [showEncryptionDialog, setShowEncryptionDialog] = useState(false);
 	const [showConfirmationDialog, setShowConfirmationDialog] = useState(false);
 	const [cvv, setCvv] = useState<string>('');
 	const [cardNumber, setCardNumber] = useState<string>('');
 	const {
-		giftCards,
-		loading: giftCardLoading,
-		refetchCards,
-	} = useGiftCards();
+		data: card,
+		isLoading: giftCardLoading,
+	} = useGetCard(params.id as string);
 	const { user } = useAuth();
 	const { globalKey, setGlobalKey } = useEncryption();
 
-	useEffect(() => {
-		const fetchGiftCard = async () => {
-			if (params.id) {
-				const card = giftCards.find((card) => card._id === params.id);
-				if (card) {
-					setGiftCard(card);
-					setFilteredStores((card.supplier as Supplier).stores);
-				} else {
-					setGiftCard(null);
-				}
-			}
-		};
-
-		fetchGiftCard();
-	}, [params.id, giftCards]);
+	const { mutateAsync: deleteCardMutation, isPending: isDeletingCard } = useDeleteCard();
+	const updateCardWithNewSupplierMutation = useUpdateCardWithNewSupplier();
+	
+	const { data: supplier, isLoading: supplierLoading } = useGetSupplier(card?.supplier ?? '', {
+		enabled: !!card?.supplier,
+	});
 
 	useEffect(() => {
-		if (giftCard) {
+		if (supplier) {
 			if (storeFilter.trim() === '') {
-				setFilteredStores((giftCard.supplier as Supplier).stores);
+				setFilteredStores(supplier.stores ?? []);
 			} else {
-				const filtered = (giftCard.supplier as Supplier).stores.filter(
+				const filtered = (supplier.stores ?? []).filter(
 					(store) =>
 						store.name
 							.toLowerCase()
@@ -96,13 +84,13 @@ export default function CardDetailsPage() {
 				setFilteredStores(filtered);
 			}
 		}
-	}, [storeFilter, giftCard]);
+	}, [storeFilter, supplier]);
 
 	const decryptData = (key: string) => {
 		const decryptedData = decryptCardFields(
 			{
-				cardNumber: giftCard?.cardNumber,
-				cvv: giftCard?.cvv,
+				cardNumber: card?.cardNumber,
+				cvv: card?.cvv,
 			},
 			key,
 			user!.salt!
@@ -144,24 +132,21 @@ export default function CardDetailsPage() {
 	};
 
 	const handleDelete = async () => {
-		setLoading(true);
 		try {
-			await deleteCard(params.id as string);
-			refetchCards();
+			await deleteCardMutation(params.id as string);
 			navigate('/');
 			setShowConfirmationDialog(false);
 			toast.success('Card deleted successfully');
 		} catch (error) {
 			toastError(error);
 		}
-		setLoading(false);
 	};
 
 	const handleBack = () => {
 		navigate('/');
 	};
 
-	const handleUpdateCard = async (data: CreateGiftCardDetails) => {
+	const handleUpdateCard = async (data: Card, supplier: Omit<Supplier, 'id'> | null) => {
 		if (!data) {
 			toast.error('No data provided');
 			return;
@@ -170,7 +155,7 @@ export default function CardDetailsPage() {
 			toast.error('Amount must be greater than 0');
 			return;
 		}
-		if (!data.name || !data.supplierId) {
+		if (!data.name) {
 			toast.error('Name and Supplier are required');
 			return;
 		}
@@ -184,21 +169,20 @@ export default function CardDetailsPage() {
 			return;
 		}
 		if (data.cvv || data.cardNumber) {
-			if (!data.encryptionKey) {
+			if (!globalKey) {
 				toast.error('Please provide encryption key');
 				return;
 			}
 			if (
 				!validateGlobalKey(
 					user.verifyToken,
-					data.encryptionKey,
+					globalKey,
 					user.salt
 				)
 			) {
 				toast.error('invalid encryption key');
 				return;
 			}
-			setGlobalKey(data.encryptionKey);
 		}
 		setLoading(true);
 		let last4, cvv, cardNumber;
@@ -208,58 +192,31 @@ export default function CardDetailsPage() {
 		if (data.cardNumber || data.cvv) {
 			const encryptedData = encryptCard(
 				{ cardNumber: data.cardNumber, cvv: data.cvv },
-				data.encryptionKey,
+				globalKey!,
 				user.salt
 			);
 			cardNumber = encryptedData.cardNumber;
 			cvv = encryptedData.cvv;
 		}
 		try {
-			if (data.supplierId === 'other') {
-				if (!data.supplier) {
-					toast.error('Supplier name is required');
-					return;
-				}
-				if (!data.fromColor) {
-					toast.error('Please provide a color');
-					return;
-				}
-				await updateCardWithNewSupplier(
-					params.id as string,
-					data.name,
-					data.supplier as string,
-					data.description || '',
-					data.isPhysical,
-					data.amount,
-					data.currency,
-					data.supportedStores.map((store) => ({
-						name: store,
-					})),
-					null,
-					[],
-					data.fromColor,
-					getDarkerColor(data.fromColor),
-					cardNumber,
-					last4,
-					data.expiry,
-					cvv
-				);
-			} else {
-				await updateCard(
-					params.id as string,
-					data.name,
-					data.supplierId,
-					data.description || '',
-					data.isPhysical,
-					data.amount,
-					data.currency,
-					cardNumber,
-					last4,
-					data.expiry,
-					cvv
-				);
-			}
-			refetchCards();
+				await updateCardWithNewSupplierMutation.mutateAsync({
+					id: params.id as string,
+					data: {
+						card: {
+						name: card?.name || '',
+						description: card?.description || '',
+						isPhysical: card?.isPhysical || false,
+						amount: card?.amount || 0,
+						currency: card?.currency || 'ILS',
+						supplier: card?.supplier,
+						cardNumber,
+						last4,
+						expiry: card?.expiry,
+						cvv
+					},
+					supplier: supplier ?? undefined
+					}
+				});
 			setShowEncryptedData(false);
 			setCvv('');
 			setCardNumber('');
@@ -276,11 +233,11 @@ export default function CardDetailsPage() {
 		setStoreFilter('');
 	};
 
-	if (loading || giftCardLoading) {
+	if (loading || giftCardLoading || supplierLoading || isDeletingCard) {
 		return <Loading />;
 	}
 
-	if (!giftCard) {
+	if (!card) {
 		return (
 			<div className="container mx-auto px-4 py-8">
 				<Button variant="outline" onClick={handleBack} className="mb-4">
@@ -300,7 +257,7 @@ export default function CardDetailsPage() {
 	}
 
 	// Get currency symbol
-	const currencySymbol = getCurrencySymbol(giftCard.currency);
+	const currencySymbol = getCurrencySymbol(card.currency);
 
 	return (
 		<div className="container mx-auto px-4 py-8">
@@ -334,7 +291,7 @@ export default function CardDetailsPage() {
 				<div>
 					{/* Card preview - Matching the home page card layout */}
 					<div className="mb-3">
-						<GiftCardItem giftCard={giftCard} />
+						<GiftCardItem giftCard={card} supplier={supplier} />
 					</div>
 
 					{/* Card information */}
@@ -352,13 +309,13 @@ export default function CardDetailsPage() {
 									</div>
 									<div className="font-medium">
 										{currencySymbol}
-										{giftCard.amount}
+										{card.amount}
 									</div>
 								</div>
 							</div>
 
 							<div className="flex items-center gap-2">
-								{giftCard.isPhysical ? (
+								{card.isPhysical ? (
 									<CreditCard className="h-5 w-5 text-muted-foreground" />
 								) : (
 									<Smartphone className="h-5 w-5 text-muted-foreground" />
@@ -368,7 +325,7 @@ export default function CardDetailsPage() {
 										Card Type
 									</div>
 									<div className="font-medium">
-										{giftCard.isPhysical
+										{card.isPhysical
 											? 'Physical Card'
 											: 'Digital Card'}
 									</div>
@@ -376,7 +333,7 @@ export default function CardDetailsPage() {
 							</div>
 						</div>
 
-						{giftCard.description && (
+						{card.description && (
 							<div className="flex items-start gap-2 mt-4 bg-background p-3 rounded-lg border">
 								<FileText className="h-5 w-5 text-muted-foreground mt-0.5" />
 								<div>
@@ -384,13 +341,13 @@ export default function CardDetailsPage() {
 										Description
 									</div>
 									<div className="mt-1">
-										{giftCard.description}
+										{card.description}
 									</div>
 								</div>
 							</div>
 						)}
 
-						{giftCard.expiry && (
+						{card.expiry && (
 							<div className="flex items-center gap-2">
 								<Calendar className="h-5 w-5 text-muted-foreground" />
 								<div>
@@ -399,7 +356,7 @@ export default function CardDetailsPage() {
 									</div>
 									<div className="font-medium">
 										{new Date(
-											giftCard.expiry
+											card.expiry
 										).toLocaleDateString('en-GB', {
 											day: '2-digit',
 											month: '2-digit',
@@ -410,7 +367,7 @@ export default function CardDetailsPage() {
 							</div>
 						)}
 
-						{giftCard.cardNumber && (
+						{card.cardNumber && (
 							<div className="flex justify-between items-center gap-2">
 								<div className="flex items-center gap-2">
 									<button
@@ -431,7 +388,7 @@ export default function CardDetailsPage() {
 											{showEncryptedData
 												? cardNumber
 												: '••• ••• •••• ' +
-												  giftCard.last4}
+												  card.last4}
 										</div>
 									</div>
 								</div>
@@ -455,7 +412,7 @@ export default function CardDetailsPage() {
 							</div>
 						)}
 
-						{giftCard.cvv && (
+						{card.cvv && (
 							<div className="flex justify-between items-center gap-2">
 								<div className="flex items-center gap-2">
 									<button
@@ -509,7 +466,7 @@ export default function CardDetailsPage() {
 							</h2>
 							<div className="text-sm text-muted-foreground">
 								{filteredStores.length} of{' '}
-								{(giftCard.supplier as Supplier).stores.length}{' '}
+								{(supplier?.stores ?? []).length}{' '}
 								stores
 							</div>
 						</div>
@@ -541,7 +498,7 @@ export default function CardDetailsPage() {
 										className="flex items-center gap-4 p-3 bg-background rounded-lg border"
 									>
 										<img
-											src={store.image || '/store.png'}
+											src={getCloudinaryUrl(store.image) || '/store.png'}
 											alt={store.name}
 											width={40}
 											height={40}
@@ -576,7 +533,7 @@ export default function CardDetailsPage() {
 			)}
 			{showEditDialog && (
 				<GiftCardDialog
-					giftCard={giftCard}
+					giftCard={card}
 					onClose={() => setShowEditDialog(false)}
 					onSubmit={handleUpdateCard}
 				/>

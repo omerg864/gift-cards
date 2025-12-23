@@ -18,13 +18,14 @@ import { CreditCard, Check, ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { email_regex } from '../lib/regex';
-import { forgotPassword } from '../services/userService';
 import { toastError } from '../lib/utils';
+import { useForgotPassword } from '../hooks/useAuthQuery';
 
 export default function ForgotPasswordPage() {
 	const [email, setEmail] = useState('');
 	const [success, setSuccess] = useState(false);
-	const [isLoading, setIsLoading] = useState(false);
+	
+	const { mutateAsync: sendForgotPassword, isPending: isLoading } = useForgotPassword();
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -35,10 +36,8 @@ export default function ForgotPasswordPage() {
 			return;
 		}
 
-		setIsLoading(true);
-
 		try {
-			const data = await forgotPassword(email);
+			const data = await sendForgotPassword(email);
 
 			if (data.sent) {
 				setSuccess(true);
@@ -48,8 +47,6 @@ export default function ForgotPasswordPage() {
 		} catch (error) {
 			toastError(error);
 		}
-
-		setIsLoading(false);
 	};
 
 	return (

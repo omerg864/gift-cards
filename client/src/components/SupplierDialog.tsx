@@ -1,27 +1,25 @@
-import {
-	Dialog,
-	DialogContent,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-} from './ui/dialog';
-import Loading from './loading';
-import { useSupplier } from '../hooks/useSupplier';
-import { Label } from './ui/label';
-import { Input } from './ui/input';
-import { Button } from './ui/button';
-import { CreateSupplierDetails, Supplier } from '../types/supplier';
-import { ChangeEvent, useCallback, useMemo, useRef, useState } from 'react';
+import { getCloudinaryUrl } from '@/lib/utils';
+import { Supplier } from '@shared/types/supplier.types';
 import { debounce } from 'lodash';
+import { CreditCard, Smartphone } from 'lucide-react';
+import { ChangeEvent, useCallback, useMemo, useRef, useState } from 'react';
 import { getDarkerColor } from '../lib/colors';
-import SupplierImageInput from './SupplierImageInput';
-import { CreditCard, Plus, Search, Smartphone, X } from 'lucide-react';
-import { ScrollArea } from './ui/scroll-area';
-import { Checkbox } from './ui/checkbox';
-import { Badge } from './ui/badge';
+import { CreateSupplierDetails } from '../types/supplier';
+import { StoreListPicker } from './StoreListPicker';
 import { SupplierCard } from './SupplierCard';
-import { Textarea } from './ui/textarea';
+import SupplierImageInput from './SupplierImageInput';
+import { Button } from './ui/button';
+import {
+    Dialog,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from './ui/dialog';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
 import { Switch } from './ui/switch';
+import { Textarea } from './ui/textarea';
 
 interface SupplierDialogProps {
 	supplier?: Supplier;
@@ -35,7 +33,6 @@ const SupplierDialog = ({
 	supplier,
 	confirmButtontext = 'Add Supplier',
 }: SupplierDialogProps) => {
-	const { loading, stores } = useSupplier();
 	const [data, setData] = useState<CreateSupplierDetails>({
 		name: '',
 		fromColor: '#6B7280',
@@ -47,14 +44,7 @@ const SupplierDialog = ({
 		logo: null,
 	});
 	const [file, setFile] = useState<File | null>(null);
-	const [storeInput, setStoreInput] = useState('');
-	const [storeSearch, setStoreSearch] = useState('');
 	const [deleteImage, setDeleteImage] = useState(false);
-	const filteredStores = useMemo(() => {
-		return stores.filter((store) =>
-			store.name.toLowerCase().includes(storeSearch.toLowerCase())
-		);
-	}, [stores, storeSearch]);
 
 	const colorRef = useRef(data.fromColor);
 
@@ -109,7 +99,7 @@ const SupplierDialog = ({
 		e.preventDefault();
 
 		const finalStores = data.stores.map((store) => {
-			const existingStore = stores.find(
+			const existingStore = (supplier?.stores ?? []).find(
 				(s) =>
 					s.name.trim().toLowerCase() ===
 					store.name.trim().toLowerCase()
@@ -137,16 +127,15 @@ const SupplierDialog = ({
 		}
 	};
 
-	const addStore = () => {
+	const addStore = (storeName: string) => {
 		if (
-			storeInput.trim() &&
-			!data.stores.some((store) => store.name === storeInput.trim())
+			storeName.trim() &&
+			!data.stores.some((store) => store.name === storeName.trim())
 		) {
 			setData((prev) => ({
 				...prev,
-				stores: [...prev.stores, { name: storeInput.trim() }],
+				stores: [...prev.stores, { name: storeName.trim() }],
 			}));
-			setStoreInput('');
 		}
 	};
 
@@ -174,17 +163,6 @@ const SupplierDialog = ({
 			stores: prev.stores.filter((_, i) => i !== index),
 		}));
 	};
-
-	const handleStoreKeyDown = (e: React.KeyboardEvent) => {
-		if (e.key === 'Enter') {
-			e.preventDefault();
-			addStore();
-		}
-	};
-
-	if (loading) {
-		return <Loading />;
-	}
 
 	return (
 		<Dialog open={true} onOpenChange={onClose}>
@@ -259,95 +237,12 @@ const SupplierDialog = ({
 							defaultImage={supplier?.logo}
 						/>
 					</div>
-					<div className="space-y-3 border rounded-md p-3">
-						<div className="flex gap-2">
-							<div className="relative flex-1">
-								<Input
-									placeholder="Add custom store"
-									value={storeInput}
-									onChange={(e) =>
-										setStoreInput(e.target.value)
-									}
-									onKeyDown={handleStoreKeyDown}
-								/>
-							</div>
-							<Button type="button" size="sm" onClick={addStore}>
-								<Plus className="h-4 w-4" />
-							</Button>
-						</div>
-
-						<div className="flex flex-col space-y-2">
-							<Label className="text-sm">
-								Or select from available stores:
-							</Label>
-							<div className="relative">
-								<Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-								<Input
-									placeholder="Search stores..."
-									value={storeSearch}
-									onChange={(e) =>
-										setStoreSearch(e.target.value)
-									}
-									className="pl-8"
-								/>
-							</div>
-							<ScrollArea className="h-[150px] rounded-md border p-2">
-								<div className="space-y-1">
-									{filteredStores.map((store) => (
-										<div
-											key={store.name}
-											className="flex items-center space-x-2"
-										>
-											<Checkbox
-												id={`store-${store.name}`}
-												checked={data.stores.some(
-													(s) =>
-														s.name ===
-														store.name.trim()
-												)}
-												onCheckedChange={() =>
-													toggleStoreSelection(
-														store.name
-													)
-												}
-											/>
-											<label
-												htmlFor={`store-${store.name}`}
-												className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-											>
-												{store.name}
-											</label>
-										</div>
-									))}
-									{filteredStores.length === 0 && (
-										<p className="text-sm text-muted-foreground py-2 text-center">
-											No stores found
-										</p>
-									)}
-								</div>
-							</ScrollArea>
-						</div>
-						<div className="flex flex-wrap gap-2 mt-2">
-							{data.stores.map((store, index) => (
-								<Badge
-									key={index}
-									variant="secondary"
-									className="flex items-center gap-1"
-								>
-									{store.name}
-									<X
-										className="h-3 w-3 cursor-pointer"
-										onClick={() => removeStore(index)}
-									/>
-								</Badge>
-							))}
-							{data.stores.length === 0 && (
-								<span className="text-sm text-muted-foreground">
-									No stores added yet
-								</span>
-							)}
-						</div>
-					</div>
+					<StoreListPicker
+						selectedStores={data.stores}
+						onAddStore={addStore}
+						onRemoveStore={removeStore}
+						onToggleStore={toggleStoreSelection}
+					/>
 					<div className="border-t pt-4">
 						<details>
 							<summary className="cursor-pointer text-sm font-medium mb-2">
@@ -360,8 +255,8 @@ const SupplierDialog = ({
 										? URL.createObjectURL(file)
 										: deleteImage
 										? ''
-										: supplier?.logo,
-									_id: supplier?._id || '',
+										: getCloudinaryUrl(supplier?.logo),
+									id: supplier?.id || '',
 								}}
 							/>
 						</details>

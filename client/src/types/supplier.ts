@@ -1,31 +1,12 @@
-import { User } from "./user";
-
-export interface Supplier {
-	_id: string;
-	name: string;
-	fromColor: string;
-	toColor: string;
-	logo?: string;
-	description?: string;
-	cardTypes: string[];
-	stores: Store[];
-	user?: User;
-}
-
-export interface Store {
-	name: string;
-	address?: string;
-	image?: string;
-}
+import { SupplierStore } from "@shared/types/supplier.types";
 
 export interface CreateSupplierDetails {
-	_id?: string;
 	name: string;
 	fromColor: string;
 	toColor: string;
 	logo?: File | null;
 	description?: string;
 	cardTypes: string[];
-	stores: Store[];
+	stores: SupplierStore[];
 	deleteImage?: boolean;
 }

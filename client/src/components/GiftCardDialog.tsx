@@ -1,16 +1,28 @@
+import { Card } from '@shared/types/card.types';
+import { Supplier } from '@shared/types/supplier.types';
+import { debounce } from 'lodash';
+import { CreditCard, Smartphone, Store } from 'lucide-react';
+import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { toast } from 'react-toastify';
+import { useEncryption } from '../context/EncryptionContext';
+import { useAuth } from '../hooks/useAuth';
+import { useGetSuppliers } from '../hooks/useSupplierQuery';
+import { getDarkerColor } from '../lib/colors';
+import { decryptCardFields, validateGlobalKey } from '../lib/cryptoHelpers';
+import type { GiftCard } from '../types/gift-card';
+import { currencies } from '../types/gift-card';
+import { GiftCardItem } from './GiftCardItem';
+import { StoreListPicker } from './StoreListPicker';
+import Loading from './loading';
 import { Badge } from './ui/badge';
-import { Switch } from './ui/switch';
-import { Textarea } from './ui/textarea';
-import { Checkbox } from './ui/checkbox';
-import { ChangeEvent, useEffect, useMemo, useRef, useState } from 'react';
+import { Button } from './ui/button';
 import {
 	Dialog,
 	DialogContent,
+	DialogFooter,
 	DialogHeader,
 	DialogTitle,
-	DialogFooter,
 } from './ui/dialog';
-import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import {
@@ -20,50 +32,42 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from './ui/select';
-import type { CreateGiftCardDetails, GiftCard } from '../types/gift-card';
-import { currencies } from '../types/gift-card';
-import { Supplier } from '../types/supplier';
-import { X, Plus, CreditCard, Smartphone, Store, Search } from 'lucide-react';
-import { ScrollArea } from './ui/scroll-area';
-import { useSupplier } from '../hooks/useSupplier';
-import Loading from './loading';
-import { useEncryption } from '../context/EncryptionContext';
-import { decryptCardFields, validateGlobalKey } from '../lib/cryptoHelpers';
-import { useAuth } from '../hooks/useAuth';
-import { GiftCardItem } from './GiftCardItem';
-import { getDarkerColor } from '../lib/colors';
-import { useCallback } from 'react';
-import { debounce } from 'lodash';
-import { toast } from 'react-toastify';
+import { Switch } from './ui/switch';
+import { Textarea } from './ui/textarea';
 
 interface GiftCardDialogProps {
 	giftCard?: GiftCard;
-	supplier?: Supplier;
-	onSubmit: (data: CreateGiftCardDetails) => Promise<void>;
+	onSubmit: (data: Card, supplier: Omit<Supplier, 'id'> | null) => Promise<void>;
 	onClose: () => void;
 }
+
+const defaultOtherSupplier: Supplier = {
+	id: 'other',
+	name: 'Other',
+	stores: [],
+	fromColor: '#6B7280',
+	cardTypes: ['physical', 'digital'],
+	toColor: '#374151',
+};
 
 export function GiftCardDialog({
 	onClose,
 	onSubmit,
 	giftCard,
-	supplier,
 }: GiftCardDialogProps) {
 	const { globalKey, setGlobalKey } = useEncryption();
 	const { user } = useAuth();
-	const [formData, setFormData] = useState<CreateGiftCardDetails>({
+	const [formData, setFormData] = useState<Card>({
+		id: '',
+		user: user?.id || '',
 		name: '',
 		amount: 0,
 		currency: 'ILS', // Default to ILS
 		description: '',
-		supportedStores: [],
 		isPhysical: true,
-		supplierName: supplier ? supplier.name : '',
-		stores_images: [],
-		supplierId: 'other',
 		supplier: '',
-		encryptionKey: '',
-		fromColor: '#6B7280',
+		notified1Month: false,
+		notified2Month: false,
 		...giftCard,
 		cardNumber: '',
 		cvv: '',
@@ -71,30 +75,25 @@ export function GiftCardDialog({
 
 	const [disabledCardTypes, setDisabledCardTypes] = useState<boolean>(false);
 	const [keyValidated, setKeyValidated] = useState(false);
-	const [customSupplier, setCustomSupplier] = useState('');
 	const [showCustomSupplier, setShowCustomSupplier] = useState(false);
-	const [storeInput, setStoreInput] = useState('');
-	const [storeSearch, setStoreSearch] = useState('');
 	const [showStoreSelector, setShowStoreSelector] = useState(false);
 	const [decodedToForm, setDecodedToForm] = useState(false);
-	const { suppliers, loading, stores } = useSupplier();
-	const newSuppliers = useMemo(() => {
-		const otherSupplier: Supplier = {
-			_id: 'other',
-			name: 'Other',
-			stores: [],
-			fromColor: '#6B7280',
-			cardTypes: ['physical', 'digital'],
-			toColor: '#374151',
-		};
-		return [...suppliers, otherSupplier];
-	}, [suppliers]);
+	const { data: suppliers, isLoading: loadingSuppliers } = useGetSuppliers();
+	const { selectedSupplier, supplierOptions} = useMemo(() => {
+		const supplierOptions = [...(suppliers ?? []), defaultOtherSupplier];
+		const selectedSupplier = supplierOptions.find((s) => s.id === formData.supplier);
+		return {selectedSupplier, supplierOptions};
+	}, [suppliers, formData.supplier]);
+	const [newCustomSupplier, setNewCustomSupplier] = useState<Omit<Supplier, 'id'> | null>(null);
 
-	const filteredStores = stores.filter((store) =>
-		store.name.toLowerCase().includes(storeSearch.toLowerCase())
-	);
+	const allStores = useMemo(() => {
+		if (newCustomSupplier) {
+			return (newCustomSupplier.stores ?? []).map((store) => store.name);
+		}
+		return (selectedSupplier?.stores ?? []).map((store) => store.name);
+	}, [selectedSupplier, newCustomSupplier]);
 
-	const colorRef = useRef(formData.fromColor);
+	const colorRef = useRef(selectedSupplier?.fromColor);
 
 	const handleChange = (
 		e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -114,17 +113,13 @@ export function GiftCardDialog({
 	};
 
 	const handleSupplierChange = (value: string) => {
-		const supplier = newSuppliers.find((s) => s._id === value);
+		const supplier = supplierOptions.find((s) => s.id === value);
 
 		if (supplier) {
-			if (supplier._id === 'other') {
+			if (supplier.id === 'other') {
 				setShowCustomSupplier(true);
-				setFormData((prev) => ({
-					...prev,
-					supplierId: 'other',
-					supportedStores: [], // Clear supported stores for custom supplier
-				}));
 				setShowStoreSelector(true);
+				setNewCustomSupplier(defaultOtherSupplier);
 			} else {
 				const onlyPhysicalType =
 					supplier.cardTypes.includes('physical') &&
@@ -135,11 +130,10 @@ export function GiftCardDialog({
 				setDisabledCardTypes(onlyPhysicalType || onlyDigitalType);
 				setShowCustomSupplier(false);
 				setShowStoreSelector(false);
+				setNewCustomSupplier(null);
 				setFormData((prev) => ({
 					...prev,
-					supplierId: supplier._id,
-					supplier: supplier.name,
-					supportedStores: supplier.stores.map((store) => store.name), // Set supported stores from supplier
+					supplier: supplier.id,
 					isPhysical: onlyPhysicalType
 						? true
 						: onlyDigitalType
@@ -157,41 +151,32 @@ export function GiftCardDialog({
 		}));
 	};
 
-	const handleCustomSupplierChange = (
+	const handleCustomSupplierNameChange = (
 		e: React.ChangeEvent<HTMLInputElement>
 	) => {
-		setCustomSupplier(e.target.value);
-		setFormData((prev) => ({
-			...prev,
-			supplier: e.target.value,
+		setNewCustomSupplier((prev) => ({
+			...(prev as Omit<Supplier, 'id'>),
+			name: e.target.value,
 		}));
 	};
 
-	const addStore = () => {
+	const addStore = (storeName: string) => {
 		if (
-			storeInput.trim() &&
-			!formData.supportedStores.includes(storeInput.trim())
+			storeName.trim() &&
+			!allStores.includes(storeName.trim())
 		) {
-			setFormData((prev) => ({
-				...prev,
-				supportedStores: [...prev.supportedStores, storeInput.trim()],
+			setNewCustomSupplier((prev) => ({
+				...(prev as Omit<Supplier, 'id'>),
+				stores: [...(prev?.stores ?? []), { name: storeName.trim() }],
 			}));
-			setStoreInput('');
 		}
 	};
 
 	const removeStore = (index: number) => {
-		setFormData((prev) => ({
-			...prev,
-			supportedStores: prev.supportedStores.filter((_, i) => i !== index),
+		setNewCustomSupplier((prev) => ({
+			...(prev as Omit<Supplier, 'id'>),
+			stores: (prev?.stores ?? []).filter((_, i) => i !== index),
 		}));
-	};
-
-	const handleStoreKeyDown = (e: React.KeyboardEvent) => {
-		if (e.key === 'Enter') {
-			e.preventDefault();
-			addStore();
-		}
 	};
 
 	const togglePhysical = () => {
@@ -202,29 +187,30 @@ export function GiftCardDialog({
 	};
 
 	const toggleStoreSelection = (store: string) => {
-		if (formData.supportedStores.includes(store)) {
-			setFormData((prev) => ({
-				...prev,
-				supportedStores: prev.supportedStores.filter(
-					(s) => s !== store
+		if (newCustomSupplier?.stores?.find((s) => s.name === store)) {
+			setNewCustomSupplier((prev) => ({
+				...(prev as Omit<Supplier, 'id'>),
+				stores: (prev?.stores ?? []).filter(
+					(s) => s.name !== store
 				),
 			}));
 		} else {
-			setFormData((prev) => ({
-				...prev,
-				supportedStores: [...prev.supportedStores, store],
+			setNewCustomSupplier((prev) => ({
+				...(prev as Omit<Supplier, 'id'>),
+				stores: [...prev?.stores ?? [], { name: store }],
 			}));
 		}
 	};
 
 	const updateColor = useCallback(
 		(color: string) => {
-			setFormData((prev) => ({
-				...prev,
+			setNewCustomSupplier((prev) => ({
+				...(prev as Omit<Supplier, 'id'>),
 				fromColor: color,
+				toColor: getDarkerColor(color)
 			}));
 		},
-		[setFormData]
+		[setNewCustomSupplier]
 	);
 
 	const debouncedUpdateColor = useMemo(
@@ -240,7 +226,7 @@ export function GiftCardDialog({
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
-		await onSubmit(formData);
+		await onSubmit(formData, newCustomSupplier);
 	};
 
 	const decodeDataToForm = (key: string | null) => {
@@ -276,18 +262,6 @@ export function GiftCardDialog({
 	};
 
 	useEffect(() => {
-		if (giftCard) {
-			handleSupplierChange((giftCard.supplier as Supplier)._id);
-		}
-	}, [giftCard]);
-
-	useEffect(() => {
-		if (supplier) {
-			handleSupplierChange(supplier._id);
-		}
-	}, [supplier]);
-
-	useEffect(() => {
 		if (
 			globalKey &&
 			user &&
@@ -305,7 +279,7 @@ export function GiftCardDialog({
 		}
 	}, [globalKey, user]);
 
-	if (loading) {
+	if (loadingSuppliers) {
 		return <Loading />;
 	}
 
@@ -334,10 +308,9 @@ export function GiftCardDialog({
 						</Label>
 						<Select
 							defaultValue={
-								supplier
-									? supplier._id
-									: (giftCard?.supplier as Supplier)?._id ||
-									  ''
+								selectedSupplier
+									? selectedSupplier.id
+									: giftCard?.supplier || ''
 							}
 							onValueChange={handleSupplierChange}
 						>
@@ -345,10 +318,10 @@ export function GiftCardDialog({
 								<SelectValue placeholder="Select a supplier" />
 							</SelectTrigger>
 							<SelectContent>
-								{newSuppliers.map((supplier) => (
+								{supplierOptions.map((supplier) => (
 									<SelectItem
-										key={supplier._id}
-										value={supplier._id}
+										key={supplier.id}
+										value={supplier.id}
 									>
 										{supplier.name}
 									</SelectItem>
@@ -360,13 +333,13 @@ export function GiftCardDialog({
 							<div className="mt-2 space-y-2">
 								<Input
 									placeholder="Enter custom supplier name"
-									value={customSupplier}
-									onChange={handleCustomSupplierChange}
+									value={newCustomSupplier?.name || ''}
+									onChange={handleCustomSupplierNameChange}
 									required
 								/>
 								<Input
 									type="color"
-									value={formData.fromColor}
+									value={newCustomSupplier?.fromColor || '#6B7280'}
 									onChange={handleColorChange}
 								/>
 							</div>
@@ -454,8 +427,7 @@ export function GiftCardDialog({
 								<Store className="h-4 w-4 mr-2" /> Supported
 								Stores
 							</Label>
-							{formData.supplierId &&
-								formData.supplierId !== 'other' && (
+							{formData.supplier && (
 									<span className="text-xs text-muted-foreground">
 										Predefined by supplier
 									</span>
@@ -464,102 +436,33 @@ export function GiftCardDialog({
 
 						{/* Show store selector only for "other" supplier */}
 						{showStoreSelector ? (
-							<div className="space-y-3 border rounded-md p-3">
-								<div className="flex gap-2">
-									<div className="relative flex-1">
-										<Input
-											placeholder="Add custom store"
-											value={storeInput}
-											onChange={(e) =>
-												setStoreInput(e.target.value)
-											}
-											onKeyDown={handleStoreKeyDown}
-										/>
-									</div>
-									<Button
-										type="button"
-										size="sm"
-										onClick={addStore}
-									>
-										<Plus className="h-4 w-4" />
-									</Button>
-								</div>
-
-								<div className="flex flex-col space-y-2">
-									<Label className="text-sm">
-										Or select from available stores:
-									</Label>
-									<div className="relative">
-										<Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-										<Input
-											placeholder="Search stores..."
-											value={storeSearch}
-											onChange={(e) =>
-												setStoreSearch(e.target.value)
-											}
-											className="pl-8"
-										/>
-									</div>
-									<ScrollArea className="h-[150px] rounded-md border p-2">
-										<div className="space-y-1">
-											{filteredStores.map((store) => (
-												<div
-													key={store.name}
-													className="flex items-center space-x-2"
-												>
-													<Checkbox
-														id={`store-${store.name}`}
-														checked={formData.supportedStores.includes(
-															store.name
-														)}
-														onCheckedChange={() =>
-															toggleStoreSelection(
-																store.name
-															)
-														}
-													/>
-													<label
-														htmlFor={`store-${store.name}`}
-														className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-													>
-														{store.name}
-													</label>
-												</div>
-											))}
-											{filteredStores.length === 0 && (
-												<p className="text-sm text-muted-foreground py-2 text-center">
-													No stores found
-												</p>
-											)}
-										</div>
-									</ScrollArea>
-								</div>
-							</div>
+							<StoreListPicker
+								selectedStores={newCustomSupplier?.stores ?? []}
+								onAddStore={addStore}
+								onRemoveStore={removeStore}
+								onToggleStore={toggleStoreSelection}
+							/>
 						) : null}
 
 						{/* Display selected stores */}
-						<div className="flex flex-wrap gap-2 mt-2">
-							{formData.supportedStores.map((store, index) => (
-								<Badge
-									key={index}
-									variant="secondary"
-									className="flex items-center gap-1"
-								>
-									{store}
-									{formData.supplierId === 'other' && (
-										<X
-											className="h-3 w-3 cursor-pointer"
-											onClick={() => removeStore(index)}
-										/>
-									)}
-								</Badge>
-							))}
-							{formData.supportedStores.length === 0 && (
-								<span className="text-sm text-muted-foreground">
-									No stores added yet
-								</span>
-							)}
-						</div>
+						{!showStoreSelector && (
+							<div className="flex flex-wrap gap-2 mt-2">
+								{allStores.map((store, index) => (
+									<Badge
+										key={index}
+										variant="secondary"
+										className="flex items-center gap-1"
+									>
+										{store}
+									</Badge>
+								))}
+								{allStores.length === 0 && (
+									<span className="text-sm text-muted-foreground">
+										No stores added yet
+									</span>
+								)}
+							</div>
+						)}
 					</div>
 
 					<div className="border-t pt-4">
@@ -605,7 +508,7 @@ export function GiftCardDialog({
 																name="encryptionKey"
 																type="password"
 																value={
-																	formData.encryptionKey
+																	globalKey || ''
 																}
 																onChange={
 																	handleChange
@@ -617,7 +520,7 @@ export function GiftCardDialog({
 															className="w-full bg-teal-600 hover:bg-teal-700 my-2"
 															onClick={() =>
 																decodeDataToForm(
-																	formData.encryptionKey
+																	globalKey || ''
 																)
 															}
 														>
@@ -664,7 +567,7 @@ export function GiftCardDialog({
 																name="encryptionKey"
 																type="password"
 																value={
-																	formData.encryptionKey
+																	globalKey || ''
 																}
 																onChange={
 																	handleChange
@@ -700,7 +603,7 @@ export function GiftCardDialog({
 													name="encryptionKey"
 													type="password"
 													value={
-														formData.encryptionKey
+														globalKey || ''
 													}
 													onChange={handleChange}
 													required
@@ -770,43 +673,8 @@ export function GiftCardDialog({
 								Preview
 							</summary>
 							<GiftCardItem
-								giftCard={{
-									...formData,
-									supplier:
-										suppliers.find(
-											(s) => s._id === formData.supplierId
-										) ||
-										({
-											_id: 'other',
-											name: formData.supplier as string,
-											stores: formData.supportedStores.map(
-												(storeName) => {
-													const fullStore =
-														stores.find(
-															(s) =>
-																s.name
-																	.trim()
-																	.toLowerCase() ===
-																storeName
-																	.trim()
-																	.toLowerCase()
-														);
-													return (
-														fullStore || {
-															name: storeName,
-														}
-													);
-												}
-											),
-											fromColor: formData.fromColor,
-											toColor: getDarkerColor(
-												formData.fromColor
-											),
-											cardTypes: ['physical', 'digital'],
-										} satisfies Supplier),
-									_id: '',
-									user: user?._id || '',
-								}}
+								giftCard={formData}
+								supplier={newCustomSupplier ?? selectedSupplier}
 							/>
 						</details>
 					</div>

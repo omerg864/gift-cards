@@ -12,13 +12,15 @@ import { Label } from './ui/label';
 import { toast } from 'react-toastify';
 import { password_regex } from '../lib/regex';
 import Loading from './loading';
-import { updateUserPassword } from '../services/userService';
+import { useUpdateUserPassword } from '../hooks/useUserQuery';
 import { toastError } from '../lib/utils';
 
 const PasswordTab = () => {
 	const [newPassword, setNewPassword] = useState('');
 	const [confirmPassword, setConfirmPassword] = useState('');
 	const [isLoading, setIsLoading] = useState(false);
+
+	const updateUserPasswordMutation = useUpdateUserPassword();
 
 	const handlePasswordUpdate = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -40,7 +42,7 @@ const PasswordTab = () => {
 		}
 		setIsLoading(true);
 		try {
-			await updateUserPassword(newPassword);
+			await updateUserPasswordMutation.mutateAsync(newPassword);
 			toast.success('Password updated successfully');
 			setNewPassword('');
 			setConfirmPassword('');

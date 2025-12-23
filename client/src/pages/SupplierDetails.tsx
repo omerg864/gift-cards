@@ -1,94 +1,71 @@
 'use client';
 
+import { Supplier, SupplierStore } from '@shared/types/supplier.types';
+import { debounce } from 'lodash';
 import {
-	useState,
-	useEffect,
-	useCallback,
-	useMemo,
-	ChangeEvent,
-	useRef,
-} from 'react';
-import { Button } from '../components/ui/button';
-import { Badge } from '../components/ui/badge';
-import {
-	ArrowLeft,
-	Store,
-	CreditCard,
-	Smartphone,
-	Plus,
-	Search,
-	X,
-	Edit,
-	Trash,
+    ArrowLeft,
+    CreditCard,
+    Edit,
+    Plus,
+    Search,
+    Smartphone,
+    Store,
+    Trash,
+    X,
 } from 'lucide-react';
 import {
-	Supplier,
-	Store as IStore,
-	CreateSupplierDetails,
-} from '../types/supplier';
-import { GiftCardDialog } from '../components/GiftCardDialog';
+    ChangeEvent,
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+} from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { CreateGiftCardDetails } from '../types/gift-card';
-import { useSupplier } from '../hooks/useSupplier';
-import Loading from '../components/loading';
 import { toast } from 'react-toastify';
-import { SupplierCard } from '../components/SupplierCard';
-import { Input } from '../components/ui/input';
-import { createCard, createCardAndSupplier } from '../services/cardService';
-import { getDarkerColor } from '../lib/colors';
-import { encryptCard, validateGlobalKey } from '../lib/cryptoHelpers';
-import { useAuth } from '../hooks/useAuth';
-import { useEncryption } from '../context/EncryptionContext';
-import { toastError } from '../lib/utils';
-import { useGiftCards } from '../hooks/useGiftCards';
-import {
-	deleteUserSupplier,
-	updateUserSupplier,
-} from '../services/supplierService';
+import { Card } from '../../../shared/types/card.types';
 import ConfirmationDialog from '../components/ConfirmationDialog';
+import { GiftCardDialog } from '../components/GiftCardDialog';
+import Loading from '../components/loading';
+import { SupplierCard } from '../components/SupplierCard';
 import SupplierDialog from '../components/SupplierDialog';
-import { debounce } from 'lodash';
+import { Badge } from '../components/ui/badge';
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
+import { useEncryption } from '../context/EncryptionContext';
+import { useAuth } from '../hooks/useAuth';
+import { useCreateCardAndSupplier } from '../hooks/useCardQuery';
+import { useDeleteSupplier, useGetSupplier, useUpdateSupplier } from '../hooks/useSupplierQuery';
+import { encryptCard, validateGlobalKey } from '../lib/cryptoHelpers';
+import { getCloudinaryUrl, toastError } from '../lib/utils';
+import {
+    CreateSupplierDetails,
+} from '../types/supplier';
 
 export default function SupplierDetailsPage() {
 	const navigate = useNavigate();
+		const params = useParams();
 	const [showAddDialog, setShowAddDialog] = useState(false);
 	const [showEditDialog, setShowEditDialog] = useState(false);
 	const [showConfirmationDialog, setShowConfirmationDialog] = useState(false);
-	const [isLoading, setIsLoading] = useState(false);
-	const { suppliers, loading, refetchSuppliers } = useSupplier();
-	const { refetchCards } = useGiftCards();
-	const [supplier, setSupplier] = useState<Supplier | null>(null);
-	const [filteredStores, setFilteredStores] = useState<IStore[]>([]);
+	const { data: supplier, isLoading: loading } = useGetSupplier(params?.id ?? '');
+	const [filteredStores, setFilteredStores] = useState<SupplierStore[]>([]);
 	const [storeFilter, setStoreFilter] = useState('');
-	const params = useParams();
 	const { user } = useAuth();
-	const { setGlobalKey } = useEncryption();
+	const { globalKey } = useEncryption();
 	const storeFilterRef = useRef<string>('');
 	const storeFilterInputRef = useRef<HTMLInputElement | null>(null);
 
-	useEffect(() => {
-		// Simulate loading
-		const getSupplier = async () => {
-			const supplier = suppliers.find((s) => s._id === params.id);
-			if (supplier) {
-				setSupplier(supplier);
-				setFilteredStores(supplier.stores);
-			} else {
-				toast.error('Supplier not found');
-			}
-		};
-
-		if (suppliers.length > 0) {
-			getSupplier();
-		}
-	}, [suppliers]);
+	const { mutateAsync: updateSupplier, isPending: isUpdating } = useUpdateSupplier();
+	const { mutateAsync: deleteSupplier, isPending: isDeleting } = useDeleteSupplier();
+	const createCardAndSupplierMutation = useCreateCardAndSupplier();
 
 	useEffect(() => {
 		if (supplier) {
 			if (storeFilter.trim() === '') {
-				setFilteredStores(supplier.stores);
+				setFilteredStores(supplier.stores ?? []);
 			} else {
-				const filtered = supplier.stores.filter((store) =>
+				const filtered = (supplier.stores ?? []).filter((store) =>
 					store.name.toLowerCase().includes(storeFilter.toLowerCase())
 				);
 				setFilteredStores(filtered);
@@ -122,17 +99,17 @@ export default function SupplierDetailsPage() {
 		setShowAddDialog(true);
 	};
 
-	const handleNewCardSubmit = async (data: CreateGiftCardDetails) => {
-		if (!data) {
+	const handleNewCardSubmit = async (card: Card, supplier: Omit<Supplier, 'id'> | null) => {
+		if (!card) {
 			toast.error('No data provided');
 			return;
 		}
-		if (isNaN(data.amount) || data.amount <= 0) {
+		if (isNaN(card.amount) || card.amount <= 0) {
 			toast.error('Amount must be greater than 0');
 			return;
 		}
-		if (!data.name || !data.supplierId) {
-			toast.error('Name and Supplier are required');
+		if (!card.name) {
+			toast.error('Name is required');
 			return;
 		}
 		if (!user) {
@@ -144,81 +121,51 @@ export default function SupplierDetailsPage() {
 			toast.error('unable to perform encryption');
 			return;
 		}
-		if (data.cvv || data.cardNumber) {
-			if (!data.encryptionKey) {
+		if (card.cvv || card.cardNumber) {
+			if (!globalKey) {
 				toast.error('Please provide encryption key');
 				return;
 			}
 			if (
 				!validateGlobalKey(
 					user.verifyToken,
-					data.encryptionKey,
+					globalKey,
 					user.salt
 				)
 			) {
 				toast.error('invalid encryption key');
 				return;
 			}
-			setGlobalKey(data.encryptionKey);
 		}
 		let last4, cvv, cardNumber;
-		if (data.cardNumber) {
-			last4 = data.cardNumber.slice(-4);
+		if (card.cardNumber) {
+			last4 = card.cardNumber.slice(-4);
 		}
-		if (data.cardNumber || data.cvv) {
+		if (card.cardNumber || card.cvv) {
 			const encryptedData = encryptCard(
-				{ cardNumber: data.cardNumber, cvv: data.cvv },
-				data.encryptionKey,
+				{ cardNumber: card.cardNumber, cvv: card.cvv },
+				globalKey!,
 				user.salt
 			);
 			cardNumber = encryptedData.cardNumber;
 			cvv = encryptedData.cvv;
 		}
 		try {
-			if (data.supplierId === 'other') {
-				if (!data.supplier) {
-					toast.error('Supplier name is required');
-					return;
-				}
-				if (!data.fromColor) {
-					toast.error('color is required');
-					return;
-				}
-				await createCardAndSupplier(
-					data.name,
-					data.supplier as string,
-					data.description || '',
-					data.isPhysical,
-					data.amount,
-					data.currency,
-					data.supportedStores.map((store) => ({
-						name: store,
-					})),
-					null,
-					[],
-					data.fromColor,
-					getDarkerColor(data.fromColor),
+				await createCardAndSupplierMutation.mutateAsync({
+					card: {
+						name: card.name,
+						description: card.description || '',
+						isPhysical: card.isPhysical,
+						amount: card.amount,
+						currency: card.currency,
+					supplier: card.supplier,
 					cardNumber,
 					last4,
-					data.expiry,
+					expiry: card.expiry,
 					cvv
-				);
-				refetchSuppliers();
-			} else {
-				await createCard(
-					data.name,
-					data.supplierId,
-					data.description || '',
-					data.isPhysical,
-					data.amount,
-					data.currency,
-					cardNumber,
-					last4,
-					data.expiry,
-					cvv
-				);
-			}
-			refetchCards();
+					},
+					supplier: supplier ?? undefined
+				});
 			setShowAddDialog(false);
 			toast.success('Card added successfully');
 		} catch (error) {
@@ -240,17 +187,15 @@ export default function SupplierDetailsPage() {
 			toast.error('At least one Card type is required');
 			return false;
 		}
-		setIsLoading(true);
 		try {
-			await updateUserSupplier(data);
-			await refetchSuppliers();
-			toast.success('Supplier created successfully');
+			if (supplier) {
+				await updateSupplier({ id: supplier.id, data });
+				toast.success('Supplier updated successfully');
+			}
 		} catch (error) {
 			toastError(error);
-			setIsLoading(false);
 			return false;
 		}
-		setIsLoading(false);
 		return true;
 	};
 
@@ -259,18 +204,14 @@ export default function SupplierDetailsPage() {
 			toast.error('Supplier not found');
 			return;
 		}
-		setIsLoading(true);
 		try {
-			await deleteUserSupplier(supplier._id);
+			await deleteSupplier(supplier.id);
 			toast.success('Supplier deleted successfully');
 			navigate('/supplier/list');
 			setShowConfirmationDialog(false);
-			refetchSuppliers();
-			refetchCards();
 		} catch (error) {
 			toastError(error);
 		}
-		setIsLoading(false);
 	};
 
 	const clearStoreFilter = () => {
@@ -281,7 +222,7 @@ export default function SupplierDetailsPage() {
 		}
 	};
 
-	if (loading || !supplier || isLoading) {
+	if (loading || !supplier || isUpdating || isDeleting) {
 		return <Loading />;
 	}
 
@@ -362,7 +303,7 @@ export default function SupplierDetailsPage() {
 							</h2>
 							<div className="text-sm text-muted-foreground">
 								{filteredStores.length} of{' '}
-								{supplier.stores.length} stores
+								{(supplier.stores ?? []).length} stores
 							</div>
 						</div>
 
@@ -393,7 +334,7 @@ export default function SupplierDetailsPage() {
 										className="flex items-center gap-4 p-3 bg-background rounded-lg border"
 									>
 										<img
-											src={store.image || '/store.png'}
+											src={getCloudinaryUrl(store.image) || '/store.png'}
 											alt={store.name}
 											width={40}
 											height={40}
@@ -432,7 +373,6 @@ export default function SupplierDetailsPage() {
 
 			{showAddDialog && (
 				<GiftCardDialog
-					supplier={supplier}
 					onSubmit={handleNewCardSubmit}
 					onClose={() => setShowAddDialog(false)}
 				/>

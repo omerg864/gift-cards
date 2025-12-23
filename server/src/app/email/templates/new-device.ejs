@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .alert { color: #d9534f; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>New Login Detected</h2>
+        <p>Hi <%= name %>,</p>
+        <p>We detected a new login to your account from a new device:</p>
+        <ul>
+            <li><strong>Device:</strong> <%= deviceName %></li>
+            <li><strong>Type:</strong> <%= deviceType %></li>
+            <li><strong>Time:</strong> <%= time %></li>
+        </ul>
+        <p class="alert">If this was you, you can ignore this email. If you don't recognize this activity, please change your password immediately.</p>
+    </div>
+</body>
+</html>

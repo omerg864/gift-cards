@@ -1,21 +1,22 @@
 'use client';
 
+import { Supplier } from '@shared/types/supplier.types';
+import { RefreshCw } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useGetCards } from '../hooks/useCardQuery';
+import { useGetSuppliers } from '../hooks/useSupplierQuery';
 import type { GiftCard } from '../types/gift-card';
 import { GiftCardItem } from './GiftCardItem';
-import { useNavigate, useSearchParams } from 'react-router-dom';
 import Loading from './loading';
-import { useGiftCards } from '../hooks/useGiftCards';
-import { Supplier } from '../types/supplier';
-import { useSupplier } from '../hooks/useSupplier';
 import { SupplierCard } from './SupplierCard';
 
 export function GiftCardList() {
 	const navigate = useNavigate();
-	const { giftCards, loading } = useGiftCards();
-	const { suppliers, loading: loadingSuppliers } = useSupplier();
+	const { data: cards, isLoading: loading, refetch, isRefetching } = useGetCards();
+	const { data: suppliers, isLoading: loadingSuppliers } = useGetSuppliers();
 	const [filteredCards, setFilteredCards] = useState<GiftCard[]>(
-		giftCards.filter((card) => card.supplier)
+		cards?.filter((card) => card.supplier) ?? []
 	);
 	const [supplierCards, setSupplierCards] = useState<Supplier[]>([]);
 	const [searchParams] = useSearchParams();
@@ -32,28 +33,34 @@ export function GiftCardList() {
 	useEffect(() => {
 		if (searchQuery) {
 			const regex = new RegExp(searchQuery, 'i');
-			const filtered = giftCards
-				.filter((card) => card.supplier)
+			const filtered = cards
+				?.filter((card) => card.supplier)
 				.filter(
-					(card) =>
-						card.name.match(regex) ||
-						(card.supplier as Supplier).name.match(regex) ||
-						card.description?.match(regex) ||
-						(card.supplier as Supplier).stores.some((store) =>
-							store.name.match(regex)
-						)
+					(card) => {
+						const cardSupplier = suppliers?.find(
+							(s) => s.id === card.supplier
+						);
+						return (
+							card.name.match(regex) ||
+							cardSupplier?.name.match(regex) ||
+							card.description?.match(regex) ||
+							(cardSupplier?.stores ?? []).some((store) =>
+								store.name.match(regex)
+							)
+						);
+					}
 				);
-			const suppliersFiltered = suppliers.filter(
+			const suppliersFiltered = suppliers?.filter(
 				(supplier) =>
 					supplier.name.match(regex) ||
-					supplier.stores.some((store) => store.name.match(regex))
+					(supplier.stores ?? []).some((store) => store.name.match(regex))
 			);
-			setSupplierCards(suppliersFiltered);
-			setFilteredCards(filtered);
+			setSupplierCards(suppliersFiltered ?? []);
+			setFilteredCards(filtered ?? []);
 		} else {
-			setFilteredCards(giftCards.filter((card) => card.supplier));
+			setFilteredCards(cards?.filter((card) => card.supplier) ?? []);
 		}
-	}, [searchQuery, giftCards, suppliers]);
+	}, [searchQuery, cards, suppliers]);
 
 	if (loading || loadingSuppliers) {
 		return <Loading />;
@@ -62,18 +69,33 @@ export function GiftCardList() {
 	return (
 		<div className="space-y-8">
 			<div>
-				<h2 className="text-2xl font-semibold mb-6">Your Gift Cards</h2>
+				<div className="flex items-center gap-4 mb-6">
+					<h2 className="text-2xl font-semibold">Your Gift Cards</h2>
+					<button
+						onClick={() => refetch()}
+						className="p-2 hover:bg-white/10 rounded-full transition-colors"
+						title="Refresh cards"
+					>
+						<RefreshCw className={`h-5 w-5 ${isRefetching ? 'animate-spin' : ''}`} />
+					</button>
+				</div>
 				{filteredCards.length > 0 ? (
 					<div className="flex gap-6 flex-wrap w-full justify-center lg:justify-start">
 						{filteredCards
 							.filter((card) => card.supplier)
-							.map((card) => (
-								<GiftCardItem
-									handleCardClick={handleGiftCardClick}
-									key={card._id}
-									giftCard={card}
-								/>
-							))}
+							.map((card) => {
+								const cardSupplier = suppliers?.find(
+									(s) => s.id === card.supplier
+								);
+								return (
+									<GiftCardItem
+										handleCardClick={handleGiftCardClick}
+										key={card.id}
+										giftCard={card}
+										supplier={cardSupplier}
+									/>
+								);
+							})}
 					</div>
 				) : (
 					<div className="bg-white/5 p-6 rounded-lg text-center">
@@ -93,7 +115,7 @@ export function GiftCardList() {
 						{supplierCards.map((supplier) => (
 							<SupplierCard
 								handleCardClick={handleSupplierClick}
-								key={supplier._id}
+								key={supplier.id}
 								supplier={supplier}
 							/>
 						))}

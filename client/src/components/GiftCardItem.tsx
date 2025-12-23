@@ -1,20 +1,22 @@
 'use client';
-import type { GiftCard } from '../types/gift-card';
+import { getCloudinaryUrl } from '@/lib/utils';
+import { Supplier } from '@shared/types/supplier.types';
 import { CreditCard, Smartphone } from 'lucide-react';
+import type { GiftCard } from '../types/gift-card';
 import { getCurrencySymbol } from '../types/gift-card';
-import { Supplier } from '../types/supplier';
 
 interface GiftCardItemProps {
 	giftCard: GiftCard;
+	supplier: Omit<Supplier, 'id'> | undefined;
 	handleCardClick?: (id: string) => void;
 }
 
-export function GiftCardItem({ giftCard, handleCardClick }: GiftCardItemProps) {
+export function GiftCardItem({ giftCard, supplier, handleCardClick }: GiftCardItemProps) {
 	const currencySymbol = getCurrencySymbol(giftCard.currency);
 
 	const onClick = () => {
 		if (handleCardClick) {
-			handleCardClick(giftCard._id);
+			handleCardClick(giftCard.id);
 		}
 	};
 
@@ -29,9 +31,9 @@ export function GiftCardItem({ giftCard, handleCardClick }: GiftCardItemProps) {
 			<div
 				className={`absolute inset-0 rounded-xl p-6 flex flex-col justify-between`}
 				style={{
-					background: `linear-gradient(135deg, ${
-						(giftCard.supplier as Supplier).fromColor
-					}, ${(giftCard.supplier as Supplier).toColor})`,
+					background: supplier
+						? `linear-gradient(135deg, ${supplier.fromColor}, ${supplier.toColor})`
+						: 'linear-gradient(135deg, #6B7280, #374151)',
 				}}
 			>
 				{/* Card header */}
@@ -41,7 +43,7 @@ export function GiftCardItem({ giftCard, handleCardClick }: GiftCardItemProps) {
 					</h3>
 
 					<p className="text-sm text-white/80 mb-2">
-						{(giftCard.supplier as Supplier).name}
+						{supplier?.name || 'Unknown Supplier'}
 					</p>
 					<div className="w-fit bg-white/20 px-2 py-1 rounded-full text-white text-xs flex items-center">
 						{giftCard.isPhysical ? (
@@ -87,10 +89,10 @@ export function GiftCardItem({ giftCard, handleCardClick }: GiftCardItemProps) {
 
 				{/* Card chip */}
 				<div className="absolute bottom-6 right-6">
-					{(giftCard.supplier as Supplier).logo ? (
+					{supplier?.logo ? (
 						<img
 							className="w-12 h-12 rounded-md"
-							src={(giftCard.supplier as Supplier).logo}
+							src={getCloudinaryUrl(supplier.logo)}
 						/>
 					) : (
 						<div className="w-12 h-8 rounded-md bg-gradient-to-br from-yellow-100/80 to-yellow-200/80"></div>

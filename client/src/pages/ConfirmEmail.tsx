@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '../components/ui/button';
 import {
 	Card,
@@ -14,8 +14,8 @@ import { Alert, AlertDescription } from '../components/ui/alert';
 import { CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { verifyEmail as verifyEmailService } from '../services/userService';
 import { toastError } from '../lib/utils';
+import { useVerifyEmail } from '../hooks/useAuthQuery';
 
 export default function ConfirmEmailPage() {
 	const navigate = useNavigate();
@@ -23,10 +23,15 @@ export default function ConfirmEmailPage() {
 
 	const [isVerifying, setIsVerifying] = useState(true);
 	const [isSuccess, setIsSuccess] = useState(false);
+	const hasRun = useRef(false);
+
+	const { mutateAsync: verifyEmail } = useVerifyEmail();
 
 	useEffect(() => {
-		// Simulate API verification
-		const verifyEmail = async () => {
+		if (hasRun.current) return;
+		hasRun.current = true;
+
+		const verify = async () => {
 			setIsVerifying(true);
 
 			// Check if token exists
@@ -37,7 +42,7 @@ export default function ConfirmEmailPage() {
 			}
 
 			try {
-				await verifyEmailService(token);
+				await verifyEmail(token);
 				toast.success('Email verified successfully');
 				setIsSuccess(true);
 			} catch (error) {
@@ -46,8 +51,8 @@ export default function ConfirmEmailPage() {
 			setIsVerifying(false);
 		};
 
-		verifyEmail();
-	}, [token]);
+		verify();
+	}, [token, verifyEmail]);
 
 	return (
 		<div className="container mx-auto flex items-center justify-center min-h-[calc(100vh-64px)] px-4 py-8">

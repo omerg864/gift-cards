@@ -1,20 +1,20 @@
+import { PlusCircle, RefreshCw } from 'lucide-react';
 import { useState } from 'react';
-import { useSupplier } from '../hooks/useSupplier';
 import { useNavigate } from 'react-router-dom';
-import Loading from '../components/loading';
-import { PlusCircle } from 'lucide-react';
-import SupplierDialog from '../components/SupplierDialog';
-import { CreateSupplierDetails } from '../types/supplier';
-import { SupplierCard } from '../components/SupplierCard';
 import { toast } from 'react-toastify';
-import { createUserSupplier } from '../services/supplierService';
+import Loading from '../components/loading';
+import { SupplierCard } from '../components/SupplierCard';
+import SupplierDialog from '../components/SupplierDialog';
+import { useCreateSupplier, useGetSuppliers } from '../hooks/useSupplierQuery';
 import { toastError } from '../lib/utils';
+import { CreateSupplierDetails } from '../types/supplier';
 
 const SuppliersList = () => {
-	const { suppliers, loading, refetchSuppliers } = useSupplier();
+	const { data: suppliers, isLoading: loading, refetch, isRefetching } = useGetSuppliers();
 	const [showDialog, setShowDialog] = useState<boolean>(false);
-	const [isLoading, setIsLoading] = useState<boolean>(false);
 	const navigate = useNavigate();
+	
+	const { mutateAsync: createSupplier, isPending: isCreating } = useCreateSupplier();
 
 	const handleSupplierClick = (supplierId: string) => {
 		navigate(`/supplier/${supplierId}`);
@@ -35,21 +35,17 @@ const SuppliersList = () => {
 			toast.error('At least one Card type is required');
 			return false;
 		}
-		setIsLoading(true);
 		try {
-			await createUserSupplier(data);
-			await refetchSuppliers();
+			await createSupplier(data);
 			toast.success('Supplier created successfully');
-			setIsLoading(false);
 			return true;
 		} catch (error) {
 			toastError(error);
-			setIsLoading(false);
 			return false;
 		}
 	};
 
-	if (loading || isLoading) {
+	if (loading || isCreating) {
 		return <Loading />;
 	}
 
@@ -57,7 +53,16 @@ const SuppliersList = () => {
 		<main className="bg-[#0B0E14] text-white p-8">
 			<div className="max-w-7xl mx-auto">
 				<div className="flex justify-between items-center gap-4 mb-8 text-center">
-					<h1 className="text-3xl font-bold">Suppliers</h1>
+					<div className="flex items-center gap-4">
+						<h1 className="text-3xl font-bold">Suppliers</h1>
+						<button
+							onClick={() => refetch()}
+							className="p-2 hover:bg-white/10 rounded-full transition-colors"
+							title="Refresh suppliers"
+						>
+							<RefreshCw className={`h-5 w-5 ${isRefetching ? 'animate-spin' : ''}`} />
+						</button>
+					</div>
 					<button
 						onClick={() => setShowDialog(true)}
 						className="flex items-center px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors"
@@ -74,10 +79,10 @@ const SuppliersList = () => {
 				</div>
 
 				<div className="flex gap-6 flex-wrap w-full justify-center lg:justify-start">
-					{suppliers.map((supplier) => (
+					{suppliers?.map((supplier) => (
 						<SupplierCard
 							handleCardClick={handleSupplierClick}
-							key={supplier._id}
+							key={supplier.id}
 							supplier={supplier}
 						/>
 					))}

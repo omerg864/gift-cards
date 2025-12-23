@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import { Laptop, Smartphone, Tablet, Monitor, LogOut } from 'lucide-react';
@@ -12,10 +11,10 @@ import {
 import { DEVICE_ID } from '../lib/constants';
 import Loading from './loading';
 import {
-	getConnectedDevices as getConnectedDevicesFromServer,
-	disconnectDevice as disconnectDeviceServer,
-	disconnectAllDevices as disconnectAllDevicesServer,
-} from '../services/userService';
+	useGetDevices,
+	useDisconnectDevice,
+	useDisconnectAllDevices,
+} from '../hooks/useUserQuery';
 import { toastError } from '../lib/utils';
 import { useAuth } from '../hooks/useAuth';
 
@@ -28,25 +27,11 @@ interface Device {
 
 export function ConnectedDevicesTab() {
 	const deviceId = localStorage.getItem(DEVICE_ID) || '';
-	const [devices, setDevices] = useState<Device[]>([]);
-	const [loading, setLoading] = useState(true);
 	const { logout } = useAuth();
-
-	useEffect(() => {
-		const getConnectedDevices = async () => {
-			try {
-				const devices = await getConnectedDevicesFromServer();
-				setDevices(devices);
-			} catch (error) {
-				console.error('Error fetching connected devices:', error);
-				toastError(error);
-			} finally {
-				setLoading(false);
-			}
-		};
-
-		getConnectedDevices();
-	}, []);
+	
+	const { data: devices = [], isLoading: loading } = useGetDevices();
+	const disconnectDeviceMutation = useDisconnectDevice();
+	const disconnectAllDevicesMutation = useDisconnectAllDevices();
 
 	const getDeviceIcon = (type: string) => {
 		switch (type) {
@@ -62,27 +47,20 @@ export function ConnectedDevicesTab() {
 	};
 
 	const disconnectDevice = async (id: string) => {
-		setLoading(true);
 		try {
-			await disconnectDeviceServer(id);
-			setDevices((prev) =>
-				prev.filter((device) => device.device_id !== id)
-			);
+			await disconnectDeviceMutation.mutateAsync(id);
 		} catch (error) {
 			toastError(error);
 		}
-		setLoading(false);
 	};
 
 	const disconnectAllDevices = async () => {
-		setLoading(true);
 		try {
-			await disconnectAllDevicesServer();
+			await disconnectAllDevicesMutation.mutateAsync();
 			logout();
 		} catch (error) {
 			toastError(error);
 		}
-		setLoading(false);
 	};
 
 	if (loading) {
@@ -116,7 +94,7 @@ export function ConnectedDevicesTab() {
 
 					<div className="space-y-4">
 						{devices.length > 0 ? (
-							devices.map((device) => (
+							devices.map((device: Device) => (
 								<div
 									key={device.device_id}
 									className={`flex items-center gap-4 p-4 bg-background rounded-lg border relative overflow-hidden`}

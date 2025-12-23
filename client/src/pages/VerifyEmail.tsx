@@ -17,13 +17,14 @@ import { Label } from '../components/ui/label';
 import { Input } from '../components/ui/input';
 import { toast } from 'react-toastify';
 import { email_regex } from '../lib/regex';
-import { resendVerificationEmail } from '../services/userService';
 import { toastError } from '../lib/utils';
+import { useResendVerification } from '../hooks/useAuthQuery';
 
 export default function VerifyEmailPage() {
-	const [isLoading, setIsLoading] = useState(false);
 	const { email: authEmail } = useAuth();
 	const [email, setEmail] = useState<string | null>(authEmail);
+
+	const { mutateAsync: resendEmail, isPending: isLoading } = useResendVerification();
 
 	const handleResendEmail = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
@@ -35,9 +36,8 @@ export default function VerifyEmailPage() {
 			toast.error('Invalid email address');
 			return;
 		}
-		setIsLoading(true);
 		try {
-			const data = await resendVerificationEmail(email);
+			const data = await resendEmail(email);
 
 			if (data.sent) {
 				toast.success('Verification email sent successfully');
@@ -47,7 +47,6 @@ export default function VerifyEmailPage() {
 		} catch (error) {
 			toastError(error);
 		}
-		setIsLoading(false);
 	};
 
 	return (

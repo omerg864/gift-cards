@@ -1,26 +1,27 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { getCloudinaryUrl } from '@/lib/utils';
+import {
+    BriefcaseBusiness,
+    CreditCard,
+    LogIn,
+    LogOut,
+    Settings,
+    User,
+    UserPlus,
+} from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
 import { Button } from '../components/ui/button';
 import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuSeparator,
-	DropdownMenuTrigger,
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
 } from '../components/ui/dropdown-menu';
-import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
-import {
-	CreditCard,
-	LogOut,
-	Settings,
-	User,
-	LogIn,
-	UserPlus,
-	BriefcaseBusiness,
-} from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
-import { Link } from 'react-router-dom';
 
 export function Header() {
 	const { isAuthenticated, user, logout } = useAuth();
@@ -59,7 +60,7 @@ export function Header() {
 								>
 									<Avatar className="h-8 w-8">
 										<AvatarImage
-											src={user?.image || ''}
+											src={getCloudinaryUrl(user?.image)}
 											alt={user?.name}
 										/>
 										<AvatarFallback>

@@ -1,9 +1,11 @@
 'use client';
 
+import { Settings } from '@shared/types/settings.types';
+import { Bell } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
+import Loading from '../components/loading';
 import { Button } from '../components/ui/button';
-import { Switch } from '../components/ui/switch';
-import { Label } from '../components/ui/label';
 import {
 	Card,
 	CardContent,
@@ -11,12 +13,10 @@ import {
 	CardHeader,
 	CardTitle,
 } from '../components/ui/card';
-import { Bell } from 'lucide-react';
-import { Settings } from '../types/settings';
-import Loading from '../components/loading';
-import { getSettings, updateSettings } from '../services/settingsService';
+import { Label } from '../components/ui/label';
+import { Switch } from '../components/ui/switch';
+import { useGetSettings, useUpdateSettings } from '../hooks/useSettingsQuery';
 import { toastError } from '../lib/utils';
-import { toast } from 'react-toastify';
 
 export default function SettingsPage() {
 	const [isLoading, setIsLoading] = useState(false);
@@ -25,6 +25,15 @@ export default function SettingsPage() {
 		email2MonthNotification: true,
 		emailOnNewDevice: true,
 	});
+
+	const { data: settings, isLoading: loadingSettings } = useGetSettings();
+	const updateSettingsMutation = useUpdateSettings();
+
+	useEffect(() => {
+		if (settings) {
+			setData(settings);
+		}
+	}, [settings]);
 
 	const handleCheckboxChange = (name: keyof Settings, checked: boolean) => {
 		setData((prevData) => ({
@@ -36,7 +45,7 @@ export default function SettingsPage() {
 	const handleSaveSettings = async () => {
 		setIsLoading(true);
 		try {
-			await updateSettings(data);
+			await updateSettingsMutation.mutateAsync(data);
 			toast.success('Settings saved successfully');
 		} catch (error) {
 			console.error('Error saving settings:', error);
@@ -45,23 +54,7 @@ export default function SettingsPage() {
 		setIsLoading(false);
 	};
 
-	useEffect(() => {
-		const fetchSettings = async () => {
-			setIsLoading(true);
-			try {
-				const settings = await getSettings();
-				setData(settings);
-			} catch (error) {
-				console.error('Error fetching settings:', error);
-				toastError(error);
-			}
-			setIsLoading(false);
-		};
-
-		fetchSettings();
-	}, []);
-
-	if (isLoading) {
+	if (isLoading || loadingSettings) {
 		return <Loading />;
 	}
 

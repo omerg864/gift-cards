@@ -1,0 +1,24 @@
+{
+  "name": "gift-cards",
+  "version": "1.0.0",
+  "description": "A secure, privacy-first application for managing all your gift cards in one place.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/omerg864/gift-cards.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/omerg864/gift-cards/issues"
+  },
+  "homepage": "https://github.com/omerg864/gift-cards#readme",
+  "dependencies": {
+    "zod": "^4.2.1"
+  }
+}

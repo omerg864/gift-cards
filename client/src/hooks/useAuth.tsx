@@ -1,21 +1,21 @@
 'use client';
 
+import { ROUTES } from '@shared/constants/routes';
+import { User } from '@shared/types/user.types';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
 	createContext,
+	useCallback,
 	useContext,
-	useState,
 	useEffect,
+	useState,
 	type ReactNode,
 } from 'react';
 import {
-	ACCESS_TOKEN,
-	AUTH_EXPIRATION,
 	EMAIL,
-	REFRESH_TOKEN,
-	USER,
+	USER
 } from '../lib/constants';
-import { User } from '../types/user';
-import { checkToken } from '../services/client';
+import { client } from '../services/client';
 
 interface AuthContextType {
 	setUser: (user: User | null) => void;
@@ -38,20 +38,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 		() => localStorage.getItem('isAuthenticated') === 'true'
 	);
 	const [accessToken, setAccessToken] = useState<boolean>(false);
+	const queryClient = useQueryClient();
+
+	const { data: profile, isError, isFetching } = useQuery({
+		queryKey: ['profile'],
+		queryFn: async () => {
+				const response = await client.get<User>(`${ROUTES.USER.BASE}${ROUTES.USER.PROFILE}`);
+				return response.data;
+		},
+		enabled: isAuthenticated,
+		retry: false,
+	});
+
+	const logout = useCallback(() => {
+		localStorage.setItem('isAuthenticated', 'false');
+		setIsAuthenticated(false);
+		setUser(null);
+		setEmail(null);
+		localStorage.removeItem(USER);
+		localStorage.removeItem(EMAIL);
+		queryClient.clear();
+	}, [queryClient]);
 
 	useEffect(() => {
-		const accessTokenOK = async () => {
-			const accessTokenFetched = await checkToken();
-			if (!accessTokenFetched) {
-				logout();
-				return;
+		if (profile) {
+			// Only update if profile is different from current user
+			// This prevents infinite loops from unnecessary state updates
+			if (JSON.stringify(profile) !== JSON.stringify(user)) {
+				setUser(profile);
+				setAccessToken(true);
 			}
-			setAccessToken(true);
-		};
-		if (isAuthenticated) {
-			accessTokenOK();
+		} else if (isError && isAuthenticated && !isFetching) {
+			// Only logout if we're authenticated and get an error
+			// This prevents infinite loops
+			logout();
 		}
-	}, [isAuthenticated]);
+	}, [profile, isError, isAuthenticated, logout, user, isFetching]);
 
 	// Load user from localStorage on mount
 	useEffect(() => {
@@ -87,17 +109,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 		}
 	}, [email]);
 
-	const logout = () => {
-		localStorage.setItem('isAuthenticated', 'false');
-		setIsAuthenticated(false);
-		setUser(null);
-		setEmail(null);
-		localStorage.removeItem(USER);
-		localStorage.removeItem(ACCESS_TOKEN);
-		localStorage.removeItem(REFRESH_TOKEN);
-		localStorage.removeItem(AUTH_EXPIRATION);
-		localStorage.removeItem(EMAIL);
-	};
+
 
 	const handleAuthentication = (isAuthenticated: boolean) => {
 		setIsAuthenticated(isAuthenticated);

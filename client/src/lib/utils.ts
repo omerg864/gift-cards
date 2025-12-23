@@ -1,15 +1,15 @@
 import { clsx, type ClassValue } from 'clsx';
-import { twMerge } from 'tailwind-merge';
 import {
-	browserName,
-	osName,
-	isIOS,
-	isAndroid,
-	isTablet,
+    browserName,
+    isAndroid,
+    isIOS,
+    isTablet,
+    osName,
 } from 'react-device-detect';
+import { toast } from 'react-toastify';
+import { twMerge } from 'tailwind-merge';
 import { v4 as uuidv4 } from 'uuid';
 import { DeviceDetails } from '../types/user';
-import { toast } from 'react-toastify';
 import { DEVICE_ID } from './constants';
 
 export function cn(...inputs: ClassValue[]) {
@@ -50,4 +50,31 @@ export const toastError = (error: unknown) => {
 	} else {
 		toast.error('Login failed due to an unexpected error.');
 	}
+};
+
+export const generatePath = ({
+	route,
+	query,
+	params,
+}: {
+	route: string[];
+	query?: Record<string, any>;
+	params?: Record<string, string>;
+}) => {
+	let path = route.join('');
+	if (params) {
+		Object.keys(params).forEach((key) => {
+			path = path.replace(`:${key}`, params[key]);
+		});
+	}
+	if (query) {
+		const queryString = new URLSearchParams(query).toString();
+		path += `?${queryString}`;
+	}
+	return path;
+};
+export const getCloudinaryUrl = (publicId: string | null | undefined) => {
+	if (!publicId) return '';
+	if (publicId.startsWith('http')) return publicId;
+	return `https://res.cloudinary.com/omerg/image/upload/f_webp/${publicId}`;
 };

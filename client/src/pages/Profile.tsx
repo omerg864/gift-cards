@@ -1,20 +1,21 @@
+import { getCloudinaryUrl } from '@/lib/utils';
+import { GlobeLock, Laptop, Lock, User } from 'lucide-react';
 import { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { ConnectedDevicesTab } from '../components/ConnectedDevicesTab';
+import EncryptionTab from '../components/EncryptionTab';
+import PasswordTab from '../components/PasswordTab';
+import ProfileTab from '../components/ProfileTab';
+import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
 import { Button } from '../components/ui/button';
 import { Card, CardContent } from '../components/ui/card';
 import {
-	Tabs,
-	TabsContent,
-	TabsList,
-	TabsTrigger,
+    Tabs,
+    TabsContent,
+    TabsList,
+    TabsTrigger,
 } from '../components/ui/tabs';
-import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
-import { User, Lock, GlobeLock, Laptop } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
-import ProfileTab from '../components/ProfileTab';
-import PasswordTab from '../components/PasswordTab';
-import EncryptionTab from '../components/EncryptionTab';
-import { useSearchParams } from 'react-router-dom';
-import { ConnectedDevicesTab } from '../components/ConnectedDevicesTab';
 
 export default function ProfilePage() {
 	const { user } = useAuth();
@@ -33,7 +34,7 @@ export default function ProfilePage() {
 							<div className="flex flex-col items-center space-y-4">
 								<Avatar className="h-24 w-24">
 									<AvatarImage
-										src={user?.image || ''}
+										src={getCloudinaryUrl(user?.image)}
 										alt={user?.name || ''}
 									/>
 									<AvatarFallback className="text-2xl">

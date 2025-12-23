@@ -19,7 +19,7 @@ import { toast } from 'react-toastify';
 import { email_regex, password_regex } from '../lib/regex';
 import Loading from '../components/loading';
 import { toastError } from '../lib/utils';
-import { resetPassword } from '../services/userService';
+import { useResetPassword } from '../hooks/useAuthQuery';
 
 export default function ResetPasswordPage() {
 	const navigate = useNavigate();
@@ -27,7 +27,8 @@ export default function ResetPasswordPage() {
 
 	const [password, setPassword] = useState('');
 	const [confirmPassword, setConfirmPassword] = useState('');
-	const [isLoading, setIsLoading] = useState(false);
+	
+	const { mutateAsync: resetUserPassword, isPending: isLoading } = useResetPassword();
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -54,17 +55,13 @@ export default function ResetPasswordPage() {
 			return;
 		}
 
-		setIsLoading(true);
-
 		try {
-			await resetPassword(token, email, password);
+			await resetUserPassword({ token, email, password });
 			toast.success('Password changed successfully');
 			navigate('/login');
 		} catch (error) {
 			toastError(error);
 		}
-
-		setIsLoading(false);
 	};
 
 	// Check if token is valid

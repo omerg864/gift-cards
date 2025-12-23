@@ -1,4 +1,5 @@
-import { Supplier } from '../types/supplier';
+import { getCloudinaryUrl } from '@/lib/utils';
+import { Supplier } from '@shared/types/supplier.types';
 
 interface SupplierCardProps {
 	supplier: Supplier;
@@ -8,7 +9,7 @@ interface SupplierCardProps {
 export function SupplierCard({ supplier, handleCardClick }: SupplierCardProps) {
 	const onClick = () => {
 		if (handleCardClick) {
-			handleCardClick(supplier._id);
+			handleCardClick(supplier.id);
 		}
 	};
 
@@ -46,7 +47,7 @@ export function SupplierCard({ supplier, handleCardClick }: SupplierCardProps) {
 					{supplier.logo ? (
 						<img
 							className="w-12 h-12 rounded-md"
-							src={supplier.logo}
+							src={getCloudinaryUrl(supplier.logo)}
 						/>
 					) : (
 						<div className="w-12 h-8 rounded-md bg-gradient-to-br from-yellow-100/80 to-yellow-200/80"></div>

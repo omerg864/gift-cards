@@ -1,6 +1,7 @@
+import { getCloudinaryUrl } from '@/lib/utils';
+import { Edit } from 'lucide-react';
 import React, { useRef, useState } from 'react';
 import { Label } from './ui/label';
-import { Edit } from 'lucide-react';
 
 interface SupplierImageInputProps {
 	setFile: (file: File | null) => void;
@@ -12,7 +13,7 @@ const SupplierImageInput = ({
 	defaultImage,
 	setDeleteImage,
 }: SupplierImageInputProps) => {
-	const [image, setImage] = useState<string | null>(defaultImage || null);
+	const [image, setImage] = useState<string | null>(getCloudinaryUrl(defaultImage) || null);
 	const fileInputRef = useRef<HTMLInputElement | null>(null);
 
 	const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {

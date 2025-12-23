@@ -10,13 +10,3 @@ export interface Device {
 	name: string;
 	type: string;
 }
-
-export interface User {
-	_id: string;
-	name: string;
-	email: string;
-	image?: string;
-	isVerified?: boolean;
-	verifyToken?: string;
-	salt?: string;
-}

@@ -1,45 +1,43 @@
+import { Card } from '@shared/types/card.types';
+import { Supplier } from '@shared/types/supplier.types';
+import { PlusCircle } from 'lucide-react';
+import { useState } from 'react';
+import { toast } from 'react-toastify';
+import { GiftCardDialog } from '../components/GiftCardDialog';
 import { GiftCardList } from '../components/GiftCardList';
 import { SearchBar } from '../components/SearchBar';
-import { PlusCircle } from 'lucide-react';
-import { GiftCardDialog } from '../components/GiftCardDialog';
-import { useState } from 'react';
-import { CreateGiftCardDetails } from '../types/gift-card';
-import { toast } from 'react-toastify';
-import { toastError } from '../lib/utils';
-import { createCard, createCardAndSupplier } from '../services/cardService';
-import { useGiftCards } from '../hooks/useGiftCards';
+import { Input } from '../components/ui/input';
 import { useEncryption } from '../context/EncryptionContext';
 import { useAuth } from '../hooks/useAuth';
-import { Input } from '../components/ui/input';
-import { setEncryptionKey as setEncryptionKeyServer } from '../services/userService';
+import { useCreateCardAndSupplier } from '../hooks/useCardQuery';
+import { useSetEncryptionKey } from '../hooks/useUserQuery';
 import {
 	encryptCard,
 	generateSaltAndVerifyToken,
 	validateGlobalKey,
 } from '../lib/cryptoHelpers';
-import { getDarkerColor } from '../lib/colors';
-import { useSupplier } from '../hooks/useSupplier';
+import { toastError } from '../lib/utils';
 
 export default function Home() {
 	const [showDialog, setShowDialog] = useState<boolean>(false);
 	const [encryptionKey, setEncryptionKey] = useState<string>('');
 	const [confirmEncryptionKey, setConfirmEncryptionKey] =
 		useState<string>('');
-	const { refetchCards } = useGiftCards();
 	const { setGlobalKey } = useEncryption();
-	const { refetchSuppliers } = useSupplier();
 	const { user, updateUser, isAuthenticated } = useAuth();
+	const createCardAndSupplierMutation = useCreateCardAndSupplier();
+	const setEncryptionKeyMutation = useSetEncryptionKey();
 
-	const handleAddCard = async (data: CreateGiftCardDetails) => {
-		if (!data) {
+	const handleAddCard = async (card: Card, supplier: Omit<Supplier, 'id'> | null) => {
+		if (!card) {
 			toast.error('No data provided');
 			return;
 		}
-		if (isNaN(data.amount) || data.amount <= 0) {
+		if (isNaN(card.amount) || card.amount <= 0) {
 			toast.error('Amount must be greater than 0');
 			return;
 		}
-		if (!data.name || !data.supplierId) {
+		if (!card.name) {
 			toast.error('Name and Supplier are required');
 			return;
 		}
@@ -52,81 +50,52 @@ export default function Home() {
 			toast.error('unable to perform encryption');
 			return;
 		}
-		if (data.cvv || data.cardNumber) {
-			if (!data.encryptionKey) {
+		if (card.cvv || card.cardNumber) {
+			if (!encryptionKey) {
 				toast.error('Please provide encryption key');
 				return;
 			}
 			if (
 				!validateGlobalKey(
 					user.verifyToken,
-					data.encryptionKey,
+					encryptionKey,
 					user.salt
 				)
 			) {
 				toast.error('invalid encryption key');
 				return;
 			}
-			setGlobalKey(data.encryptionKey);
+			setGlobalKey(encryptionKey);
 		}
 		let last4, cvv, cardNumber;
-		if (data.cardNumber) {
-			last4 = data.cardNumber.slice(-4);
+		if (card.cardNumber) {
+			last4 = card.cardNumber.slice(-4);
 		}
-		if (data.cardNumber || data.cvv) {
+		if (card.cardNumber || card.cvv) {
 			const encryptedData = encryptCard(
-				{ cardNumber: data.cardNumber, cvv: data.cvv },
-				data.encryptionKey,
+				{ cardNumber: card.cardNumber, cvv: card.cvv },
+				encryptionKey,
 				user.salt
 			);
 			cardNumber = encryptedData.cardNumber;
 			cvv = encryptedData.cvv;
 		}
 		try {
-			if (data.supplierId === 'other') {
-				if (!data.supplier) {
-					toast.error('Supplier name is required');
-					return;
-				}
-				if (!data.fromColor) {
-					toast.error('color is required');
-					return;
-				}
-				await createCardAndSupplier(
-					data.name,
-					data.supplier as string,
-					data.description || '',
-					data.isPhysical,
-					data.amount,
-					data.currency,
-					data.supportedStores.map((store) => ({
-						name: store,
-					})),
-					null,
-					[],
-					data.fromColor,
-					getDarkerColor(data.fromColor),
+				await createCardAndSupplierMutation.mutateAsync({
+					card: {
+						name: card.name,
+						description: card.description || '',
+						isPhysical: card.isPhysical,
+						amount: card.amount,
+						currency: card.currency,
+					supplier: card.supplier,
 					cardNumber,
 					last4,
-					data.expiry,
+					expiry: card.expiry,
 					cvv
-				);
-				refetchSuppliers();
-			} else {
-				await createCard(
-					data.name,
-					data.supplierId,
-					data.description || '',
-					data.isPhysical,
-					data.amount,
-					data.currency,
-					cardNumber,
-					last4,
-					data.expiry,
-					cvv
-				);
-			}
-			refetchCards();
+					},
+					supplier: supplier ?? undefined
+				});
 			setShowDialog(false);
 			toast.success('Card added successfully');
 		} catch (error) {
@@ -150,7 +119,7 @@ export default function Home() {
 		const { salt, verifyToken } = generateSaltAndVerifyToken(encryptionKey);
 
 		try {
-			await setEncryptionKeyServer(salt, verifyToken);
+			await setEncryptionKeyMutation.mutateAsync({ salt, verifyToken });
 			updateUser({ salt, verifyToken });
 			setGlobalKey(encryptionKey);
 			toast.success('Encryption key set successfully');

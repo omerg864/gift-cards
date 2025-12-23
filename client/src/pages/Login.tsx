@@ -20,52 +20,38 @@ import { useAuth } from '../hooks/useAuth';
 import { Link, useNavigate } from 'react-router-dom';
 import { email_regex } from '../lib/regex';
 import Loading from '../components/loading';
-import {
-	ACCESS_TOKEN,
-	AUTH_EXPIRATION,
-	REFRESH_TOKEN,
-	USER,
-} from '../lib/constants';
-import { googleLogin, login, LoginResponse } from '../services/userService';
 import { getDeviceDetails, toastError } from '../lib/utils';
 import GoogleLogin from '../components/GoogleLoginButton';
+import { useLogin, useGoogleLogin } from '../hooks/useAuthQuery';
 
 export default function LoginPage() {
 	const navigate = useNavigate();
-	const [isLoading, setIsLoading] = useState<boolean>(false);
 	const { setUser, setEmail: setAuthEmail, handleAuthentication } = useAuth();
 	const [email, setEmail] = useState('');
 	const [password, setPassword] = useState('');
+	
+	const { mutateAsync: loginUser, isPending: isLoginPending } = useLogin();
+	const { mutateAsync: loginGoogle, isPending: isGooglePending } = useGoogleLogin();
+
+	const isLoading = isLoginPending || isGooglePending;
 
 	const handleGoogleLogin = async (authResult: any) => {
 		if (authResult?.code) {
-			setIsLoading(true);
 			try {
 				const device = getDeviceDetails();
-				const data = await googleLogin(authResult.code, device);
-				successfulLogin(data);
+				const data = await loginGoogle({ code: authResult.code, device });
+				if (data) {
+					setUser(data.user);
+					handleAuthentication(true);
+					toast.success('Logged in successfully');
+					navigate('/');
+				}
 			} catch (error) {
 				toastError(error);
 			}
-			setIsLoading(false);
 		} else {
 			toast.error('Google login failed');
 		}
-	};
-
-	const successfulLogin = (data: LoginResponse) => {
-		localStorage.setItem(USER, JSON.stringify(data.user));
-		localStorage.setItem(ACCESS_TOKEN, data.accessToken);
-		localStorage.setItem(REFRESH_TOKEN, data.refreshToken);
-		const expiresIn = 50 * 60 * 1000;
-		localStorage.setItem(
-			AUTH_EXPIRATION,
-			new Date(Date.now() + expiresIn).toISOString()
-		);
-		toast.success('Logged in successfully');
-		setUser(data.user);
-		handleAuthentication(true);
-		navigate('/');
 	};
 
 	const handleSubmit = async (e: React.FormEvent) => {
@@ -83,11 +69,14 @@ export default function LoginPage() {
 			return;
 		}
 
-		setIsLoading(true);
-
 		try {
-			const data = await login(email, password, device);
-			successfulLogin(data);
+			const data = await loginUser({ email, password, device });
+			if (data) {
+				setUser(data.user);
+				handleAuthentication(true);
+				toast.success('Logged in successfully');
+				navigate('/');
+			}
 		} catch (error) {
 			if (
 				error instanceof Error &&
@@ -100,8 +89,6 @@ export default function LoginPage() {
 			}
 			toastError(error);
 		}
-
-		setIsLoading(false);
 	};
 
 	if (isLoading) {

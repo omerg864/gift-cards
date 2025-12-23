@@ -20,52 +20,38 @@ import { Link, useNavigate } from 'react-router-dom';
 import GoogleLogin from '../components/GoogleLoginButton';
 import Loading from '../components/loading';
 import { getDeviceDetails, toastError } from '../lib/utils';
-import { googleLogin, LoginResponse, register } from '../services/userService';
 import { toast } from 'react-toastify';
-import {
-	ACCESS_TOKEN,
-	AUTH_EXPIRATION,
-	REFRESH_TOKEN,
-	USER,
-} from '../lib/constants';
 import { email_regex, password_regex } from '../lib/regex';
+import { useRegister, useGoogleLogin } from '../hooks/useAuthQuery';
 
 export default function RegisterPage() {
 	const { setUser, setEmail: setAuthEmail, handleAuthentication } = useAuth();
 	const navigate = useNavigate();
-	const [isLoading, setIsLoading] = useState(false);
 	const [name, setName] = useState('');
 	const [email, setEmail] = useState('');
 	const [password, setPassword] = useState('');
 	const [confirmPassword, setConfirmPassword] = useState('');
 
-	const successfulLogin = (data: LoginResponse) => {
-		localStorage.setItem(USER, JSON.stringify(data.user));
-		localStorage.setItem(ACCESS_TOKEN, data.accessToken);
-		localStorage.setItem(REFRESH_TOKEN, data.refreshToken);
-		const expiresIn = 50 * 60 * 1000;
-		localStorage.setItem(
-			AUTH_EXPIRATION,
-			new Date(Date.now() + expiresIn).toISOString()
-		);
-		toast.success('Logged in successfully');
-		setUser(data.user);
-		handleAuthentication(true);
-		navigate('/');
-	};
+	const { mutateAsync: registerUser, isPending: isRegisterPending } = useRegister();
+	const { mutateAsync: loginGoogle, isPending: isGooglePending } = useGoogleLogin();
+
+	const isLoading = isRegisterPending || isGooglePending;
 
 	// Add Google registration function
 	const handleGoogle = async (authResult: any) => {
 		if (authResult?.code) {
-			setIsLoading(true);
 			try {
 				const device = getDeviceDetails();
-				const data = await googleLogin(authResult.code, device);
-				successfulLogin(data);
+				const data = await loginGoogle({ code: authResult.code, device });
+				if (data) {
+					setUser(data.user);
+					handleAuthentication(true);
+					toast.success('Logged in successfully');
+					navigate('/');
+				}
 			} catch (error) {
 				toastError(error);
 			}
-			setIsLoading(false);
 		} else {
 			toast.error('Google login failed');
 		}
@@ -96,24 +82,24 @@ export default function RegisterPage() {
 			return;
 		}
 
-		setIsLoading(true);
 		try {
-			const data = await register(email, password, name);
-			setAuthEmail(email);
-			if (data.sent) {
-				toast.success(
-					'Registration successful! Please verify your email.'
-				);
-			} else {
-				toast.error(
-					"Registration Successful! However, we couldn't send a verification email. Please resend it."
-				);
+			const data = await registerUser({ email, password, name });
+			if (data) {
+				setAuthEmail(email);
+				if (data.sent) {
+					toast.success(
+						'Registration successful! Please verify your email.'
+					);
+				} else {
+					toast.error(
+						"Registration Successful! However, we couldn't send a verification email. Please resend it."
+					);
+				}
+				navigate('/verify-email');
 			}
-			navigate('/verify-email');
 		} catch (error) {
 			toastError(error);
 		}
-		setIsLoading(false);
 	};
 
 	if (isLoading) {
