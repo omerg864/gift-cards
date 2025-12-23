@@ -4,12 +4,14 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { generatePath } from '../lib/utils';
 import { axiosErrorHandler, client } from '../services/client';
+import { useAuth } from './useAuth';
 import { SUPPLIER_QUERY_KEY } from './useSupplierQuery';
 
 
 export const CARD_QUERY_KEY = 'card'
 
 export const useGetCards = () => {
+  const { accessToken } = useAuth();
   const queryClient = useQueryClient();
   const query = useQuery({
     queryKey: [CARD_QUERY_KEY],
@@ -23,6 +25,7 @@ export const useGetCards = () => {
         axiosErrorHandler(error);
       }
     },
+    enabled: accessToken,
   });
 
   useEffect(() => {

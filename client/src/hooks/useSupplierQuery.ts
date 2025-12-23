@@ -4,10 +4,12 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { generatePath } from '../lib/utils';
 import { axiosErrorHandler, client } from '../services/client';
+import { useAuth } from './useAuth';
 
 export const SUPPLIER_QUERY_KEY = 'supplier'
 
 export const useGetSuppliers = () => {
+  const { accessToken } = useAuth();
   const queryClient = useQueryClient();
   const query = useQuery({
     queryKey: [SUPPLIER_QUERY_KEY],
@@ -21,6 +23,7 @@ export const useGetSuppliers = () => {
         axiosErrorHandler(error);
       }
     },
+    enabled: accessToken,
   });
 
   useEffect(() => {
