@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { v4 as uuid } from 'uuid';
@@ -15,6 +16,7 @@ export class UserService {
     @InjectModel(UserModel.name) private userModel: Model<UserDocument>,
     @InjectModel(CardModel.name) private cardModel: Model<CardDocument>,
     private readonly cloudinaryService: CloudinaryService,
+    private readonly configService: ConfigService,
   ) {}
 
   async create(user: Omit<User, 'id'>): Promise<UserDocument> {
@@ -54,7 +56,7 @@ export class UserService {
       }
       const publicId = await this.cloudinaryService.uploadImage(
         file.buffer,
-        `${process.env.CLOUDINARY_BASE_FOLDER}/users`,
+        `${this.configService.get<string>('CLOUDINARY_BASE_FOLDER')}/users`,
         uuid(),
       );
       updateUserDto.image = publicId;

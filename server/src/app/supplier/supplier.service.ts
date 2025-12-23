@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { v4 as uuid } from 'uuid';
@@ -14,6 +15,7 @@ export class SupplierService {
     @InjectModel(SupplierModel.name)
     private supplierModel: Model<SupplierDocument>,
     private cloudinaryService: CloudinaryService,
+    private configService: ConfigService,
   ) {}
 
   async create(
@@ -44,7 +46,7 @@ export class SupplierService {
         // However, the path structure is just for organization. I can use 'suppliers' folder.
         logoUrl = await this.cloudinaryService.uploadImage(
           supplierImage.buffer,
-          `${process.env.CLOUDINARY_BASE_FOLDER}/suppliers`,
+          `${this.configService.get<string>('CLOUDINARY_BASE_FOLDER')}/suppliers`,
           uuid(),
         );
       }
@@ -53,7 +55,7 @@ export class SupplierService {
         for (const storeImage of files.stores_images) {
           const storeImageUrl = await this.cloudinaryService.uploadImage(
             storeImage.buffer,
-            `${process.env.CLOUDINARY_BASE_FOLDER}/suppliers/stores`,
+            `${this.configService.get<string>('CLOUDINARY_BASE_FOLDER')}/suppliers/stores`,
             uuid(),
           );
           store_images.push(storeImageUrl);
@@ -118,7 +120,7 @@ export class SupplierService {
         }
         logoUrl = await this.cloudinaryService.uploadImage(
           files.supplier[0].buffer,
-          `${process.env.CLOUDINARY_BASE_FOLDER}/suppliers`,
+          `${this.configService.get<string>('CLOUDINARY_BASE_FOLDER')}/suppliers`,
           uuid(),
         );
       }
