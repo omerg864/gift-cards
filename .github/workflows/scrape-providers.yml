@@ -1,0 +1,15 @@
+name: Scrape Providers
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * *' # Runs everyday at midnight UTC
+
+jobs:
+  ping-scrape:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Scrape Providers Endpoint
+        run: |
+          curl -v -X GET "${{ secrets.SERVER_URL }}/api/jobs/scrape-providers" \
+          -H "x-api-key: ${{ secrets.JOBS_API_KEY }}"
