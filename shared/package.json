@@ -1,0 +1,11 @@
+{
+  "name": "gift-cards-shared",
+  "version": "1.0.0",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "zod": "^4.2.1"
+  }
+}
