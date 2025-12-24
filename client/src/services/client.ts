@@ -28,8 +28,6 @@ client.interceptors.response.use(
 				return client(originalRequest);
 			} catch (refreshError) {
 				localStorage.setItem('isAuthenticated', 'false');
-				cookieStore.delete('accessToken');
-				cookieStore.delete('refreshToken');
 				window.location.href = '/login';
 				return Promise.reject(refreshError);
 			}
