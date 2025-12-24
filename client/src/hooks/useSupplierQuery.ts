@@ -1,7 +1,6 @@
 import { ROUTES } from '@shared/constants/routes';
 import { CreateSupplierDto, Supplier, UpdateSupplierDto } from '@shared/types/supplier.types';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect } from 'react';
 import { generatePath } from '../lib/utils';
 import { axiosErrorHandler, client } from '../services/client';
 import { useAuth } from './useAuth';
@@ -18,21 +17,17 @@ export const useGetSuppliers = () => {
         const response = await client.get<Supplier[]>(
           generatePath({ route: [ROUTES.SUPPLIER.BASE, ROUTES.SUPPLIER.GET_ALL] })
         );
-        return response.data;
+        const suppliers = response.data;
+        suppliers.forEach((supplier) => {
+          queryClient.setQueryData([SUPPLIER_QUERY_KEY, supplier.id], supplier);
+        });
+        return suppliers;
       } catch (error) {
         axiosErrorHandler(error);
       }
     },
     enabled: accessToken,
   });
-
-  useEffect(() => {
-    if (query.data) {
-      query.data.forEach((supplier) => {
-        queryClient.setQueryData([SUPPLIER_QUERY_KEY, supplier.id], supplier);
-      });
-    }
-  }, [query.data, queryClient]);
 
   return query;
 };
@@ -91,8 +86,8 @@ export const useCreateSupplier = () => {
         axiosErrorHandler(error);
       }
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [SUPPLIER_QUERY_KEY] });
+    onSuccess: async () => {
+      await queryClient.refetchQueries({ queryKey: [SUPPLIER_QUERY_KEY] });
     },
   });
 };
@@ -122,16 +117,16 @@ export const useUpdateSupplier = () => {
         const response = await client.patch<Supplier>(
           generatePath({ route: [ROUTES.SUPPLIER.BASE, '/:id'], params: { id } }),
           formData,
-           { headers: { 'Content-Type': 'multipart/form-data' } }
+          { headers: { 'Content-Type': 'multipart/form-data' } }
         );
         return response.data;
       } catch (error) {
         axiosErrorHandler(error);
       }
     },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: [SUPPLIER_QUERY_KEY] });
-      queryClient.invalidateQueries({ queryKey: [SUPPLIER_QUERY_KEY, data?.id] });
+    onSuccess: async (data) => {
+      await queryClient.refetchQueries({ queryKey: [SUPPLIER_QUERY_KEY] });
+      await queryClient.refetchQueries({ queryKey: [SUPPLIER_QUERY_KEY, data?.id] });
     },
   });
 };
@@ -148,8 +143,8 @@ export const useDeleteSupplier = () => {
         axiosErrorHandler(error);
       }
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [SUPPLIER_QUERY_KEY] });
+    onSuccess: async () => {
+      await queryClient.refetchQueries({ queryKey: [SUPPLIER_QUERY_KEY] });
     },
   });
 };

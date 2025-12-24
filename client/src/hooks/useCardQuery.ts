@@ -1,7 +1,7 @@
 import { ROUTES } from '@shared/constants/routes';
 import { Card, CreateCardDto, UpdateCardDto } from '@shared/types/card.types';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect } from 'react';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { queryClient } from '../lib/queryClient';
 import { generatePath } from '../lib/utils';
 import { axiosErrorHandler, client } from '../services/client';
 import { useAuth } from './useAuth';
@@ -12,7 +12,6 @@ export const CARD_QUERY_KEY = 'card'
 
 export const useGetCards = () => {
   const { accessToken } = useAuth();
-  const queryClient = useQueryClient();
   const query = useQuery({
     queryKey: [CARD_QUERY_KEY],
     queryFn: async () => {
@@ -20,21 +19,17 @@ export const useGetCards = () => {
         const response = await client.get<Card[]>(
           generatePath({ route: [ROUTES.CARD.BASE, ROUTES.CARD.GET_ALL] })
         );
-        return response.data;
+        const cards = response.data;
+        cards.forEach((card) => {
+          queryClient.setQueryData([CARD_QUERY_KEY, card.id], card);
+        });
+        return cards;
       } catch (error) {
         axiosErrorHandler(error);
       }
     },
     enabled: accessToken,
   });
-
-  useEffect(() => {
-    if (query.data) {
-      query.data.forEach((card) => {
-        queryClient.setQueryData([CARD_QUERY_KEY, card.id], card);
-      });
-    }
-  }, [query.data, queryClient]);
 
   return query;
 };
@@ -57,7 +52,6 @@ export const useGetCard = (id: string) => {
 };
 
 export const useCreateCard = () => {
-  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (data: CreateCardDto) => {
       try {
@@ -70,14 +64,13 @@ export const useCreateCard = () => {
         axiosErrorHandler(error);
       }
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [CARD_QUERY_KEY] });
+    onSuccess: async () => {
+      await queryClient.refetchQueries({ queryKey: [CARD_QUERY_KEY] });
     },
   });
 };
 
 export const useUpdateCard = () => {
-  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, data }: { id: string; data: UpdateCardDto }) => {
       try {
@@ -90,15 +83,14 @@ export const useUpdateCard = () => {
         axiosErrorHandler(error);
       }
     },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: [CARD_QUERY_KEY] });
-      queryClient.invalidateQueries({ queryKey: [CARD_QUERY_KEY, data?.id] });
+    onSuccess: async (data) => {
+      await queryClient.refetchQueries({ queryKey: [CARD_QUERY_KEY] });
+      await queryClient.refetchQueries({ queryKey: [CARD_QUERY_KEY, data?.id] });
     },
   });
 };
 
 export const useDeleteCard = () => {
-  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
       try {
@@ -109,14 +101,13 @@ export const useDeleteCard = () => {
         axiosErrorHandler(error);
       }
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [CARD_QUERY_KEY] });
+    onSuccess: async () => {
+      await queryClient.refetchQueries({ queryKey: [CARD_QUERY_KEY] });
     },
   });
 };
 
 export const useCreateCardAndSupplier = () => {
-  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (data: CreateCardDto & { supplierLogo?: File }) => {
       const formData = new FormData();
@@ -139,15 +130,14 @@ export const useCreateCardAndSupplier = () => {
         axiosErrorHandler(error);
       }
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [CARD_QUERY_KEY] });
-      queryClient.invalidateQueries({ queryKey: [SUPPLIER_QUERY_KEY] });
+    onSuccess: async () => {
+      await queryClient.refetchQueries({ queryKey: [CARD_QUERY_KEY] });
+      await queryClient.refetchQueries({ queryKey: [SUPPLIER_QUERY_KEY] });
     },
   });
 };
 
 export const useUpdateCardWithNewSupplier = () => {
-  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, data }: { id: string; data: UpdateCardDto & { supplierLogo?: File } }) => {
       const formData = new FormData();
@@ -170,10 +160,10 @@ export const useUpdateCardWithNewSupplier = () => {
         axiosErrorHandler(error);
       }
     },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: [CARD_QUERY_KEY] });
-      queryClient.invalidateQueries({ queryKey: [CARD_QUERY_KEY, data?.id] });
-      queryClient.invalidateQueries({ queryKey: [SUPPLIER_QUERY_KEY] });
+    onSuccess: async (data) => {
+      await queryClient.refetchQueries({ queryKey: [CARD_QUERY_KEY] });
+      await queryClient.refetchQueries({ queryKey: [CARD_QUERY_KEY, data?.id] });
+      await queryClient.refetchQueries({ queryKey: [SUPPLIER_QUERY_KEY] });
     },
   });
 };

@@ -64,17 +64,6 @@ export class OwnershipGuard implements CanActivate {
     const isReadOperation = method === 'GET';
     const isWriteOperation = ['PUT', 'PATCH', 'DELETE'].includes(method);
 
-    // Check ownership
-    console.log('OwnershipGuard Debug:', {
-      userId,
-      resourceId,
-      resourceUser: resource.user,
-      resourceUserType: typeof resource.user,
-      resourceUserString: resource.user?.toString(),
-      config,
-      isReadOperation,
-    });
-
     if (config.allowSharedRead && isReadOperation) {
       // Allow read if no user or belongs to current user
       if (resource.user && resource.user.toString() !== userId) {

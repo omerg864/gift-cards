@@ -23,7 +23,7 @@ export default function Home() {
 	const [encryptionKey, setEncryptionKey] = useState<string>('');
 	const [confirmEncryptionKey, setConfirmEncryptionKey] =
 		useState<string>('');
-	const { setGlobalKey } = useEncryption();
+	const { setGlobalKey, globalKey } = useEncryption();
 	const { user, updateUser, isAuthenticated } = useAuth();
 	const createCardAndSupplierMutation = useCreateCardAndSupplier();
 	const setEncryptionKeyMutation = useSetEncryptionKey();
@@ -51,23 +51,22 @@ export default function Home() {
 			return;
 		}
 		if (card.cvv || card.cardNumber) {
-			if (!encryptionKey) {
+			if (!globalKey) {
 				toast.error('Please provide encryption key');
 				return;
 			}
 			if (
 				!validateGlobalKey(
 					user.verifyToken,
-					encryptionKey,
+					globalKey,
 					user.salt
 				)
 			) {
 				toast.error('invalid encryption key');
 				return;
 			}
-			setGlobalKey(encryptionKey);
 		}
-		let last4, cvv, cardNumber;
+		let last4: string | undefined, cvv: string | undefined, cardNumber: string | undefined;
 		if (card.cardNumber) {
 			last4 = card.cardNumber.slice(-4);
 		}
