@@ -1,10 +1,10 @@
 import { clsx, type ClassValue } from 'clsx';
 import {
-    browserName,
-    isAndroid,
-    isIOS,
-    isTablet,
-    osName,
+	browserName,
+	isAndroid,
+	isIOS,
+	isTablet,
+	osName,
 } from 'react-device-detect';
 import { toast } from 'react-toastify';
 import { twMerge } from 'tailwind-merge';
@@ -53,26 +53,42 @@ export const toastError = (error: unknown) => {
 };
 
 export const generatePath = ({
-	route,
-	query,
-	params,
+  route,
+  query,
+  params,
 }: {
-	route: string[];
-	query?: Record<string, any>;
-	params?: Record<string, string>;
+  route: string[];
+  query?: Record<string, any>;
+  params?: Record<string, string>;
 }) => {
-	let path = route.join('');
-	if (params) {
-		Object.keys(params).forEach((key) => {
-			path = path.replace(`:${key}`, params[key]);
-		});
-	}
-	if (query) {
-		const queryString = new URLSearchParams(query).toString();
-		path += `?${queryString}`;
-	}
-	return path;
+  let path = route.join('');
+
+  // 1. Replace Params
+  if (params) {
+    Object.keys(params).forEach((key) => {
+      path = path.replace(`:${key}`, params[key]);
+    });
+  }
+
+  // 2. Clean up double slashes (e.g., "//" -> "/")
+  path = path.replace(/\/+/g, '/');
+
+  // 3. Remove trailing slash (unless the path is exactly "/")
+  if (path.endsWith('/') && path !== '/') {
+    path = path.slice(0, -1);
+  }
+
+  // 4. Append Query String
+  if (query) {
+    const queryString = new URLSearchParams(query).toString();
+    if (queryString) {
+      path += `?${queryString}`;
+    }
+  }
+
+  return path;
 };
+
 export const getCloudinaryUrl = (publicId: string | null | undefined) => {
 	if (!publicId) return '';
 	if (publicId.startsWith('http')) return publicId;
