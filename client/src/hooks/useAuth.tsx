@@ -15,6 +15,7 @@ import {
 	EMAIL,
 	USER
 } from '../lib/constants';
+import { generatePath } from '../lib/utils';
 import { client } from '../services/client';
 
 interface AuthContextType {
@@ -43,7 +44,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 	const { data: profile, isError, isFetching } = useQuery({
 		queryKey: ['profile'],
 		queryFn: async () => {
-				const response = await client.get<User>(`${ROUTES.USER.BASE}${ROUTES.USER.PROFILE}`);
+				const response = await client.get<User>(generatePath({ route: [ROUTES.USER.BASE, ROUTES.USER.PROFILE] }));
 				return response.data;
 		},
 		enabled: isAuthenticated,
