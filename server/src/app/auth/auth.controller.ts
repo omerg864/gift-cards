@@ -122,7 +122,7 @@ export class AuthController {
     const isProduction =
       this.configService.get<NODE_ENV>('NODE_ENV') === NODE_ENV.PRODUCTION;
 
-    const sameSite = isProduction ? 'none' : 'strict';
+    const sameSite = isProduction ? 'lax' : 'strict';
 
     res.cookie(COOKIE_NAMES.ACCESS_TOKEN, accessToken, {
       httpOnly: true,
