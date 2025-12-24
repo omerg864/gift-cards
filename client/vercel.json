@@ -1,9 +1,12 @@
 {
-	"routes": [{ "src": "/[^.]+", "dest": "/", "status": 200 }],
   "rewrites": [
     {
       "source": "/api/:match*",
       "destination": "https://gift-cards-api.vercel.app/:match*"
+    },
+    {
+      "source": "/:path((?!.*\\..*).*)",
+      "destination": "/index.html"
     }
-	]
+  ]
 }
