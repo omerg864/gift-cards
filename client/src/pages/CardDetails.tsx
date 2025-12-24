@@ -3,20 +3,20 @@
 import { useGetSupplier } from '@/hooks/useSupplierQuery';
 import { Supplier, SupplierStore } from '@shared/types/supplier.types';
 import {
-    ArrowLeft,
-    Calendar,
-    Copy,
-    CreditCard,
-    DollarSign,
-    Edit,
-    Eye,
-    EyeOff,
-    FileText,
-    Search,
-    Smartphone,
-    Store,
-    Trash,
-    X,
+	ArrowLeft,
+	Calendar,
+	Copy,
+	CreditCard,
+	DollarSign,
+	Edit,
+	Eye,
+	EyeOff,
+	FileText,
+	Search,
+	Smartphone,
+	Store,
+	Trash,
+	X,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
@@ -32,14 +32,14 @@ import { Input } from '../components/ui/input';
 import { useEncryption } from '../context/EncryptionContext';
 import { useAuth } from '../hooks/useAuth';
 import {
-    useDeleteCard,
-    useGetCard,
-    useUpdateCardWithNewSupplier,
+	useDeleteCard,
+	useGetCard,
+	useUpdateCardWithNewSupplier,
 } from '../hooks/useCardQuery';
 import {
-    decryptCardFields,
-    encryptCard,
-    validateGlobalKey,
+	decryptCardFields,
+	encryptCard,
+	validateGlobalKey,
 } from '../lib/cryptoHelpers';
 import { getCloudinaryUrl, toastError } from '../lib/utils';
 import { getCurrencySymbol } from '../types/gift-card';
@@ -203,15 +203,15 @@ export default function CardDetailsPage() {
 					id: params.id as string,
 					data: {
 						card: {
-						name: card?.name || '',
-						description: card?.description || '',
-						isPhysical: card?.isPhysical || false,
-						amount: card?.amount || 0,
-						currency: card?.currency || 'ILS',
-						supplier: card?.supplier,
+						name: data.name,
+						description: data.description,
+						isPhysical: data.isPhysical,
+						amount: data.amount,
+						currency: data.currency,
+						supplier: data.supplier,
 						cardNumber,
 						last4,
-						expiry: card?.expiry,
+						expiry: data.expiry,
 						cvv
 					},
 					supplier: supplier ?? undefined

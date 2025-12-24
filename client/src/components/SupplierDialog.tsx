@@ -10,11 +10,11 @@ import { SupplierCard } from './SupplierCard';
 import SupplierImageInput from './SupplierImageInput';
 import { Button } from './ui/button';
 import {
-    Dialog,
-    DialogContent,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
+	Dialog,
+	DialogContent,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
 } from './ui/dialog';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
@@ -26,12 +26,14 @@ interface SupplierDialogProps {
 	onClose: () => void;
 	onSubmit: (data: CreateSupplierDetails) => Promise<boolean>;
 	confirmButtontext?: string;
+	isLoading?: boolean;
 }
 const SupplierDialog = ({
 	onClose,
 	onSubmit,
 	supplier,
 	confirmButtontext = 'Add Supplier',
+	isLoading = false,
 }: SupplierDialogProps) => {
 	const [data, setData] = useState<CreateSupplierDetails>({
 		name: '',
@@ -53,6 +55,7 @@ const SupplierDialog = ({
 			setData((prev) => ({
 				...prev,
 				fromColor: color,
+				toColor: getDarkerColor(color),
 			}));
 		},
 		[setData]
@@ -94,10 +97,9 @@ const SupplierDialog = ({
 			[name]: value,
 		}));
 	};
-
-	const handleFormSubmit = async (e: React.FormEvent) => {
+	
+	const handleFormSubmitWrapper = async (e: React.FormEvent) => {
 		e.preventDefault();
-
 		const finalStores = data.stores.map((store) => {
 			const existingStore = (supplier?.stores ?? []).find(
 				(s) =>
@@ -125,7 +127,8 @@ const SupplierDialog = ({
 		if (success) {
 			onClose();
 		}
-	};
+	}
+
 
 	const addStore = (storeName: string) => {
 		if (
@@ -170,7 +173,7 @@ const SupplierDialog = ({
 				<DialogHeader>
 					<DialogTitle>Add new Supplier</DialogTitle>
 				</DialogHeader>
-				<form onSubmit={handleFormSubmit} className="space-y-6">
+				<form onSubmit={handleFormSubmitWrapper} className="space-y-6">
 					<div className="space-y-2">
 						<Label htmlFor="expirationDate">
 							Name <span className="text-red-500">*</span>
@@ -182,6 +185,7 @@ const SupplierDialog = ({
 							name="name"
 							onChange={handleInputChange}
 							value={data.name}
+							disabled={isLoading}
 						/>
 					</div>
 					<div className="space-y-2">
@@ -193,6 +197,7 @@ const SupplierDialog = ({
 							onChange={handleInputChange}
 							placeholder="Add a description for this supplier"
 							className="min-h-[80px]"
+							disabled={isLoading}
 						/>
 					</div>
 					<div className="flex items-center justify-between space-y-0">
@@ -204,6 +209,7 @@ const SupplierDialog = ({
 							id="isPhysical"
 							checked={data.cardTypes.includes('physical')}
 							onCheckedChange={() => toggleCardType('physical')}
+							disabled={isLoading}
 						/>
 					</div>
 					<div className="flex items-center justify-between space-y-0">
@@ -215,6 +221,7 @@ const SupplierDialog = ({
 							id="isDigital"
 							checked={data.cardTypes.includes('digital')}
 							onCheckedChange={() => toggleCardType('digital')}
+							disabled={isLoading}
 						/>
 					</div>
 					<div className="space-y-2">
@@ -228,6 +235,7 @@ const SupplierDialog = ({
 							name="color"
 							onChange={handleColorChange}
 							value={data.fromColor}
+							disabled={isLoading}
 						/>
 					</div>
 					<div className="space-y-2">
@@ -266,14 +274,16 @@ const SupplierDialog = ({
 							type="button"
 							variant="outline"
 							onClick={onClose}
+							disabled={isLoading}
 						>
 							Cancel
 						</Button>
 						<Button
 							type="submit"
 							className="w-full bg-teal-600 hover:bg-teal-700"
+							disabled={isLoading}
 						>
-							{confirmButtontext}
+							{isLoading ? 'Loading...' : confirmButtontext}
 						</Button>
 					</DialogFooter>
 				</form>

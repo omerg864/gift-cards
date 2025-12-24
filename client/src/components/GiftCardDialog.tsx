@@ -151,6 +151,10 @@ export function GiftCardDialog({
 		}));
 	};
 
+	const handleKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		setGlobalKey(e.target.value);
+	};
+
 	const handleCustomSupplierNameChange = (
 		e: React.ChangeEvent<HTMLInputElement>
 	) => {
@@ -511,7 +515,7 @@ export function GiftCardDialog({
 																	globalKey || ''
 																}
 																onChange={
-																	handleChange
+																	handleKeyChange
 																}
 															/>
 														</div>
@@ -570,7 +574,7 @@ export function GiftCardDialog({
 																	globalKey || ''
 																}
 																onChange={
-																	handleChange
+																	handleKeyChange
 																}
 																required
 															/>
@@ -605,7 +609,7 @@ export function GiftCardDialog({
 													value={
 														globalKey || ''
 													}
-													onChange={handleChange}
+													onChange={handleKeyChange}
 													required
 												/>
 											</div>

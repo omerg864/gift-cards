@@ -91,6 +91,6 @@ export const generatePath = ({
 
 export const getCloudinaryUrl = (publicId: string | null | undefined) => {
 	if (!publicId) return '';
-	if (publicId.startsWith('http')) return publicId;
+	if (publicId.startsWith('http') || publicId.startsWith('blob:')) return publicId;
 	return `https://res.cloudinary.com/omerg/image/upload/f_webp/${publicId}`;
 };

@@ -57,20 +57,23 @@ export const useGetSupplier = (id: string, options?: { enabled?: boolean }) => {
 export const useCreateSupplier = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (data: CreateSupplierDto & { supplierLogo?: File; storesImages?: File[] }) => {
-      const formData = new FormData();
-      // append normal fields
-      Object.keys(data).forEach(key => {
-        if (key === 'stores' || key === 'cardTypes') {
-           formData.append(key, JSON.stringify(data[key]));
-        } else if (key !== 'supplierLogo' && key !== 'storesImages') {
-           formData.append(key, (data as any)[key]);
-        }
-      });
-      // append files
-      if (data.supplierLogo) {
-        formData.append('supplier', data.supplierLogo);
-      }
+		mutationFn: async (data: CreateSupplierDto & { supplierLogo?: File; storesImages?: File[], logo?: File | null }) => {
+			const formData = new FormData();
+			// append normal fields
+			Object.keys(data).forEach(key => {
+				if (key === 'stores' || key === 'cardTypes') {
+					formData.append(key, JSON.stringify(data[key]));
+				} else if (key !== 'supplierLogo' && key !== 'storesImages' && key !== 'logo') {
+					formData.append(key, (data as any)[key]);
+				}
+			});
+			// append files
+			if (data.supplierLogo) {
+				formData.append('supplier', data.supplierLogo);
+			}
+			if (data.logo) {
+				formData.append('supplier', data.logo);
+			}
       if (data.storesImages && data.storesImages.length > 0) {
         data.storesImages.forEach(file => {
           formData.append('stores_images', file);

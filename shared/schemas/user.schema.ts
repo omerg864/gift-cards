@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { preprocessJson } from '../utils/zod.utils';
 import { DeviceSchema } from './device.schema';
 
 export const UserSchema = z.object({
@@ -37,11 +38,11 @@ export const LoginUserSchema = z.object({
   device: DeviceSchema,
 });
 
-export const UpdateUserSchema = UserSchema.pick({
+export const UpdateUserSchema = preprocessJson(UserSchema.pick({
   name: true,
   email: true,
   image: true,
-}).partial();
+}).partial());
 
 export const UpdateEncryptionKeySchema = UserSchema.pick({
   salt: true,

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { preprocessJson } from '../utils/zod.utils';
 import { CreateSupplierSchema } from './supplier.schema';
 
 export const CardSchema = z.object({
@@ -18,7 +19,7 @@ export const CardSchema = z.object({
   notified2Month: z.boolean().default(false),
 });
 
-export const CreateCardSchema = z.object({ card: CardSchema.omit({
+export const CreateCardSchema = z.object({ card: preprocessJson(CardSchema.omit({
   id: true,
   user: true,
   notified1Month: true,
@@ -26,9 +27,9 @@ export const CreateCardSchema = z.object({ card: CardSchema.omit({
   supplier: true,
 }).extend({
   supplier: z.string().optional().nullable(),
-}), supplier: CreateSupplierSchema.optional().nullable()})
+})), supplier: preprocessJson(CreateSupplierSchema.optional().nullable())})
 
-export const UpdateCardSchema = z.object({ card: CardSchema.omit({
+export const UpdateCardSchema = z.object({ card: preprocessJson(CardSchema.omit({
   id: true,
   user: true,
   notified1Month: true,
@@ -36,4 +37,4 @@ export const UpdateCardSchema = z.object({ card: CardSchema.omit({
   supplier: true,
 }).extend({
   supplier: z.string().optional().nullable(),
-}), supplier: CreateSupplierSchema.optional().nullable()})
+})), supplier: preprocessJson(CreateSupplierSchema.optional().nullable())})

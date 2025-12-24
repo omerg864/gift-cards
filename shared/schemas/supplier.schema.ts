@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { preprocessJson } from '../utils/zod.utils';
 
 export const supplierStoreSchema = z.object({
   name: z.string().min(1, 'Store name is required'),
@@ -14,12 +15,12 @@ export const SupplierSchema = z.object({
   id: z.string(),
   user: z.string().optional(), // ObjectId as string
   name: z.string().min(1, 'Name is required'),
-  stores: z.array(
+  stores: preprocessJson(z.array(
     supplierStoreSchema
-  ).optional(),
+  ).optional()),
   logo: z.string().optional(),
   description: z.string().optional(),
-  cardTypes: z.array(z.string()).default(['digital', 'physical']),
+  cardTypes: preprocessJson(z.array(z.string()).default(['digital', 'physical'])),
   fromColor: z.string().min(1, 'From color is required'),
   toColor: z.string().min(1, 'To color is required'),
 });

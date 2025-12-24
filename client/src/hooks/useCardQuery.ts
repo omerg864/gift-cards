@@ -158,7 +158,7 @@ export const useUpdateCardWithNewSupplier = () => {
       }
 
       try {
-        const response = await client.patch(
+        const response = await client.patch<Card>(
           generatePath({ route: [ROUTES.CARD.BASE, '/:id'], params: { id } }),
           formData,
           {
@@ -172,7 +172,7 @@ export const useUpdateCardWithNewSupplier = () => {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: [CARD_QUERY_KEY] });
-      queryClient.invalidateQueries({ queryKey: [CARD_QUERY_KEY, data.card.id] });
+      queryClient.invalidateQueries({ queryKey: [CARD_QUERY_KEY, data?.id] });
       queryClient.invalidateQueries({ queryKey: [SUPPLIER_QUERY_KEY] });
     },
   });

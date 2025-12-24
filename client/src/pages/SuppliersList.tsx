@@ -45,7 +45,7 @@ const SuppliersList = () => {
 		}
 	};
 
-	if (loading || isCreating) {
+	if (loading) {
 		return <Loading />;
 	}
 
@@ -72,6 +72,7 @@ const SuppliersList = () => {
 					</button>
 					{showDialog && (
 						<SupplierDialog
+							isLoading={isCreating}
 							onSubmit={handleAddSupplier}
 							onClose={() => setShowDialog(false)}
 						/>

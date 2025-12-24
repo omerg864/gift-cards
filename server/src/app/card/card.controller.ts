@@ -13,16 +13,13 @@ import {
 import { ParseObjectIdPipe } from '@nestjs/mongoose';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { z } from 'zod';
 import { ROUTES } from '../../../../shared/constants/routes';
-import { CreateCardSchema } from '../../../../shared/schemas/card.schema';
 import { Card } from '../../../../shared/types/card.types';
 import { User as UserType } from '../../../../shared/types/user.types';
 import { CheckOwnership } from '../../lib/common/decorators/check-ownership.decorator';
 import { User } from '../../lib/common/decorators/user.decorator';
 import { JwtAuthGuard } from '../../lib/common/guards/jwt-auth.guard';
 import { OwnershipGuard } from '../../lib/common/guards/ownership.guard';
-import { safeJsonParse } from '../../lib/utils/json.utils';
 import { SupplierService } from '../supplier/supplier.service';
 import { CardService } from './card.service';
 import { CreateCardDto, UpdateCardDto } from './dto/card.dto';
@@ -46,19 +43,6 @@ export class CardController {
     @User() user: UserType,
     @UploadedFile() supplierFile?: Express.Multer.File,
   ) {
-    // Handle parsing if sent as FormData string
-    if (typeof createCardDto.card === 'string') {
-      const parsed = safeJsonParse<z.infer<typeof CreateCardSchema>['card']>(
-        createCardDto.card,
-      );
-      if (parsed) createCardDto.card = parsed;
-    }
-    if (typeof createCardDto.supplier === 'string') {
-      const parsed = safeJsonParse<
-        z.infer<typeof CreateCardSchema>['supplier']
-      >(createCardDto.supplier);
-      if (parsed) createCardDto.supplier = parsed;
-    }
     const { supplier, card } = createCardDto;
     const newCard = { ...card, user: user.id };
     if (supplier) {
@@ -98,16 +82,6 @@ export class CardController {
     @Body() updateCardDto: UpdateCardDto,
     @UploadedFile() supplierFile?: Express.Multer.File,
   ) {
-    // Handle parsing if sent as FormData string
-    if (typeof updateCardDto.card === 'string') {
-      const parsed = safeJsonParse(updateCardDto.card);
-      if (parsed) updateCardDto.card = parsed;
-    }
-    if (typeof updateCardDto.supplier === 'string') {
-      const parsed = safeJsonParse(updateCardDto.supplier);
-      if (parsed) updateCardDto.supplier = parsed;
-    }
-
     const { supplier, card } = updateCardDto;
     const updatedCard = { ...card };
     if (supplier) {
