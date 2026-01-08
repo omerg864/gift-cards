@@ -50,7 +50,10 @@ export class AuthService {
     const unique = uuid();
     const refreshToken = this.jwtService.sign(
       { id: user._id.toString(), device: device.id, unique },
-      { secret: this.configService.get('JWT_SECRET_REFRESH') },
+      {
+        secret: this.configService.get('JWT_SECRET_REFRESH'),
+        expiresIn: '30d',
+      },
     );
 
     const hashedToken = await bcrypt.hash(refreshToken, 10);
@@ -227,7 +230,11 @@ export class AuthService {
       throw new BadRequestException('No refresh token provided');
     }
 
-    let decoded;
+    let decoded: {
+      id: string;
+      device: string;
+      unique: string;
+    };
     try {
       decoded = this.jwtService.verify(refreshToken, {
         secret: this.configService.get('JWT_SECRET_REFRESH'),
@@ -245,13 +252,14 @@ export class AuthService {
     if (!user.tokens) {
       user.tokens = [];
     }
-    const device = user.tokens.find((t) => t.device_id === decoded.device);
-    if (!device) {
+    const index = user.tokens.findIndex((t) => t.device_id === decoded.device);
+    if (index === -1) {
       throw new UnauthorizedException('Invalid refresh token');
     }
+    const auth = user.tokens[index];
 
-    const isValidToken = await bcrypt.compare(refreshToken, device.token);
-    if (!isValidToken || device.unique !== decoded.unique) {
+    const isValidToken = await bcrypt.compare(refreshToken, auth.token);
+    if (!isValidToken || auth.unique !== decoded.unique) {
       // Clear all tokens on security breach
       user.tokens = [];
       await user.save();
@@ -268,23 +276,19 @@ export class AuthService {
 
     const unique = uuid();
     const newRefreshToken = this.jwtService.sign(
-      { id: decoded.id, device: device.device_id, unique },
-      { secret: this.configService.get('JWT_SECRET_REFRESH') },
+      { id: decoded.id, device: auth.device_id, unique },
+      {
+        secret: this.configService.get('JWT_SECRET_REFRESH'),
+        expiresIn: '30d',
+      },
     );
 
     const newHashedToken = await bcrypt.hash(newRefreshToken, 10);
-    const index = user.tokens.findIndex((t) => t.device_id === decoded.device);
-
-    if (index !== -1 && user.tokens[index]) {
-      user.tokens[index] = {
-        device_id: device.device_id,
-        type: device.type,
-        name: device.name,
-        createdAt: device.createdAt,
-        token: newHashedToken,
-        unique,
-      };
-    }
+    user.tokens[index] = {
+      ...user.tokens[index],
+      token: newHashedToken,
+      unique,
+    };
     await user.save();
 
     return {
@@ -299,7 +303,11 @@ export class AuthService {
       throw new BadRequestException('No refresh token provided');
     }
 
-    let decoded;
+    let decoded: {
+      id: string;
+      device: string;
+      unique: string;
+    };
     try {
       decoded = this.jwtService.verify(refreshToken, {
         secret: this.configService.get('JWT_SECRET_REFRESH'),
