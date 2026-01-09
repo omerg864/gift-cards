@@ -1,27 +1,25 @@
-import { Routes, Route } from 'react-router';
-import './globals.css';
-import { ToastContainer } from 'react-toastify';
-import Home from './pages/Home';
-import CardDetails from './pages/CardDetails';
-import SupplierDetails from './pages/SupplierDetails';
-import { Header } from './components/Header';
-import LoginPage from './pages/Login';
-import RegisterPage from './pages/Register';
-import ProfilePage from './pages/Profile';
-import SettingsPage from './pages/Settings';
-import 'react-toastify/dist/ReactToastify.css';
-import ForgotPasswordPage from './pages/ForgotPassword';
-import VerifyEmailPage from './pages/VerifyEmail';
-import ResetPasswordPage from './pages/ResetPassword';
 import { GoogleOAuthProvider } from '@react-oauth/google';
-import ConfirmEmailPage from './pages/ConfirmEmail';
+import { Route, Routes } from 'react-router';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { Header } from './components/Header';
 import ProtectedRoute from './components/routes/ProtectedRoute';
 import UserRestrictedRoute from './components/routes/UserRestrictedRoute';
-import { useAuth } from './hooks/useAuth';
+import './globals.css';
+import CardDetails from './pages/CardDetails';
+import ConfirmEmailPage from './pages/ConfirmEmail';
+import ForgotPasswordPage from './pages/ForgotPassword';
+import Home from './pages/Home';
+import LoginPage from './pages/Login';
+import ProfilePage from './pages/Profile';
+import RegisterPage from './pages/Register';
+import ResetPasswordPage from './pages/ResetPassword';
+import SettingsPage from './pages/Settings';
+import SupplierDetails from './pages/SupplierDetails';
 import SuppliersList from './pages/SuppliersList';
+import VerifyEmailPage from './pages/VerifyEmail';
 
 function App() {
-	const { isAuthenticated } = useAuth();
 	return (
 		<>
 			<ToastContainer theme="dark" />
@@ -33,9 +31,7 @@ function App() {
 								<Route
 									path="/"
 									element={
-										<ProtectedRoute
-											isAuthenticated={isAuthenticated}
-										>
+										<ProtectedRoute>
 											<Home />
 										</ProtectedRoute>
 									}
@@ -43,9 +39,7 @@ function App() {
 								<Route
 									path="/card/:id"
 									element={
-										<ProtectedRoute
-											isAuthenticated={isAuthenticated}
-										>
+										<ProtectedRoute>
 											<CardDetails />
 										</ProtectedRoute>
 									}
@@ -53,9 +47,7 @@ function App() {
 								<Route
 									path="/supplier/:id"
 									element={
-										<ProtectedRoute
-											isAuthenticated={isAuthenticated}
-										>
+										<ProtectedRoute>
 											<SupplierDetails />
 										</ProtectedRoute>
 									}
@@ -63,9 +55,7 @@ function App() {
 								<Route
 									path="/supplier/list"
 									element={
-										<ProtectedRoute
-											isAuthenticated={isAuthenticated}
-										>
+										<ProtectedRoute>
 											<SuppliersList />
 										</ProtectedRoute>
 									}
@@ -73,9 +63,7 @@ function App() {
 								<Route
 									path="/login"
 									element={
-										<UserRestrictedRoute
-											isAuthenticated={isAuthenticated}
-										>
+										<UserRestrictedRoute>
 											<LoginPage />
 										</UserRestrictedRoute>
 									}
@@ -87,9 +75,7 @@ function App() {
 								<Route
 									path="/profile"
 									element={
-										<ProtectedRoute
-											isAuthenticated={isAuthenticated}
-										>
+										<ProtectedRoute>
 											<ProfilePage />
 										</ProtectedRoute>
 									}
@@ -97,9 +83,7 @@ function App() {
 								<Route
 									path="/settings"
 									element={
-										<ProtectedRoute
-											isAuthenticated={isAuthenticated}
-										>
+										<ProtectedRoute>
 											<SettingsPage />
 										</ProtectedRoute>
 									}
@@ -107,9 +91,7 @@ function App() {
 								<Route
 									path="/forgot-password"
 									element={
-										<UserRestrictedRoute
-											isAuthenticated={isAuthenticated}
-										>
+										<UserRestrictedRoute>
 											<ForgotPasswordPage />
 										</UserRestrictedRoute>
 									}
@@ -121,9 +103,7 @@ function App() {
 								<Route
 									path="/verify-email"
 									element={
-										<UserRestrictedRoute
-											isAuthenticated={isAuthenticated}
-										>
+										<UserRestrictedRoute>
 											<VerifyEmailPage />
 										</UserRestrictedRoute>
 									}
@@ -131,9 +111,7 @@ function App() {
 								<Route
 									path="/forgot/password/:token/:email"
 									element={
-										<UserRestrictedRoute
-											isAuthenticated={isAuthenticated}
-										>
+										<UserRestrictedRoute>
 											<ResetPasswordPage />
 										</UserRestrictedRoute>
 									}

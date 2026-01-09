@@ -1,6 +1,15 @@
-import { Button } from '../components/ui/button';
+import { Laptop, LogOut, Monitor, Smartphone, Tablet } from 'lucide-react';
 import { Badge } from '../components/ui/badge';
-import { Laptop, Smartphone, Tablet, Monitor, LogOut } from 'lucide-react';
+import { Button } from '../components/ui/button';
+import {
+	useDisconnectAllDevices,
+	useDisconnectDevice,
+	useGetDevices,
+} from '../hooks/useUserQuery';
+import { DEVICE_ID } from '../lib/constants';
+import { toastError } from '../lib/utils';
+import { useAuthStore } from '../stores/useAuthStore';
+import Loading from './loading';
 import {
 	Card,
 	CardContent,
@@ -8,15 +17,6 @@ import {
 	CardHeader,
 	CardTitle,
 } from './ui/card';
-import { DEVICE_ID } from '../lib/constants';
-import Loading from './loading';
-import {
-	useGetDevices,
-	useDisconnectDevice,
-	useDisconnectAllDevices,
-} from '../hooks/useUserQuery';
-import { toastError } from '../lib/utils';
-import { useAuth } from '../hooks/useAuth';
 
 interface Device {
 	createdAt: string;
@@ -27,7 +27,7 @@ interface Device {
 
 export function ConnectedDevicesTab() {
 	const deviceId = localStorage.getItem(DEVICE_ID) || '';
-	const { logout } = useAuth();
+	const { removeAuthenticated } = useAuthStore();
 	
 	const { data: devices = [], isLoading: loading } = useGetDevices();
 	const disconnectDeviceMutation = useDisconnectDevice();
@@ -57,7 +57,7 @@ export function ConnectedDevicesTab() {
 	const disconnectAllDevices = async () => {
 		try {
 			await disconnectAllDevicesMutation.mutateAsync();
-			logout();
+			removeAuthenticated();
 		} catch (error) {
 			toastError(error);
 		}

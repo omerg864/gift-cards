@@ -15,10 +15,10 @@ import {
     TabsList,
     TabsTrigger,
 } from '../components/ui/tabs';
-import { useAuth } from '../hooks/useAuth';
+import { useAuthStore } from '../stores/useAuthStore';
 
 export default function ProfilePage() {
-	const { user } = useAuth();
+	const { user } = useAuthStore();
 	const [searchParams, setSearchParams] = useSearchParams();
 	const tab = searchParams.get('tab') || 'profile';
 	const [activeTab, setActiveTab] = useState(tab);

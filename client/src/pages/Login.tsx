@@ -2,10 +2,13 @@
 
 import type React from 'react';
 
+import { CreditCard } from 'lucide-react';
 import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import GoogleLogin from '../components/GoogleLoginButton';
+import Loading from '../components/loading';
 import { Button } from '../components/ui/button';
-import { Input } from '../components/ui/input';
-import { Label } from '../components/ui/label';
 import {
 	Card,
 	CardContent,
@@ -14,24 +17,22 @@ import {
 	CardHeader,
 	CardTitle,
 } from '../components/ui/card';
-import { CreditCard } from 'lucide-react';
-import { toast } from 'react-toastify';
-import { useAuth } from '../hooks/useAuth';
-import { Link, useNavigate } from 'react-router-dom';
+import { Input } from '../components/ui/input';
+import { Label } from '../components/ui/label';
+import { useGoogleLogin, useLogin } from '../hooks/useAuthQuery';
 import { email_regex } from '../lib/regex';
-import Loading from '../components/loading';
 import { getDeviceDetails, toastError } from '../lib/utils';
-import GoogleLogin from '../components/GoogleLoginButton';
-import { useLogin, useGoogleLogin } from '../hooks/useAuthQuery';
+import { useAuthStore } from '../stores/useAuthStore';
 
 export default function LoginPage() {
 	const navigate = useNavigate();
-	const { setUser, setEmail: setAuthEmail, handleAuthentication } = useAuth();
+	const { setAuthenticated, setEmail: setAuthEmail } = useAuthStore();
 	const [email, setEmail] = useState('');
 	const [password, setPassword] = useState('');
-	
+
 	const { mutateAsync: loginUser, isPending: isLoginPending } = useLogin();
-	const { mutateAsync: loginGoogle, isPending: isGooglePending } = useGoogleLogin();
+	const { mutateAsync: loginGoogle, isPending: isGooglePending } =
+		useGoogleLogin();
 
 	const isLoading = isLoginPending || isGooglePending;
 
@@ -39,10 +40,12 @@ export default function LoginPage() {
 		if (authResult?.code) {
 			try {
 				const device = getDeviceDetails();
-				const data = await loginGoogle({ code: authResult.code, device });
+				const data = await loginGoogle({
+					code: authResult.code,
+					device,
+				});
 				if (data) {
-					setUser(data.user);
-					handleAuthentication(true);
+					setAuthenticated(data);
 					toast.success('Logged in successfully');
 					navigate('/');
 				}
@@ -72,8 +75,7 @@ export default function LoginPage() {
 		try {
 			const data = await loginUser({ email, password, device });
 			if (data) {
-				setUser(data.user);
-				handleAuthentication(true);
+				setAuthenticated(data);
 				toast.success('Logged in successfully');
 				navigate('/');
 			}

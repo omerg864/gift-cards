@@ -1,14 +1,14 @@
 import { Navigate, useSearchParams } from 'react-router-dom';
+import { useAuthStore } from '../../stores/useAuthStore';
 
 interface UserRestrictedRouteProps {
 	children: React.ReactNode;
-	isAuthenticated: boolean;
 }
 
 const UserRestrictedRoute = ({
 	children,
-	isAuthenticated,
 }: UserRestrictedRouteProps) => {
+    const { isAuthenticated } = useAuthStore();
 	const [searchParams] = useSearchParams();
 
 	if (isAuthenticated) {

@@ -1,32 +1,24 @@
 import { ROUTES } from '@shared/constants/routes';
 import { CreateSupplierDto, Supplier, UpdateSupplierDto } from '@shared/types/supplier.types';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { generatePath } from '../lib/utils';
-import { axiosErrorHandler, client } from '../services/client';
-import { useAuth } from './useAuth';
+import { axiosClient, generateLink } from '../services/client';
 
 export const SUPPLIER_QUERY_KEY = 'supplier'
 
 export const useGetSuppliers = () => {
-  const { accessToken } = useAuth();
   const queryClient = useQueryClient();
   const query = useQuery({
     queryKey: [SUPPLIER_QUERY_KEY],
     queryFn: async () => {
-      try {
-        const response = await client.get<Supplier[]>(
-          generatePath({ route: [ROUTES.SUPPLIER.BASE, ROUTES.SUPPLIER.GET_ALL] })
+        const response = await axiosClient.get<Supplier[]>(
+          generateLink({ route: [ROUTES.SUPPLIER.BASE, ROUTES.SUPPLIER.GET_ALL] })
         );
         const suppliers = response.data;
         suppliers.forEach((supplier) => {
           queryClient.setQueryData([SUPPLIER_QUERY_KEY, supplier.id], supplier);
         });
         return suppliers;
-      } catch (error) {
-        axiosErrorHandler(error);
-      }
     },
-    enabled: accessToken,
   });
 
   return query;
@@ -36,14 +28,10 @@ export const useGetSupplier = (id: string, options?: { enabled?: boolean }) => {
   return useQuery({
     queryKey: [SUPPLIER_QUERY_KEY, id],
     queryFn: async () => {
-      try {
-        const response = await client.get<Supplier>(
-          generatePath({ route: [ROUTES.SUPPLIER.BASE, '/:id'], params: { id } })
+        const response = await axiosClient.get<Supplier>(
+          generateLink({ route: [ROUTES.SUPPLIER.BASE, ROUTES.SUPPLIER.GET_ONE], params: { id } })
         );
         return response.data;
-      } catch (error) {
-        axiosErrorHandler(error);
-      }
     },
     enabled: options?.enabled !== false && !!id,
   });
@@ -57,9 +45,9 @@ export const useCreateSupplier = () => {
 			// append normal fields
 			Object.keys(data).forEach(key => {
 				if (key === 'stores' || key === 'cardTypes') {
-					formData.append(key, JSON.stringify(data[key]));
+					formData.append(key, JSON.stringify(data[key as keyof typeof data]));
 				} else if (key !== 'supplierLogo' && key !== 'storesImages' && key !== 'logo') {
-					formData.append(key, (data as any)[key]);
+					formData.append(key, data[key as keyof typeof data] as string);
 				}
 			});
 			// append files
@@ -75,16 +63,12 @@ export const useCreateSupplier = () => {
         });
       }
 
-      try {
-        const response = await client.post<Supplier>(
-          generatePath({ route: [ROUTES.SUPPLIER.BASE, ROUTES.SUPPLIER.CREATE] }),
+        const response = await axiosClient.post<Supplier>(
+          generateLink({ route: [ROUTES.SUPPLIER.BASE, ROUTES.SUPPLIER.CREATE] }),
           formData,
           { headers: { 'Content-Type': 'multipart/form-data' } }
         );
         return response.data;
-      } catch (error) {
-        axiosErrorHandler(error);
-      }
     },
     onSuccess: async () => {
       await queryClient.refetchQueries({ queryKey: [SUPPLIER_QUERY_KEY] });
@@ -99,9 +83,9 @@ export const useUpdateSupplier = () => {
       const formData = new FormData();
       Object.keys(data).forEach(key => {
         if (key === 'stores' || key === 'cardTypes') {
-           formData.append(key, JSON.stringify(data[key]));
+           formData.append(key, data[key as keyof typeof data] as string | Blob);
         } else if (key !== 'supplierLogo' && key !== 'storesImages') {
-           formData.append(key, (data as any)[key]);
+           formData.append(key, data[key as keyof typeof data] as string);
         }
       });
       if (data.supplierLogo) {
@@ -113,16 +97,12 @@ export const useUpdateSupplier = () => {
         });
       }
 
-      try {
-        const response = await client.patch<Supplier>(
-          generatePath({ route: [ROUTES.SUPPLIER.BASE, '/:id'], params: { id } }),
+        const response = await axiosClient.patch<Supplier>(
+          generateLink({ route: [ROUTES.SUPPLIER.BASE, ROUTES.SUPPLIER.UPDATE], params: { id } }),
           formData,
           { headers: { 'Content-Type': 'multipart/form-data' } }
         );
         return response.data;
-      } catch (error) {
-        axiosErrorHandler(error);
-      }
     },
     onSuccess: async (data) => {
       await queryClient.refetchQueries({ queryKey: [SUPPLIER_QUERY_KEY] });
@@ -135,16 +115,13 @@ export const useDeleteSupplier = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      try {
-        await client.delete(
-          generatePath({ route: [ROUTES.SUPPLIER.BASE, '/:id'], params: { id } })
+        await axiosClient.delete(
+          generateLink({ route: [ROUTES.SUPPLIER.BASE, ROUTES.SUPPLIER.DELETE], params: { id } })
         );
-      } catch (error) {
-        axiosErrorHandler(error);
-      }
     },
     onSuccess: async () => {
       await queryClient.refetchQueries({ queryKey: [SUPPLIER_QUERY_KEY] });
     },
   });
 };
+

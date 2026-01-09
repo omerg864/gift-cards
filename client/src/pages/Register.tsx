@@ -2,10 +2,13 @@
 
 import type React from 'react';
 
+import { CreditCard } from 'lucide-react';
 import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import GoogleLogin from '../components/GoogleLoginButton';
+import Loading from '../components/loading';
 import { Button } from '../components/ui/button';
-import { Input } from '../components/ui/input';
-import { Label } from '../components/ui/label';
 import {
 	Card,
 	CardContent,
@@ -14,26 +17,25 @@ import {
 	CardHeader,
 	CardTitle,
 } from '../components/ui/card';
-import { CreditCard } from 'lucide-react';
-import { useAuth } from '../hooks/useAuth';
-import { Link, useNavigate } from 'react-router-dom';
-import GoogleLogin from '../components/GoogleLoginButton';
-import Loading from '../components/loading';
-import { getDeviceDetails, toastError } from '../lib/utils';
-import { toast } from 'react-toastify';
+import { Input } from '../components/ui/input';
+import { Label } from '../components/ui/label';
+import { useGoogleLogin, useRegister } from '../hooks/useAuthQuery';
 import { email_regex, password_regex } from '../lib/regex';
-import { useRegister, useGoogleLogin } from '../hooks/useAuthQuery';
+import { getDeviceDetails, toastError } from '../lib/utils';
+import { useAuthStore } from '../stores/useAuthStore';
 
 export default function RegisterPage() {
-	const { setUser, setEmail: setAuthEmail, handleAuthentication } = useAuth();
+	const { setAuthenticated, setEmail: setAuthEmail } = useAuthStore();
 	const navigate = useNavigate();
 	const [name, setName] = useState('');
 	const [email, setEmail] = useState('');
 	const [password, setPassword] = useState('');
 	const [confirmPassword, setConfirmPassword] = useState('');
 
-	const { mutateAsync: registerUser, isPending: isRegisterPending } = useRegister();
-	const { mutateAsync: loginGoogle, isPending: isGooglePending } = useGoogleLogin();
+	const { mutateAsync: registerUser, isPending: isRegisterPending } =
+		useRegister();
+	const { mutateAsync: loginGoogle, isPending: isGooglePending } =
+		useGoogleLogin();
 
 	const isLoading = isRegisterPending || isGooglePending;
 
@@ -42,10 +44,12 @@ export default function RegisterPage() {
 		if (authResult?.code) {
 			try {
 				const device = getDeviceDetails();
-				const data = await loginGoogle({ code: authResult.code, device });
+				const data = await loginGoogle({
+					code: authResult.code,
+					device,
+				});
 				if (data) {
-					setUser(data.user);
-					handleAuthentication(true);
+					setAuthenticated(data);
 					toast.success('Logged in successfully');
 					navigate('/');
 				}

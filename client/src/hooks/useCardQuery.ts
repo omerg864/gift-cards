@@ -1,34 +1,25 @@
 import { ROUTES } from '@shared/constants/routes';
 import { Card, CreateCardDto, UpdateCardDto } from '@shared/types/card.types';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { queryClient } from '../lib/queryClient';
-import { generatePath } from '../lib/utils';
-import { axiosErrorHandler, client } from '../services/client';
-import { useAuth } from './useAuth';
+import { axiosClient, generateLink, queryClient } from '../services/client';
 import { SUPPLIER_QUERY_KEY } from './useSupplierQuery';
 
 
 export const CARD_QUERY_KEY = 'card'
 
 export const useGetCards = () => {
-  const { accessToken } = useAuth();
   const query = useQuery({
     queryKey: [CARD_QUERY_KEY],
     queryFn: async () => {
-      try {
-        const response = await client.get<Card[]>(
-          generatePath({ route: [ROUTES.CARD.BASE, ROUTES.CARD.GET_ALL] })
+        const response = await axiosClient.get<Card[]>(
+          generateLink({ route: [ROUTES.CARD.BASE, ROUTES.CARD.GET_ALL] })
         );
         const cards = response.data;
         cards.forEach((card) => {
           queryClient.setQueryData([CARD_QUERY_KEY, card.id], card);
         });
         return cards;
-      } catch (error) {
-        axiosErrorHandler(error);
-      }
     },
-    enabled: accessToken,
   });
 
   return query;
@@ -38,14 +29,10 @@ export const useGetCard = (id: string) => {
   return useQuery({
     queryKey: [CARD_QUERY_KEY, id],
     queryFn: async () => {
-      try {
-        const response = await client.get<Card>(
-          generatePath({ route: [ROUTES.CARD.BASE, ROUTES.CARD.GET_ONE], params: { id } })
+        const response = await axiosClient.get<Card>(
+          generateLink({ route: [ROUTES.CARD.BASE, ROUTES.CARD.GET_ONE], params: { id } })
         );
         return response.data;
-      } catch (error) {
-        axiosErrorHandler(error);
-      }
     },
     enabled: !!id,
   });
@@ -54,15 +41,11 @@ export const useGetCard = (id: string) => {
 export const useCreateCard = () => {
   return useMutation({
     mutationFn: async (data: CreateCardDto) => {
-      try {
-        const response = await client.post<Card>(
-          generatePath({ route: [ROUTES.CARD.BASE, ROUTES.CARD.CREATE] }),
+        const response = await axiosClient.post<Card>(
+          generateLink({ route: [ROUTES.CARD.BASE, ROUTES.CARD.CREATE] }),
           data
         );
         return response.data;
-      } catch (error) {
-        axiosErrorHandler(error);
-      }
     },
     onSuccess: async () => {
       await queryClient.refetchQueries({ queryKey: [CARD_QUERY_KEY] });
@@ -73,15 +56,11 @@ export const useCreateCard = () => {
 export const useUpdateCard = () => {
   return useMutation({
     mutationFn: async ({ id, data }: { id: string; data: UpdateCardDto }) => {
-      try {
-        const response = await client.patch<Card>(
-          generatePath({ route: [ROUTES.CARD.BASE, '/:id'], params: { id } }),
+        const response = await axiosClient.patch<Card>(
+          generateLink({ route: [ROUTES.CARD.BASE, ROUTES.CARD.UPDATE], params: { id } }),
           data
         );
         return response.data;
-      } catch (error) {
-        axiosErrorHandler(error);
-      }
     },
     onSuccess: async (data) => {
       await queryClient.refetchQueries({ queryKey: [CARD_QUERY_KEY] });
@@ -93,13 +72,9 @@ export const useUpdateCard = () => {
 export const useDeleteCard = () => {
   return useMutation({
     mutationFn: async (id: string) => {
-      try {
-        await client.delete(
-          generatePath({ route: [ROUTES.CARD.BASE, '/:id'], params: { id } })
+        await axiosClient.delete(
+          generateLink({ route: [ROUTES.CARD.BASE, ROUTES.CARD.DELETE], params: { id } })
         );
-      } catch (error) {
-        axiosErrorHandler(error);
-      }
     },
     onSuccess: async () => {
       await queryClient.refetchQueries({ queryKey: [CARD_QUERY_KEY] });
@@ -117,18 +92,14 @@ export const useCreateCardAndSupplier = () => {
         formData.append('supplier', data.supplierLogo);
       }
       
-      try {
-        const response = await client.post(
-          generatePath({ route: [ROUTES.CARD.BASE, ROUTES.CARD.CREATE] }),
+        const response = await axiosClient.post(
+          generateLink({ route: [ROUTES.CARD.BASE, ROUTES.CARD.CREATE] }),
           formData,
           {
             headers: { 'Content-Type': 'multipart/form-data' },
           }
         );
         return response.data;
-      } catch (error) {
-        axiosErrorHandler(error);
-      }
     },
     onSuccess: async () => {
       await queryClient.refetchQueries({ queryKey: [CARD_QUERY_KEY] });
@@ -147,18 +118,14 @@ export const useUpdateCardWithNewSupplier = () => {
         formData.append('supplier', data.supplierLogo);
       }
 
-      try {
-        const response = await client.patch<Card>(
-          generatePath({ route: [ROUTES.CARD.BASE, '/:id'], params: { id } }),
+        const response = await axiosClient.patch<Card>(
+          generateLink({ route: [ROUTES.CARD.BASE, ROUTES.CARD.UPDATE], params: { id } }),
           formData,
           {
              headers: { 'Content-Type': 'multipart/form-data' },
           }
         );
         return response.data;
-      } catch (error) {
-        axiosErrorHandler(error);
-      }
     },
     onSuccess: async (data) => {
       await queryClient.refetchQueries({ queryKey: [CARD_QUERY_KEY] });
@@ -167,3 +134,4 @@ export const useUpdateCardWithNewSupplier = () => {
     },
   });
 };
+

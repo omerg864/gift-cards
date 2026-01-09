@@ -130,7 +130,7 @@ export class AuthService {
 
     const user = await this.userService.findByEmail(email);
     if (!user) {
-      throw new UnauthorizedException('Invalid email or password');
+      throw new BadRequestException('Invalid email or password');
     }
 
     if (!user.isVerified) {
@@ -139,7 +139,7 @@ export class AuthService {
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      throw new UnauthorizedException('Invalid email or password');
+      throw new BadRequestException('Invalid email or password');
     }
 
     return this.createUserLogin(user, device);
@@ -256,6 +256,7 @@ export class AuthService {
     if (index === -1) {
       throw new UnauthorizedException('Invalid refresh token');
     }
+    console.log(user.tokens[index]);
     const auth = user.tokens[index];
 
     const isValidToken = await bcrypt.compare(refreshToken, auth.token);
@@ -284,11 +285,14 @@ export class AuthService {
     );
 
     const newHashedToken = await bcrypt.hash(newRefreshToken, 10);
-    user.tokens[index] = {
-      ...user.tokens[index],
-      token: newHashedToken,
-      unique,
-    };
+
+    // Update token directly to avoid subdocument spread issues
+    user.tokens[index].token = newHashedToken;
+    user.tokens[index].unique = unique;
+
+    // Mark as modified if necessary (Mongoose usually tracks this)
+    user.markModified('tokens');
+    console.log(user);
     await user.save();
 
     return {

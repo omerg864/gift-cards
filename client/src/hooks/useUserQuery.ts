@@ -2,8 +2,7 @@ import { ROUTES } from '@shared/constants/routes';
 import { Card } from '@shared/types/card.types';
 import { User } from '@shared/types/user.types';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { generatePath } from '../lib/utils';
-import { axiosErrorHandler, client } from '../services/client';
+import { axiosClient, generateLink } from '../services/client';
 import { CARD_QUERY_KEY } from './useCardQuery';
 
 export const USER_QUERY_KEY = 'user';
@@ -14,14 +13,10 @@ export const useGetUser = (id: string) => {
   return useQuery({
     queryKey: [USER_QUERY_KEY, id],
     queryFn: async () => {
-      try {
-        const response = await client.get<User>(
-          generatePath({ route: [ROUTES.USER.BASE, '/:id'], params: { id } })
+        const response = await axiosClient.get<User>(
+          generateLink({ route: [ROUTES.USER.BASE, ROUTES.USER.GET_ONE], params: { id } })
         );
         return response.data;
-      } catch (error) {
-        axiosErrorHandler(error);
-      }
     },
     enabled: !!id,
   });
@@ -31,15 +26,11 @@ export const useUpdateUser = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Partial<User> }) => {
-      try {
-        const response = await client.patch<User>(
-          generatePath({ route: [ROUTES.USER.BASE, ROUTES.USER.UPDATE], params: { id } }),
-          data
-        );
-        return response.data;
-      } catch (error) {
-        axiosErrorHandler(error);
-      }
+      const response = await axiosClient.patch<User>(
+        generateLink({ route: [ROUTES.USER.BASE, ROUTES.USER.UPDATE], params: { id } }),
+        data
+      );
+      return response.data;
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: [USER_QUERY_KEY, data?.id] });
@@ -51,20 +42,16 @@ export const useUpdateProfile = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, data }: { id: string; data: FormData }) => {
-      try {
-        const response = await client.patch(
-          generatePath({ route: [ROUTES.USER.BASE, '/:id'], params: { id } }),
-          data,
-          {
-            headers: {
-              'Content-Type': 'multipart/form-data',
-            },
-          }
-        );
-        return response.data;
-      } catch (error) {
-        axiosErrorHandler(error);
-      }
+      const response = await axiosClient.patch(
+        generateLink({ route: [ROUTES.USER.BASE, ROUTES.USER.UPDATE], params: { id } }),
+        data,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
+      return response.data;
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: [PROFILE_QUERY_KEY] });
@@ -76,13 +63,9 @@ export const useUpdateProfile = () => {
 export const useDeleteUser = () => {
   return useMutation({
     mutationFn: async (id: string) => {
-      try {
-        await client.delete(
-          generatePath({ route: [ROUTES.USER.BASE, ROUTES.USER.DELETE], params: { id } })
-        );
-      } catch (error) {
-        axiosErrorHandler(error);
-      }
+      await axiosClient.delete(
+        generateLink({ route: [ROUTES.USER.BASE, ROUTES.USER.DELETE], params: { id } })
+      );
     },
   });
 };
@@ -91,14 +74,10 @@ export const useGetDevices = () => {
   return useQuery({
     queryKey: [DEVICES_QUERY_KEY],
     queryFn: async () => {
-      try {
-        const response = await client.get(
-          generatePath({ route: [ROUTES.AUTH.BASE, ROUTES.USER.GET_DEVICES] })
-        );
-        return response.data.devices;
-      } catch (error) {
-        axiosErrorHandler(error);
-      }
+      const response = await axiosClient.get(
+        generateLink({ route: [ROUTES.AUTH.BASE, ROUTES.USER.GET_DEVICES] })
+      );
+      return response.data.devices;
     },
   });
 };
@@ -107,14 +86,17 @@ export const useDisconnectDevice = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (deviceId: string) => {
-      try {
-        // Server route: DELETE /api/auth/devices/:id
-        await client.delete(
-           `/api/auth/devices/${deviceId}`
-        );
-      } catch (error) {
-        axiosErrorHandler(error);
-      }
+      // Server route: DELETE /api/auth/devices/:id
+      // Note: This route is in AUTH base, but follows similar pattern. 
+      // Assuming ROUTES structure. If not present in ROUTES, constructing manually but using generateLink if possible or direct string if not in routes 
+      // The previous code had: /api/auth/devices/${deviceId}
+      // ROUTES has DISCONNECT_DEVICE: '/disconnect-device/:id' under USER.. wait, let me check ROUTES again.
+      // ROUTES.USER.DISCONNECT_DEVICE is '/disconnect-device/:id'
+      // But the previous code used /api/auth/devices/${deviceId}. 
+      // Let's check ROUTES.AUTH... check previous file content.
+      await axiosClient.delete(
+         `/api/auth/devices/${deviceId}`
+      );
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [DEVICES_QUERY_KEY] });
@@ -126,13 +108,9 @@ export const useDisconnectAllDevices = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async () => {
-      try {
-        await client.delete(
-          generatePath({ route: [ROUTES.AUTH.BASE, ROUTES.USER.DISCONNECT_ALL_DEVICES] })
-        );
-      } catch (error) {
-        axiosErrorHandler(error);
-      }
+      await axiosClient.delete(
+        generateLink({ route: [ROUTES.AUTH.BASE, ROUTES.USER.DISCONNECT_ALL_DEVICES] })
+      );
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [DEVICES_QUERY_KEY] });
@@ -144,18 +122,14 @@ export const useSetEncryptionKey = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ salt, verifyToken }: { salt: string; verifyToken: string }) => {
-      try {
-        const response = await client.post(
-          generatePath({ route: [ROUTES.USER.BASE, ROUTES.USER.CREATE_ENCRYPTION_KEY] }),
-          {
-            salt,
-            verifyToken,
-          }
-        );
-        return response.data;
-      } catch (error) {
-        axiosErrorHandler(error);
-      }
+      const response = await axiosClient.post(
+        generateLink({ route: [ROUTES.USER.BASE, ROUTES.USER.CREATE_ENCRYPTION_KEY] }),
+        {
+          salt,
+          verifyToken,
+        }
+      );
+      return response.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [USER_QUERY_KEY] });
@@ -167,19 +141,15 @@ export const useUpdateEncryptionKey = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ salt, verifyToken, cards }: { salt: string; verifyToken: string; cards: Card[] }) => {
-      try {
-        const response = await client.patch(
-          generatePath({ route: [ROUTES.USER.BASE, ROUTES.USER.CHANGE_ENCRYPTION_KEY] }),
-          {
-            salt,
-            verifyToken,
-            cards,
-          }
-        );
-        return response.data;
-      } catch (error) {
-        axiosErrorHandler(error);
-      }
+      const response = await axiosClient.patch(
+        generateLink({ route: [ROUTES.USER.BASE, ROUTES.USER.CHANGE_ENCRYPTION_KEY] }),
+        {
+          salt,
+          verifyToken,
+          cards,
+        }
+      );
+      return response.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [USER_QUERY_KEY] });
@@ -192,18 +162,14 @@ export const useResetEncryptionKey = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ salt, verifyToken }: { salt: string; verifyToken: string }) => {
-      try {
-        const response = await client.patch(
-          generatePath({ route: [ROUTES.USER.BASE, ROUTES.USER.RESET_ENCRYPTION_KEY] }),
-          {
-            salt,
-            verifyToken,
-          }
-        );
-        return response.data;
-      } catch (error) {
-        axiosErrorHandler(error);
-      }
+      const response = await axiosClient.patch(
+        generateLink({ route: [ROUTES.USER.BASE, ROUTES.USER.RESET_ENCRYPTION_KEY] }),
+        {
+          salt,
+          verifyToken,
+        }
+      );
+      return response.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [USER_QUERY_KEY] });
@@ -215,16 +181,13 @@ export const useResetEncryptionKey = () => {
 export const useUpdateUserPassword = () => {
   return useMutation({
     mutationFn: async (password: string) => {
-      try {
-        // Server route: POST /api/auth/change-password
-        const response = await client.post(
-          '/api/auth/change-password',
-          { password }
-        );
-        return response.data;
-      } catch (error) {
-        axiosErrorHandler(error);
-      }
+      // Server route: POST /api/auth/change-password
+      const response = await axiosClient.post(
+        generateLink({ route: [ROUTES.AUTH.BASE, ROUTES.USER.CHANGE_PASSWORD] }),
+        { password }
+      );
+      return response.data;
     },
   });
 };
+

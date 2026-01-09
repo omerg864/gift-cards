@@ -30,7 +30,6 @@ import Loading from '../components/loading';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { useEncryption } from '../context/EncryptionContext';
-import { useAuth } from '../hooks/useAuth';
 import {
 	useDeleteCard,
 	useGetCard,
@@ -42,6 +41,7 @@ import {
 	validateGlobalKey,
 } from '../lib/cryptoHelpers';
 import { getCloudinaryUrl, toastError } from '../lib/utils';
+import { useAuthStore } from '../stores/useAuthStore';
 import { getCurrencySymbol } from '../types/gift-card';
 
 export default function CardDetailsPage() {
@@ -60,7 +60,7 @@ export default function CardDetailsPage() {
 		data: card,
 		isLoading: giftCardLoading,
 	} = useGetCard(params.id as string);
-	const { user } = useAuth();
+	const { user } = useAuthStore();
 	const { globalKey, setGlobalKey } = useEncryption();
 
 	const { mutateAsync: deleteCardMutation, isPending: isDeletingCard } = useDeleteCard();

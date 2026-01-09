@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
-import { useAuth } from '../hooks/useAuth';
 import { useUpdateProfile } from '../hooks/useUserQuery';
 import { getCloudinaryUrl, toastError } from '../lib/utils';
+import { useAuthStore } from '../stores/useAuthStore';
 import Loading from './loading';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Button } from './ui/button';
@@ -17,7 +17,7 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 
 const ProfileTab = () => {
-	const { user, updateUser: updateUserState } = useAuth();
+	const { user, updateUser: updateUserState } = useAuthStore();
 	const [name, setName] = useState(user?.name || '');
 	const [file, setFile] = useState<File | null>(null);
 	const [imagePreview, setImagePreview] = useState<string>(getCloudinaryUrl(user?.image) || '');

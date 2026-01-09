@@ -8,15 +8,15 @@ import { GiftCardList } from '../components/GiftCardList';
 import { SearchBar } from '../components/SearchBar';
 import { Input } from '../components/ui/input';
 import { useEncryption } from '../context/EncryptionContext';
-import { useAuth } from '../hooks/useAuth';
 import { useCreateCardAndSupplier } from '../hooks/useCardQuery';
 import { useSetEncryptionKey } from '../hooks/useUserQuery';
 import {
-	encryptCard,
-	generateSaltAndVerifyToken,
-	validateGlobalKey,
+    encryptCard,
+    generateSaltAndVerifyToken,
+    validateGlobalKey,
 } from '../lib/cryptoHelpers';
 import { toastError } from '../lib/utils';
+import { useAuthStore } from '../stores/useAuthStore';
 
 export default function Home() {
 	const [showDialog, setShowDialog] = useState<boolean>(false);
@@ -24,7 +24,7 @@ export default function Home() {
 	const [confirmEncryptionKey, setConfirmEncryptionKey] =
 		useState<string>('');
 	const { setGlobalKey, globalKey } = useEncryption();
-	const { user, updateUser, isAuthenticated } = useAuth();
+	const { user, updateUser, isAuthenticated } = useAuthStore();
 	const createCardAndSupplierMutation = useCreateCardAndSupplier();
 	const setEncryptionKeyMutation = useSetEncryptionKey();
 

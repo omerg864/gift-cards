@@ -5,10 +5,10 @@ import { CreditCard, Smartphone, Store } from 'lucide-react';
 import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'react-toastify';
 import { useEncryption } from '../context/EncryptionContext';
-import { useAuth } from '../hooks/useAuth';
 import { useGetSuppliers } from '../hooks/useSupplierQuery';
 import { getDarkerColor } from '../lib/colors';
 import { decryptCardFields, validateGlobalKey } from '../lib/cryptoHelpers';
+import { useAuthStore } from '../stores/useAuthStore';
 import type { GiftCard } from '../types/gift-card';
 import { currencies } from '../types/gift-card';
 import { GiftCardItem } from './GiftCardItem';
@@ -17,20 +17,20 @@ import Loading from './loading';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import {
-	Dialog,
-	DialogContent,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
+    Dialog,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
 } from './ui/dialog';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from './ui/select';
 import { Switch } from './ui/switch';
 import { Textarea } from './ui/textarea';
@@ -56,7 +56,7 @@ export function GiftCardDialog({
 	giftCard,
 }: GiftCardDialogProps) {
 	const { globalKey, setGlobalKey } = useEncryption();
-	const { user } = useAuth();
+	const { user } = useAuthStore();
 	const [formData, setFormData] = useState<Card>({
 		id: '',
 		user: user?.id || '',

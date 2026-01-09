@@ -1,18 +1,18 @@
 import { useState } from 'react';
+import { toast } from 'react-toastify';
 import { useEncryption } from '../context/EncryptionContext';
+import { validateGlobalKey } from '../lib/cryptoHelpers';
+import { useAuthStore } from '../stores/useAuthStore';
+import { Button } from './ui/button';
 import {
-	Dialog,
-	DialogContent,
-	DialogHeader,
-	DialogTitle,
-	DialogFooter,
+    Dialog,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
 } from './ui/dialog';
 import { Input } from './ui/input';
-import { toast } from 'react-toastify';
-import { validateGlobalKey } from '../lib/cryptoHelpers';
-import { useAuth } from '../hooks/useAuth';
 import { Label } from './ui/label';
-import { Button } from './ui/button';
 
 interface EncryptionDialogProps {
 	onClose: () => void;
@@ -20,7 +20,7 @@ interface EncryptionDialogProps {
 }
 const EncryptionDialog = ({ onClose, onSave }: EncryptionDialogProps) => {
 	const { setGlobalKey } = useEncryption();
-	const { user } = useAuth();
+	const { user } = useAuthStore();
 	const [encryptionKey, setEncryptionKey] = useState<string>('');
 
 	const handleSubmit = (e: React.FormEvent) => {

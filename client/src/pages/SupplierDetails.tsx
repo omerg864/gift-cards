@@ -33,11 +33,11 @@ import { Badge } from '../components/ui/badge';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { useEncryption } from '../context/EncryptionContext';
-import { useAuth } from '../hooks/useAuth';
 import { useCreateCardAndSupplier } from '../hooks/useCardQuery';
 import { useDeleteSupplier, useGetSupplier, useUpdateSupplier } from '../hooks/useSupplierQuery';
 import { encryptCard, validateGlobalKey } from '../lib/cryptoHelpers';
 import { getCloudinaryUrl, toastError } from '../lib/utils';
+import { useAuthStore } from '../stores/useAuthStore';
 import {
     CreateSupplierDetails,
 } from '../types/supplier';
@@ -51,7 +51,7 @@ export default function SupplierDetailsPage() {
 	const { data: supplier, isLoading: loading } = useGetSupplier(params?.id ?? '');
 	const [filteredStores, setFilteredStores] = useState<SupplierStore[]>([]);
 	const [storeFilter, setStoreFilter] = useState('');
-	const { user } = useAuth();
+	const { user } = useAuthStore();
 	const { globalKey } = useEncryption();
 	const storeFilterRef = useRef<string>('');
 	const storeFilterInputRef = useRef<HTMLInputElement | null>(null);

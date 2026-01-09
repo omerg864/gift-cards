@@ -1,27 +1,27 @@
 'use client';
 
+import { Mail } from 'lucide-react';
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import { Button } from '../components/ui/button';
 import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardFooter,
-	CardHeader,
-	CardTitle,
+    Card,
+    CardContent,
+    CardDescription,
+    CardFooter,
+    CardHeader,
+    CardTitle,
 } from '../components/ui/card';
-import { Mail } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
-import { Label } from '../components/ui/label';
 import { Input } from '../components/ui/input';
-import { toast } from 'react-toastify';
+import { Label } from '../components/ui/label';
+import { useResendVerification } from '../hooks/useAuthQuery';
 import { email_regex } from '../lib/regex';
 import { toastError } from '../lib/utils';
-import { useResendVerification } from '../hooks/useAuthQuery';
+import { useAuthStore } from '../stores/useAuthStore';
 
 export default function VerifyEmailPage() {
-	const { email: authEmail } = useAuth();
+	const { email: authEmail } = useAuthStore();
 	const [email, setEmail] = useState<string | null>(authEmail);
 
 	const { mutateAsync: resendEmail, isPending: isLoading } = useResendVerification();

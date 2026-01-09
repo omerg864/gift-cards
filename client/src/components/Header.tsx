@@ -21,10 +21,10 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '../components/ui/dropdown-menu';
-import { useAuth } from '../hooks/useAuth';
+import { useAuthStore } from '../stores/useAuthStore';
 
 export function Header() {
-	const { isAuthenticated, user, logout } = useAuth();
+	const { isAuthenticated, user, removeAuthenticated } = useAuthStore();
 	const [mounted, setMounted] = useState(false);
 
 	// Prevent hydration mismatch
@@ -33,7 +33,7 @@ export function Header() {
 	}, []);
 
 	const handleLogout = () => {
-		logout();
+		removeAuthenticated();
 	};
 
 	if (!mounted) return null;

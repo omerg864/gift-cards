@@ -1,26 +1,26 @@
 import { useState } from 'react';
 import { toast } from 'react-toastify';
 import { useEncryption } from '../context/EncryptionContext';
-import { useAuth } from '../hooks/useAuth';
 import { useGetCards } from '../hooks/useCardQuery';
 import {
-	useResetEncryptionKey,
-	useUpdateEncryptionKey,
+    useResetEncryptionKey,
+    useUpdateEncryptionKey,
 } from '../hooks/useUserQuery';
 import {
-	decryptCardFields,
-	encryptCard,
-	generateSaltAndVerifyToken,
-	validateGlobalKey,
+    decryptCardFields,
+    encryptCard,
+    generateSaltAndVerifyToken,
+    validateGlobalKey,
 } from '../lib/cryptoHelpers';
 import { toastError } from '../lib/utils';
+import { useAuthStore } from '../stores/useAuthStore';
 import EncryptionForm from './EncryptionForm';
 import Loading from './loading';
 import { Button } from './ui/button';
 
 const EncryptionTab = () => {
 	const [isLoading, setIsLoading] = useState(false);
-	const { user, updateUser } = useAuth();
+	const { user, updateUser } = useAuthStore();
 	const { setGlobalKey } = useEncryption();
 	const { data: giftCards } = useGetCards();
 	const [resetKeyForm, setResetKeyForm] = useState(false);
