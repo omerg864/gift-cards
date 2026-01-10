@@ -30,7 +30,8 @@ export function generateLink({
 	// remove double slashes
 	path = path.replace(/([^:]\/)\/+/g, '$1');
 
-	return `${baseUrl}${path}`;
+	const fullUrl = `${baseUrl}${path}`;
+	return fullUrl.endsWith('/') ? fullUrl.slice(0, -1) : fullUrl;
 }
 
 function retryFunction(failureCount: number, error: unknown): boolean {
@@ -138,7 +139,6 @@ axiosClient.interceptors.response.use(
 					return axiosClient(originalRequest);
 				} catch {
 					refreshQueue = [];
-					isRefreshing = false;
 					isRefreshing = false;
 					authStore.getState().removeAuthenticated();
 					queryClient.clear();
