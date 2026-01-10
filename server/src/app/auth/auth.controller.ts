@@ -80,7 +80,7 @@ export class AuthController {
     return data.user;
   }
 
-  @Post('/refresh')
+  @Post(ROUTES.AUTH.REFRESH)
   @ApiOperation({ summary: 'Refresh access token' })
   async refresh(
     @Req() req: ExpressRequest,
@@ -97,7 +97,7 @@ export class AuthController {
     return { success: true };
   }
 
-  @Post('/logout')
+  @Post(ROUTES.AUTH.LOGOUT)
   @ApiOperation({ summary: 'Logout user' })
   async logout(
     @Req() req: ExpressRequest,
@@ -151,30 +151,29 @@ export class AuthController {
   private clearCookies(res: ExpressResponse) {
     res.clearCookie(COOKIE_NAMES.ACCESS_TOKEN);
     res.clearCookie(COOKIE_NAMES.REFRESH_TOKEN);
-    res.clearCookie(COOKIE_NAMES.DEVICE_ID);
   }
 
-  @Get('/verify/:id')
+  @Get(ROUTES.AUTH.VERIFY_EMAIL)
   @ApiOperation({ summary: 'Verify email' })
   async verifyEmail(@Param('id') id: string) {
     return this.authService.verifyEmail(id);
   }
 
-  @Post('/resend-verification')
+  @Post(ROUTES.AUTH.RESEND_EMAIL)
   @ApiOperation({ summary: 'Resend verification email' })
   @ApiBody({ schema: { properties: { email: { type: 'string' } } } })
   async resendVerification(@Body('email') email: string) {
     return this.authService.resendVerificationEmail(email);
   }
 
-  @Post('/forgot-password')
+  @Post(ROUTES.AUTH.FORGOT_PASSWORD)
   @ApiOperation({ summary: 'Send password reset email' })
   @ApiBody({ schema: { properties: { email: { type: 'string' } } } })
   async forgotPassword(@Body('email') email: string) {
     return this.authService.sendPasswordResetEmail(email);
   }
 
-  @Post('/reset-password/:email')
+  @Post(ROUTES.AUTH.RESET_PASSWORD)
   @ApiOperation({ summary: 'Reset password' })
   @ApiBody({
     schema: {
@@ -189,7 +188,7 @@ export class AuthController {
     return this.authService.resetPassword(email, token, password);
   }
 
-  @Post('/change-password')
+  @Post(ROUTES.USER.CHANGE_PASSWORD)
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Change password' })
@@ -201,7 +200,7 @@ export class AuthController {
     return this.authService.changePassword(user.id, password);
   }
 
-  @Get('/devices')
+  @Get(ROUTES.AUTH.GET_DEVICES)
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get connected devices' })
@@ -209,7 +208,7 @@ export class AuthController {
     return this.authService.getConnectedDevices(user.id);
   }
 
-  @Delete('/devices/:id')
+  @Delete(ROUTES.AUTH.DISCONNECT_DEVICE)
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Disconnect device' })
@@ -220,7 +219,7 @@ export class AuthController {
     return this.authService.disconnectDevice(user.id, deviceId);
   }
 
-  @Delete('/devices')
+  @Delete(ROUTES.AUTH.DISCONNECT_ALL_DEVICES)
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Disconnect all devices' })

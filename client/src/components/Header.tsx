@@ -2,29 +2,32 @@
 
 import { getCloudinaryUrl } from '@/lib/utils';
 import {
-    BriefcaseBusiness,
-    CreditCard,
-    LogIn,
-    LogOut,
-    Settings,
-    User,
-    UserPlus,
+	BriefcaseBusiness,
+	CreditCard,
+	LogIn,
+	LogOut,
+	Settings,
+	User,
+	UserPlus,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
 import { Button } from '../components/ui/button';
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
 } from '../components/ui/dropdown-menu';
+import { useLogout } from '../hooks/useAuthQuery';
 import { useAuthStore } from '../stores/useAuthStore';
 
 export function Header() {
-	const { isAuthenticated, user, removeAuthenticated } = useAuthStore();
+	// const { isAuthenticated, user, removeAuthenticated } = useAuthStore();
+	const { isAuthenticated, user } = useAuthStore();
+	const { mutate: logout } = useLogout();
 	const [mounted, setMounted] = useState(false);
 
 	// Prevent hydration mismatch
@@ -33,7 +36,7 @@ export function Header() {
 	}, []);
 
 	const handleLogout = () => {
-		removeAuthenticated();
+		logout();
 	};
 
 	if (!mounted) return null;

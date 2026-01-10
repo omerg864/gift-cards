@@ -11,7 +11,11 @@ interface GiftCardItemProps {
 	handleCardClick?: (id: string) => void;
 }
 
-export function GiftCardItem({ giftCard, supplier, handleCardClick }: GiftCardItemProps) {
+export function GiftCardItem({
+	giftCard,
+	supplier,
+	handleCardClick,
+}: GiftCardItemProps) {
 	const currencySymbol = getCurrencySymbol(giftCard.currency);
 
 	const onClick = () => {
@@ -39,11 +43,11 @@ export function GiftCardItem({ giftCard, supplier, handleCardClick }: GiftCardIt
 				{/* Card header */}
 				<div>
 					<h3 className="text-xl font-bold text-white">
-						{giftCard.name.toUpperCase()}
+						{supplier?.name || 'Unknown Supplier'}
 					</h3>
 
 					<p className="text-sm text-white/80 mb-2">
-						{supplier?.name || 'Unknown Supplier'}
+						{giftCard.name.toUpperCase()}
 					</p>
 					<div className="w-fit bg-white/20 px-2 py-1 rounded-full text-white text-xs flex items-center">
 						{giftCard.isPhysical ? (

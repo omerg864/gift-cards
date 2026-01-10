@@ -2,8 +2,8 @@ import { ROUTES } from '@shared/constants/routes';
 import { CreateUserDto, LoginUserDto } from '@shared/types/user.types';
 import { useMutation } from '@tanstack/react-query';
 import { Device } from '../../../shared/types/device.types';
-import { EMAIL, USER } from '../lib/constants';
-import { axiosClient, generateLink } from '../services/client';
+import { axiosClient, generateLink, queryClient } from '../services/client';
+import { useAuthStore } from '../stores/useAuthStore';
 
 export const useLogin = () => {
 	return useMutation({
@@ -39,9 +39,8 @@ export const useLogout = () => {
 			);
 		},
 		onSuccess: () => {
-			localStorage.removeItem(USER);
-			localStorage.removeItem(EMAIL);
-			localStorage.setItem('isAuthenticated', 'false');
+			useAuthStore.getState().removeAuthenticated();
+			queryClient.clear();
 			window.location.href = '/login';
 		},
 	});

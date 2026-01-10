@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { Settings } from '../../../../shared/types/settings.types';
 import { CreateSettingsDto, UpdateSettingsDto } from './dto/settings.dto';
 import { SettingsDocument, SettingsModel } from './schemas/settings.schema';
 
@@ -11,10 +12,8 @@ export class SettingsService {
     private settingsModel: Model<SettingsDocument>,
   ) {}
 
-  async create(
-    createSettingsDto: CreateSettingsDto,
-  ): Promise<SettingsDocument> {
-    const createdSettings = new this.settingsModel(createSettingsDto);
+  async create(settings: Partial<Settings>): Promise<SettingsDocument> {
+    const createdSettings = new this.settingsModel(settings);
     return createdSettings.save();
   }
 
@@ -40,7 +39,7 @@ export class SettingsService {
   }
 
   async findByUser(userId: string): Promise<SettingsDocument | null> {
-    return this.settingsModel.findOne({ user: userId }).exec();
+    return await this.settingsModel.findOne({ user: userId }).exec();
   }
 
   async updateByUser(

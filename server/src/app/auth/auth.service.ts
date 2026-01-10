@@ -87,7 +87,10 @@ export class AuthService {
       });
 
       // Send email notification for new device if settings.emailOnNewDevice is true
-      const settings = await this.settingsService.findOne(user._id.toString());
+      const settings = await this.settingsService.findByUser(
+        user._id.toString(),
+      );
+
       if (settings?.emailOnNewDevice) {
         await this.emailService.sendEmail(EMAIL_SUBJECTS.NEW_DEVICE, {
           to: user.email,
@@ -163,6 +166,10 @@ export class AuthService {
       isVerified: false,
       tokens: [],
     } as unknown as UserDocument);
+
+    await this.settingsService.create({
+      user: user._id.toString(),
+    });
 
     const verifyUrl = `${this.configService.get('CLIENT_URL')}/verify-email/${user._id.toString()}`;
     await this.emailService.sendEmail(EMAIL_SUBJECTS.VERIFY_EMAIL, {
@@ -256,7 +263,7 @@ export class AuthService {
     if (index === -1) {
       throw new UnauthorizedException('Invalid refresh token');
     }
-    console.log(user.tokens[index]);
+
     const auth = user.tokens[index];
 
     const isValidToken = await bcrypt.compare(refreshToken, auth.token);
@@ -286,13 +293,10 @@ export class AuthService {
 
     const newHashedToken = await bcrypt.hash(newRefreshToken, 10);
 
-    // Update token directly to avoid subdocument spread issues
     user.tokens[index].token = newHashedToken;
     user.tokens[index].unique = unique;
 
-    // Mark as modified if necessary (Mongoose usually tracks this)
     user.markModified('tokens');
-    console.log(user);
     await user.save();
 
     return {
