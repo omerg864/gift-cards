@@ -165,7 +165,7 @@ export class ScrapingService {
         });
       } catch (error) {
         this.logger.error(`Error scraping ${giftCard.name}`, error);
-        await this.sendAdminErrorEmail(giftCard.name, error);
+        // await this.sendAdminErrorEmail(giftCard.name, error);
       }
     }
 
@@ -225,7 +225,7 @@ export class ScrapingService {
         });
       } catch (error) {
         this.logger.error(`Error scraping ${giftCard.name}`, error);
-        await this.sendAdminErrorEmail(giftCard.name, error);
+        // await this.sendAdminErrorEmail(giftCard.name, error);
       }
     }
 
@@ -285,7 +285,7 @@ export class ScrapingService {
         });
       } catch (error) {
         this.logger.error(`Error scraping ${giftCard.name}`, error);
-        await this.sendAdminErrorEmail(giftCard.name, error);
+        // await this.sendAdminErrorEmail(giftCard.name, error);
       }
     }
     if (suppliers.length > 0) {
@@ -342,7 +342,7 @@ export class ScrapingService {
         });
       } catch (error) {
         this.logger.error(`Error scraping ${giftCard.name}`, error);
-        await this.sendAdminErrorEmail(giftCard.name, error);
+        // await this.sendAdminErrorEmail(giftCard.name, error);
       }
     }
     if (suppliers.length > 0) {
@@ -386,7 +386,7 @@ export class ScrapingService {
         });
       } catch (error) {
         this.logger.error(`Error scraping ${giftCard.name}`, error);
-        await this.sendAdminErrorEmail(giftCard.name, error);
+        // await this.sendAdminErrorEmail(giftCard.name, error);
       }
     }
     if (suppliers.length > 0) {
@@ -530,7 +530,7 @@ export class ScrapingService {
         });
       } catch (error) {
         this.logger.error(`Error scraping ${giftCard.name}`, error);
-        await this.sendAdminErrorEmail(giftCard.name, error);
+        // await this.sendAdminErrorEmail(giftCard.name, error);
       }
     }
     if (suppliers.length > 0) {
