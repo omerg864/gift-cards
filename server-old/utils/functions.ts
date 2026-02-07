@@ -4,10 +4,12 @@ export const sendEmail = async (
 	receiver: string,
 	subject: string,
 	text: string,
-	html?: string
+	html?: string,
 ): Promise<boolean> => {
 	var transporter = createTransport({
-		service: process.env.EMAIL_SERVICE,
+		host: process.env.EMAIL_HOST,
+		port: Number(process.env.EMAIL_PORT),
+		secure: process.env.EMAIL_SECURE === 'true',
 		auth: {
 			user: process.env.EMAIL_USERNAME,
 			pass: process.env.EMAIL_PASSWORD,
@@ -15,7 +17,7 @@ export const sendEmail = async (
 	});
 
 	var mailOptions = {
-		from: process.env.EMAIL_ADDRESS,
+		from: `"Gift Cards App" <${process.env.EMAIL_ADDRESS}>`,
 		to: receiver,
 		subject: subject,
 		text: text,
