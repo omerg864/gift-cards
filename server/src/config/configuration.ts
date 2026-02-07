@@ -21,7 +21,9 @@ export const configurationSchema = z.object({
   EMAIL_USERNAME: z.string(),
   EMAIL_PASSWORD: z.string(),
   EMAIL_ADDRESS: z.string(),
-  EMAIL_SERVICE: z.string(),
+  EMAIL_HOST: z.string(),
+  EMAIL_PORT: z.coerce.number(),
+  EMAIL_SECURE: z.string(),
   CLIENT_URL: z.string().default('http://localhost:5173'),
   ADMIN_EMAIL: z.string().optional(),
   ENABLE_ADMIN_EMAILS: z
