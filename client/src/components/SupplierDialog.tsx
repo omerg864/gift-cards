@@ -58,12 +58,12 @@ const SupplierDialog = ({
 				toColor: getDarkerColor(color),
 			}));
 		},
-		[setData]
+		[setData],
 	);
 
 	const debouncedUpdateColor = useMemo(
 		() => debounce(updateColor, 300),
-		[updateColor]
+		[updateColor],
 	);
 
 	const toggleCardType = (type: string) => {
@@ -89,7 +89,7 @@ const SupplierDialog = ({
 	};
 
 	const handleInputChange = (
-		e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+		e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
 	) => {
 		const { name, value } = e.target;
 		setData((prevData) => ({
@@ -97,14 +97,14 @@ const SupplierDialog = ({
 			[name]: value,
 		}));
 	};
-	
+
 	const handleFormSubmitWrapper = async (e: React.FormEvent) => {
 		e.preventDefault();
 		const finalStores = data.stores.map((store) => {
 			const existingStore = (supplier?.stores ?? []).find(
 				(s) =>
 					s.name.trim().toLowerCase() ===
-					store.name.trim().toLowerCase()
+					store.name.trim().toLowerCase(),
 			);
 
 			if (existingStore) {
@@ -127,8 +127,7 @@ const SupplierDialog = ({
 		if (success) {
 			onClose();
 		}
-	}
-
+	};
 
 	const addStore = (storeName: string) => {
 		if (
@@ -250,6 +249,7 @@ const SupplierDialog = ({
 						onAddStore={addStore}
 						onRemoveStore={removeStore}
 						onToggleStore={toggleStoreSelection}
+						isDisabled={isLoading}
 					/>
 					<div className="border-t pt-4">
 						<details>
@@ -262,8 +262,8 @@ const SupplierDialog = ({
 									logo: file
 										? URL.createObjectURL(file)
 										: deleteImage
-										? ''
-										: getCloudinaryUrl(supplier?.logo),
+											? ''
+											: getCloudinaryUrl(supplier?.logo),
 									id: supplier?.id || '',
 								}}
 							/>

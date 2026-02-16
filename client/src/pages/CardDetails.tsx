@@ -56,30 +56,32 @@ export default function CardDetailsPage() {
 	const [showConfirmationDialog, setShowConfirmationDialog] = useState(false);
 	const [cvv, setCvv] = useState<string>('');
 	const [cardNumber, setCardNumber] = useState<string>('');
-	const {
-		data: card,
-		isLoading: giftCardLoading,
-	} = useGetCard(params.id as string);
+	const { data: card, isLoading: giftCardLoading } = useGetCard(
+		params.id as string,
+	);
 	const { user } = useAuthStore();
 	const { globalKey, setGlobalKey } = useEncryption();
 
-	const { mutateAsync: deleteCardMutation, isPending: isDeletingCard } = useDeleteCard();
+	const { mutateAsync: deleteCardMutation, isPending: isDeletingCard } =
+		useDeleteCard();
 	const updateCardWithNewSupplierMutation = useUpdateCardWithNewSupplier();
-	
-	const { data: supplier, isLoading: supplierLoading } = useGetSupplier(card?.supplier ?? '', {
-		enabled: !!card?.supplier,
-	});
+
+	const { data: supplier, isLoading: supplierLoading } = useGetSupplier(
+		card?.supplier ?? '',
+		{
+			enabled: !!card?.supplier,
+		},
+	);
 
 	useEffect(() => {
 		if (supplier) {
 			if (storeFilter.trim() === '') {
 				setFilteredStores(supplier.stores ?? []);
 			} else {
-				const filtered = (supplier.stores ?? []).filter(
-					(store) =>
-						store.name
-							.toLowerCase()
-							.includes(storeFilter.toLowerCase())
+				const filtered = (supplier.stores ?? []).filter((store) =>
+					store.name
+						.toLowerCase()
+						.includes(storeFilter.toLowerCase()),
 				);
 				setFilteredStores(filtered);
 			}
@@ -93,7 +95,7 @@ export default function CardDetailsPage() {
 				cvv: card?.cvv,
 			},
 			key,
-			user!.salt!
+			user!.salt!,
 		);
 		setCvv(decryptedData.cvv);
 		setCardNumber(decryptedData.cardNumber);
@@ -146,7 +148,10 @@ export default function CardDetailsPage() {
 		navigate('/');
 	};
 
-	const handleUpdateCard = async (data: Card, supplier: Omit<Supplier, 'id'> | null) => {
+	const handleUpdateCard = async (
+		data: Card,
+		supplier: Omit<Supplier, 'id'> | null,
+	) => {
 		if (!data) {
 			toast.error('No data provided');
 			return;
@@ -173,13 +178,7 @@ export default function CardDetailsPage() {
 				toast.error('Please provide encryption key');
 				return;
 			}
-			if (
-				!validateGlobalKey(
-					user.verifyToken,
-					globalKey,
-					user.salt
-				)
-			) {
+			if (!validateGlobalKey(user.verifyToken, globalKey, user.salt)) {
 				toast.error('invalid encryption key');
 				return;
 			}
@@ -193,16 +192,16 @@ export default function CardDetailsPage() {
 			const encryptedData = encryptCard(
 				{ cardNumber: data.cardNumber, cvv: data.cvv },
 				globalKey!,
-				user.salt
+				user.salt,
 			);
 			cardNumber = encryptedData.cardNumber;
 			cvv = encryptedData.cvv;
 		}
 		try {
-				await updateCardWithNewSupplierMutation.mutateAsync({
-					id: params.id as string,
-					data: {
-						card: {
+			await updateCardWithNewSupplierMutation.mutateAsync({
+				id: params.id as string,
+				data: {
+					card: {
 						name: data.name,
 						description: data.description,
 						isPhysical: data.isPhysical,
@@ -212,11 +211,11 @@ export default function CardDetailsPage() {
 						cardNumber,
 						last4,
 						expiry: data.expiry,
-						cvv
+						cvv,
 					},
-					supplier: supplier ?? undefined
-					}
-				});
+					supplier: supplier ?? undefined,
+				},
+			});
 			setShowEncryptedData(false);
 			setCvv('');
 			setCardNumber('');
@@ -356,7 +355,7 @@ export default function CardDetailsPage() {
 									</div>
 									<div className="font-medium">
 										{new Date(
-											card.expiry
+											card.expiry,
 										).toLocaleDateString('en-GB', {
 											day: '2-digit',
 											month: '2-digit',
@@ -387,8 +386,7 @@ export default function CardDetailsPage() {
 										<div className="font-medium">
 											{showEncryptedData
 												? cardNumber
-												: '••• ••• •••• ' +
-												  card.last4}
+												: '••• ••• •••• ' + card.last4}
 										</div>
 									</div>
 								</div>
@@ -397,10 +395,10 @@ export default function CardDetailsPage() {
 										onClick={() => {
 											if (cardNumber) {
 												navigator.clipboard.writeText(
-													cardNumber
+													cardNumber,
 												);
 												toast.success(
-													'Card number copied to clipboard'
+													'Card number copied to clipboard',
 												);
 											}
 										}}
@@ -439,10 +437,10 @@ export default function CardDetailsPage() {
 										onClick={() => {
 											if (cardNumber) {
 												navigator.clipboard.writeText(
-													cvv
+													cvv,
 												);
 												toast.success(
-													'Card number copied to clipboard'
+													'Card number copied to clipboard',
 												);
 											}
 										}}
@@ -466,8 +464,7 @@ export default function CardDetailsPage() {
 							</h2>
 							<div className="text-sm text-muted-foreground">
 								{filteredStores.length} of{' '}
-								{(supplier?.stores ?? []).length}{' '}
-								stores
+								{(supplier?.stores ?? []).length} stores
 							</div>
 						</div>
 
@@ -498,7 +495,10 @@ export default function CardDetailsPage() {
 										className="flex items-center gap-4 p-3 bg-background rounded-lg border"
 									>
 										<img
-											src={getCloudinaryUrl(store.image) || '/store.png'}
+											src={
+												getCloudinaryUrl(store.image) ||
+												'/store.png'
+											}
 											alt={store.name}
 											width={40}
 											height={40}
@@ -536,6 +536,7 @@ export default function CardDetailsPage() {
 					giftCard={card}
 					onClose={() => setShowEditDialog(false)}
 					onSubmit={handleUpdateCard}
+					isLoading={updateCardWithNewSupplierMutation.isPending}
 				/>
 			)}
 			{showConfirmationDialog && (

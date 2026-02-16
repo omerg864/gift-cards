@@ -11,9 +11,9 @@ import { useEncryption } from '../context/EncryptionContext';
 import { useCreateCardAndSupplier } from '../hooks/useCardQuery';
 import { useSetEncryptionKey } from '../hooks/useUserQuery';
 import {
-    encryptCard,
-    generateSaltAndVerifyToken,
-    validateGlobalKey,
+	encryptCard,
+	generateSaltAndVerifyToken,
+	validateGlobalKey,
 } from '../lib/cryptoHelpers';
 import { toastError } from '../lib/utils';
 import { useAuthStore } from '../stores/useAuthStore';
@@ -28,7 +28,10 @@ export default function Home() {
 	const createCardAndSupplierMutation = useCreateCardAndSupplier();
 	const setEncryptionKeyMutation = useSetEncryptionKey();
 
-	const handleAddCard = async (card: Card, supplier: Omit<Supplier, 'id'> | null) => {
+	const handleAddCard = async (
+		card: Card,
+		supplier: Omit<Supplier, 'id'> | null,
+	) => {
 		if (!card) {
 			toast.error('No data provided');
 			return;
@@ -55,46 +58,42 @@ export default function Home() {
 				toast.error('Please provide encryption key');
 				return;
 			}
-			if (
-				!validateGlobalKey(
-					user.verifyToken,
-					globalKey,
-					user.salt
-				)
-			) {
+			if (!validateGlobalKey(user.verifyToken, globalKey, user.salt)) {
 				toast.error('invalid encryption key');
 				return;
 			}
 		}
-		let last4: string | undefined, cvv: string | undefined, cardNumber: string | undefined;
+		let last4: string | undefined,
+			cvv: string | undefined,
+			cardNumber: string | undefined;
 		if (card.cardNumber) {
 			last4 = card.cardNumber.slice(-4);
 		}
 		if (card.cardNumber || card.cvv) {
 			const encryptedData = encryptCard(
 				{ cardNumber: card.cardNumber, cvv: card.cvv },
-				encryptionKey,
-				user.salt
+				globalKey!,
+				user.salt,
 			);
 			cardNumber = encryptedData.cardNumber;
 			cvv = encryptedData.cvv;
 		}
 		try {
-				await createCardAndSupplierMutation.mutateAsync({
-					card: {
-						name: card.name,
-						description: card.description || '',
-						isPhysical: card.isPhysical,
-						amount: card.amount,
-						currency: card.currency,
+			await createCardAndSupplierMutation.mutateAsync({
+				card: {
+					name: card.name,
+					description: card.description || '',
+					isPhysical: card.isPhysical,
+					amount: card.amount,
+					currency: card.currency,
 					supplier: card.supplier,
 					cardNumber,
 					last4,
 					expiry: card.expiry,
-					cvv
-					},
-					supplier: supplier ?? undefined
-				});
+					cvv,
+				},
+				supplier: supplier ?? undefined,
+			});
 			setShowDialog(false);
 			toast.success('Card added successfully');
 		} catch (error) {
@@ -213,6 +212,7 @@ export default function Home() {
 						<GiftCardDialog
 							onSubmit={handleAddCard}
 							onClose={() => setShowDialog(false)}
+							isLoading={createCardAndSupplierMutation.isPending}
 						/>
 					)}
 				</div>

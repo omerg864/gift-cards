@@ -3,23 +3,23 @@
 import { Supplier, SupplierStore } from '@shared/types/supplier.types';
 import { debounce } from 'lodash';
 import {
-    ArrowLeft,
-    CreditCard,
-    Edit,
-    Plus,
-    Search,
-    Smartphone,
-    Store,
-    Trash,
-    X,
+	ArrowLeft,
+	CreditCard,
+	Edit,
+	Plus,
+	Search,
+	Smartphone,
+	Store,
+	Trash,
+	X,
 } from 'lucide-react';
 import {
-    ChangeEvent,
-    useCallback,
-    useEffect,
-    useMemo,
-    useRef,
-    useState,
+	ChangeEvent,
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
 } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
@@ -34,21 +34,25 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { useEncryption } from '../context/EncryptionContext';
 import { useCreateCardAndSupplier } from '../hooks/useCardQuery';
-import { useDeleteSupplier, useGetSupplier, useUpdateSupplier } from '../hooks/useSupplierQuery';
+import {
+	useDeleteSupplier,
+	useGetSupplier,
+	useUpdateSupplier,
+} from '../hooks/useSupplierQuery';
 import { encryptCard, validateGlobalKey } from '../lib/cryptoHelpers';
 import { getCloudinaryUrl, toastError } from '../lib/utils';
 import { useAuthStore } from '../stores/useAuthStore';
-import {
-    CreateSupplierDetails,
-} from '../types/supplier';
+import { CreateSupplierDetails } from '../types/supplier';
 
 export default function SupplierDetailsPage() {
 	const navigate = useNavigate();
-		const params = useParams();
+	const params = useParams();
 	const [showAddDialog, setShowAddDialog] = useState(false);
 	const [showEditDialog, setShowEditDialog] = useState(false);
 	const [showConfirmationDialog, setShowConfirmationDialog] = useState(false);
-	const { data: supplier, isLoading: loading } = useGetSupplier(params?.id ?? '');
+	const { data: supplier, isLoading: loading } = useGetSupplier(
+		params?.id ?? '',
+	);
 	const [filteredStores, setFilteredStores] = useState<SupplierStore[]>([]);
 	const [storeFilter, setStoreFilter] = useState('');
 	const { user } = useAuthStore();
@@ -56,8 +60,10 @@ export default function SupplierDetailsPage() {
 	const storeFilterRef = useRef<string>('');
 	const storeFilterInputRef = useRef<HTMLInputElement | null>(null);
 
-	const { mutateAsync: updateSupplier, isPending: isUpdating } = useUpdateSupplier();
-	const { mutateAsync: deleteSupplier, isPending: isDeleting } = useDeleteSupplier();
+	const { mutateAsync: updateSupplier, isPending: isUpdating } =
+		useUpdateSupplier();
+	const { mutateAsync: deleteSupplier, isPending: isDeleting } =
+		useDeleteSupplier();
 	const createCardAndSupplierMutation = useCreateCardAndSupplier();
 
 	useEffect(() => {
@@ -66,7 +72,9 @@ export default function SupplierDetailsPage() {
 				setFilteredStores(supplier.stores ?? []);
 			} else {
 				const filtered = (supplier.stores ?? []).filter((store) =>
-					store.name.toLowerCase().includes(storeFilter.toLowerCase())
+					store.name
+						.toLowerCase()
+						.includes(storeFilter.toLowerCase()),
 				);
 				setFilteredStores(filtered);
 			}
@@ -77,12 +85,12 @@ export default function SupplierDetailsPage() {
 		(text: string) => {
 			setStoreFilter(text);
 		},
-		[setStoreFilter]
+		[setStoreFilter],
 	);
 
 	const debouncedUpdateStoreFilter = useMemo(
 		() => debounce(updateStoreFilter, 300),
-		[updateStoreFilter]
+		[updateStoreFilter],
 	);
 
 	const handleStoreFilterChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -99,7 +107,10 @@ export default function SupplierDetailsPage() {
 		setShowAddDialog(true);
 	};
 
-	const handleNewCardSubmit = async (card: Card, supplier: Omit<Supplier, 'id'> | null) => {
+	const handleNewCardSubmit = async (
+		card: Card,
+		supplier: Omit<Supplier, 'id'> | null,
+	) => {
 		if (!card) {
 			toast.error('No data provided');
 			return;
@@ -126,13 +137,7 @@ export default function SupplierDetailsPage() {
 				toast.error('Please provide encryption key');
 				return;
 			}
-			if (
-				!validateGlobalKey(
-					user.verifyToken,
-					globalKey,
-					user.salt
-				)
-			) {
+			if (!validateGlobalKey(user.verifyToken, globalKey, user.salt)) {
 				toast.error('invalid encryption key');
 				return;
 			}
@@ -145,27 +150,27 @@ export default function SupplierDetailsPage() {
 			const encryptedData = encryptCard(
 				{ cardNumber: card.cardNumber, cvv: card.cvv },
 				globalKey!,
-				user.salt
+				user.salt,
 			);
 			cardNumber = encryptedData.cardNumber;
 			cvv = encryptedData.cvv;
 		}
 		try {
-				await createCardAndSupplierMutation.mutateAsync({
-					card: {
-						name: card.name,
-						description: card.description || '',
-						isPhysical: card.isPhysical,
-						amount: card.amount,
-						currency: card.currency,
+			await createCardAndSupplierMutation.mutateAsync({
+				card: {
+					name: card.name,
+					description: card.description || '',
+					isPhysical: card.isPhysical,
+					amount: card.amount,
+					currency: card.currency,
 					supplier: card.supplier,
 					cardNumber,
 					last4,
 					expiry: card.expiry,
-					cvv
-					},
-					supplier: supplier ?? undefined
-				});
+					cvv,
+				},
+				supplier: supplier ?? undefined,
+			});
 			setShowAddDialog(false);
 			toast.success('Card added successfully');
 		} catch (error) {
@@ -334,7 +339,10 @@ export default function SupplierDetailsPage() {
 										className="flex items-center gap-4 p-3 bg-background rounded-lg border"
 									>
 										<img
-											src={getCloudinaryUrl(store.image) || '/store.png'}
+											src={
+												getCloudinaryUrl(store.image) ||
+												'/store.png'
+											}
 											alt={store.name}
 											width={40}
 											height={40}
@@ -375,6 +383,7 @@ export default function SupplierDetailsPage() {
 				<GiftCardDialog
 					onSubmit={handleNewCardSubmit}
 					onClose={() => setShowAddDialog(false)}
+					isLoading={createCardAndSupplierMutation.isPending}
 				/>
 			)}
 			{showEditDialog && (
@@ -383,6 +392,7 @@ export default function SupplierDetailsPage() {
 					onSubmit={handleEdit}
 					onClose={() => setShowEditDialog(false)}
 					supplier={supplier}
+					isLoading={isUpdating}
 				/>
 			)}
 			{showConfirmationDialog && (

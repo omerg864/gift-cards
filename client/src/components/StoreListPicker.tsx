@@ -14,6 +14,7 @@ interface StoreListPickerProps {
 	onAddStore: (storeName: string) => void;
 	onRemoveStore: (index: number) => void;
 	onToggleStore: (storeName: string) => void;
+	isDisabled?: boolean;
 }
 
 export function StoreListPicker({
@@ -21,6 +22,7 @@ export function StoreListPicker({
 	onAddStore,
 	onRemoveStore,
 	onToggleStore,
+	isDisabled = false,
 }: StoreListPickerProps) {
 	const [storeInput, setStoreInput] = useState('');
 	const [storeSearch, setStoreSearch] = useState('');
@@ -30,10 +32,10 @@ export function StoreListPicker({
 		const allStores = suppliers?.flatMap((s) => s.stores ?? []) ?? [];
 		// Remove duplicates based on store name
 		const uniqueStores = Array.from(
-			new Map(allStores.map((store) => [store.name, store])).values()
+			new Map(allStores.map((store) => [store.name, store])).values(),
 		);
 		return uniqueStores.filter((store) =>
-			store.name.toLowerCase().includes(storeSearch.toLowerCase())
+			store.name.toLowerCase().includes(storeSearch.toLowerCase()),
 		);
 	}, [suppliers, storeSearch]);
 
@@ -60,9 +62,15 @@ export function StoreListPicker({
 						value={storeInput}
 						onChange={(e) => setStoreInput(e.target.value)}
 						onKeyDown={handleStoreKeyDown}
+						disabled={isDisabled}
 					/>
 				</div>
-				<Button type="button" size="sm" onClick={handleAddStore}>
+				<Button
+					type="button"
+					size="sm"
+					onClick={handleAddStore}
+					disabled={isDisabled}
+				>
 					<Plus className="h-4 w-4" />
 				</Button>
 			</div>
@@ -78,6 +86,7 @@ export function StoreListPicker({
 						value={storeSearch}
 						onChange={(e) => setStoreSearch(e.target.value)}
 						className="pl-8"
+						disabled={isDisabled}
 					/>
 				</div>
 				<ScrollArea className="h-[150px] rounded-md border p-2">
@@ -90,11 +99,12 @@ export function StoreListPicker({
 								<Checkbox
 									id={`store-${store.name}`}
 									checked={selectedStores.some(
-										(s) => s.name === store.name.trim()
+										(s) => s.name === store.name.trim(),
 									)}
 									onCheckedChange={() =>
 										onToggleStore(store.name)
 									}
+									disabled={isDisabled}
 								/>
 								<label
 									htmlFor={`store-${store.name}`}
@@ -121,8 +131,8 @@ export function StoreListPicker({
 					>
 						{store.name}
 						<X
-							className="h-3 w-3 cursor-pointer"
-							onClick={() => onRemoveStore(index)}
+							className={`h-3 w-3 ${isDisabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
+							onClick={() => !isDisabled && onRemoveStore(index)}
 						/>
 					</Badge>
 				))}

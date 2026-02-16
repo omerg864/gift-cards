@@ -2,7 +2,14 @@ import { Card } from '@shared/types/card.types';
 import { Supplier } from '@shared/types/supplier.types';
 import { debounce } from 'lodash';
 import { CreditCard, Smartphone, Store } from 'lucide-react';
-import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+	ChangeEvent,
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from 'react';
 import { toast } from 'react-toastify';
 import { useEncryption } from '../context/EncryptionContext';
 import { useGetSuppliers } from '../hooks/useSupplierQuery';
@@ -17,28 +24,32 @@ import Loading from './loading';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import {
-    Dialog,
-    DialogContent,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
+	Dialog,
+	DialogContent,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
 } from './ui/dialog';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
 } from './ui/select';
 import { Switch } from './ui/switch';
 import { Textarea } from './ui/textarea';
 
 interface GiftCardDialogProps {
 	giftCard?: GiftCard;
-	onSubmit: (data: Card, supplier: Omit<Supplier, 'id'> | null) => Promise<void>;
+	onSubmit: (
+		data: Card,
+		supplier: Omit<Supplier, 'id'> | null,
+	) => Promise<void>;
 	onClose: () => void;
+	isLoading?: boolean;
 }
 
 const defaultOtherSupplier: Supplier = {
@@ -54,6 +65,7 @@ export function GiftCardDialog({
 	onClose,
 	onSubmit,
 	giftCard,
+	isLoading = false,
 }: GiftCardDialogProps) {
 	const { globalKey, setGlobalKey } = useEncryption();
 	const { user } = useAuthStore();
@@ -79,12 +91,17 @@ export function GiftCardDialog({
 	const [showStoreSelector, setShowStoreSelector] = useState(false);
 	const [decodedToForm, setDecodedToForm] = useState(false);
 	const { data: suppliers, isLoading: loadingSuppliers } = useGetSuppliers();
-	const { selectedSupplier, supplierOptions} = useMemo(() => {
+	const { selectedSupplier, supplierOptions } = useMemo(() => {
 		const supplierOptions = [...(suppliers ?? []), defaultOtherSupplier];
-		const selectedSupplier = supplierOptions.find((s) => s.id === formData.supplier);
-		return {selectedSupplier, supplierOptions};
+		const selectedSupplier = supplierOptions.find(
+			(s) => s.id === formData.supplier,
+		);
+		return { selectedSupplier, supplierOptions };
 	}, [suppliers, formData.supplier]);
-	const [newCustomSupplier, setNewCustomSupplier] = useState<Omit<Supplier, 'id'> | null>(null);
+	const [newCustomSupplier, setNewCustomSupplier] = useState<Omit<
+		Supplier,
+		'id'
+	> | null>(null);
 
 	const allStores = useMemo(() => {
 		if (newCustomSupplier) {
@@ -96,7 +113,7 @@ export function GiftCardDialog({
 	const colorRef = useRef(selectedSupplier?.fromColor);
 
 	const handleChange = (
-		e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+		e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
 	) => {
 		const { name, value } = e.target;
 		setFormData((prev) => ({
@@ -105,10 +122,10 @@ export function GiftCardDialog({
 				name === 'amount'
 					? Number.parseFloat(value) || 0
 					: name === 'expiry'
-					? value
-						? new Date(value)
-						: undefined
-					: value,
+						? value
+							? new Date(value)
+							: undefined
+						: value,
 		}));
 	};
 
@@ -137,8 +154,8 @@ export function GiftCardDialog({
 					isPhysical: onlyPhysicalType
 						? true
 						: onlyDigitalType
-						? false
-						: prev.isPhysical,
+							? false
+							: prev.isPhysical,
 				}));
 			}
 		}
@@ -156,7 +173,7 @@ export function GiftCardDialog({
 	};
 
 	const handleCustomSupplierNameChange = (
-		e: React.ChangeEvent<HTMLInputElement>
+		e: React.ChangeEvent<HTMLInputElement>,
 	) => {
 		setNewCustomSupplier((prev) => ({
 			...(prev as Omit<Supplier, 'id'>),
@@ -165,10 +182,7 @@ export function GiftCardDialog({
 	};
 
 	const addStore = (storeName: string) => {
-		if (
-			storeName.trim() &&
-			!allStores.includes(storeName.trim())
-		) {
+		if (storeName.trim() && !allStores.includes(storeName.trim())) {
 			setNewCustomSupplier((prev) => ({
 				...(prev as Omit<Supplier, 'id'>),
 				stores: [...(prev?.stores ?? []), { name: storeName.trim() }],
@@ -194,14 +208,12 @@ export function GiftCardDialog({
 		if (newCustomSupplier?.stores?.find((s) => s.name === store)) {
 			setNewCustomSupplier((prev) => ({
 				...(prev as Omit<Supplier, 'id'>),
-				stores: (prev?.stores ?? []).filter(
-					(s) => s.name !== store
-				),
+				stores: (prev?.stores ?? []).filter((s) => s.name !== store),
 			}));
 		} else {
 			setNewCustomSupplier((prev) => ({
 				...(prev as Omit<Supplier, 'id'>),
-				stores: [...prev?.stores ?? [], { name: store }],
+				stores: [...(prev?.stores ?? []), { name: store }],
 			}));
 		}
 	};
@@ -211,15 +223,15 @@ export function GiftCardDialog({
 			setNewCustomSupplier((prev) => ({
 				...(prev as Omit<Supplier, 'id'>),
 				fromColor: color,
-				toColor: getDarkerColor(color)
+				toColor: getDarkerColor(color),
 			}));
 		},
-		[setNewCustomSupplier]
+		[setNewCustomSupplier],
 	);
 
 	const debouncedUpdateColor = useMemo(
 		() => debounce(updateColor, 300),
-		[updateColor]
+		[updateColor],
 	);
 
 	const handleColorChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -272,7 +284,7 @@ export function GiftCardDialog({
 			validateGlobalKey(
 				user?.verifyToken || '',
 				globalKey,
-				user?.salt || ''
+				user?.salt || '',
 			)
 		) {
 			setFormData((prev) => ({
@@ -304,6 +316,7 @@ export function GiftCardDialog({
 							value={formData.name || ''}
 							onChange={handleChange}
 							required
+							disabled={isLoading}
 						/>
 					</div>
 					<div className="space-y-2">
@@ -317,6 +330,7 @@ export function GiftCardDialog({
 									: giftCard?.supplier || ''
 							}
 							onValueChange={handleSupplierChange}
+							disabled={isLoading}
 						>
 							<SelectTrigger>
 								<SelectValue placeholder="Select a supplier" />
@@ -340,11 +354,16 @@ export function GiftCardDialog({
 									value={newCustomSupplier?.name || ''}
 									onChange={handleCustomSupplierNameChange}
 									required
+									disabled={isLoading}
 								/>
 								<Input
 									type="color"
-									value={newCustomSupplier?.fromColor || '#6B7280'}
+									value={
+										newCustomSupplier?.fromColor ||
+										'#6B7280'
+									}
 									onChange={handleColorChange}
+									disabled={isLoading}
 								/>
 							</div>
 						)}
@@ -363,6 +382,7 @@ export function GiftCardDialog({
 								onChange={handleChange}
 								required
 								placeholder="0.00"
+								disabled={isLoading}
 							/>
 						</div>
 						<div className="space-y-2">
@@ -372,6 +392,7 @@ export function GiftCardDialog({
 							<Select
 								value={formData.currency}
 								onValueChange={handleCurrencyChange}
+								disabled={isLoading}
 							>
 								<SelectTrigger>
 									<SelectValue placeholder="Select currency" />
@@ -400,6 +421,7 @@ export function GiftCardDialog({
 							onChange={handleChange}
 							placeholder="Add a description for this gift card"
 							className="min-h-[80px]"
+							disabled={isLoading}
 						/>
 					</div>
 
@@ -418,7 +440,7 @@ export function GiftCardDialog({
 						</div>
 						<Switch
 							id="isPhysical"
-							disabled={disabledCardTypes}
+							disabled={disabledCardTypes || isLoading}
 							checked={formData.isPhysical}
 							onCheckedChange={togglePhysical}
 						/>
@@ -432,10 +454,10 @@ export function GiftCardDialog({
 								Stores
 							</Label>
 							{formData.supplier && (
-									<span className="text-xs text-muted-foreground">
-										Predefined by supplier
-									</span>
-								)}
+								<span className="text-xs text-muted-foreground">
+									Predefined by supplier
+								</span>
+							)}
 						</div>
 
 						{/* Show store selector only for "other" supplier */}
@@ -445,6 +467,7 @@ export function GiftCardDialog({
 								onAddStore={addStore}
 								onRemoveStore={removeStore}
 								onToggleStore={toggleStoreSelection}
+								isDisabled={isLoading}
 							/>
 						) : null}
 
@@ -488,9 +511,10 @@ export function GiftCardDialog({
 														className="w-full bg-teal-600 hover:bg-teal-700 my-2"
 														onClick={() =>
 															decodeDataToForm(
-																globalKey
+																globalKey,
 															)
 														}
+														disabled={isLoading}
 													>
 														Decode Data
 													</Button>
@@ -512,7 +536,8 @@ export function GiftCardDialog({
 																name="encryptionKey"
 																type="password"
 																value={
-																	globalKey || ''
+																	globalKey ||
+																	''
 																}
 																onChange={
 																	handleKeyChange
@@ -524,9 +549,11 @@ export function GiftCardDialog({
 															className="w-full bg-teal-600 hover:bg-teal-700 my-2"
 															onClick={() =>
 																decodeDataToForm(
-																	globalKey || ''
+																	globalKey ||
+																		'',
 																)
 															}
+															disabled={isLoading}
 														>
 															Decode Data
 														</Button>
@@ -571,7 +598,8 @@ export function GiftCardDialog({
 																name="encryptionKey"
 																type="password"
 																value={
-																	globalKey || ''
+																	globalKey ||
+																	''
 																}
 																onChange={
 																	handleKeyChange
@@ -606,9 +634,7 @@ export function GiftCardDialog({
 													id="encryptionKey"
 													name="encryptionKey"
 													type="password"
-													value={
-														globalKey || ''
-													}
+													value={globalKey || ''}
 													onChange={handleKeyChange}
 													required
 												/>
@@ -634,6 +660,7 @@ export function GiftCardDialog({
 										value={formData.cardNumber}
 										onChange={handleChange}
 										className="w-full"
+										disabled={isLoading}
 									/>
 								</div>
 
@@ -654,6 +681,7 @@ export function GiftCardDialog({
 													: ''
 											}
 											onChange={handleChange}
+											disabled={isLoading}
 										/>
 									</div>
 									<div className="space-y-2">
@@ -665,6 +693,7 @@ export function GiftCardDialog({
 											onChange={handleChange}
 											maxLength={3}
 											placeholder="123"
+											disabled={isLoading}
 										/>
 									</div>
 								</div>
@@ -688,14 +717,20 @@ export function GiftCardDialog({
 							type="button"
 							variant="outline"
 							onClick={onClose}
+							disabled={isLoading}
 						>
 							Cancel
 						</Button>
 						<Button
 							type="submit"
 							className="w-full bg-teal-600 hover:bg-teal-700"
+							disabled={isLoading}
 						>
-							{giftCard ? 'Update Gift Card' : 'Add Gift Card'}
+							{isLoading
+								? 'Loading...'
+								: giftCard
+									? 'Update Gift Card'
+									: 'Add Gift Card'}
 						</Button>
 					</DialogFooter>
 				</form>
